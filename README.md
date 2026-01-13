@@ -16,7 +16,7 @@ Human-in-the-loop verification framework for AI-assisted development. Breaks wor
 | Component | Count |
 |-----------|-------|
 | Agents | 9 |
-| Commands | 6 |
+| Commands | 7 |
 | Skills | 1 |
 | MCP Servers | 1 |
 
@@ -55,6 +55,7 @@ Unit Work addresses the "70-80% completion problem" - AI tends to complete featu
 |---------|-------------|
 | `/uw:bootstrap` | First-time setup: check deps, configure Hindsight, explore codebase |
 | `/uw:action-comments` | Bulk resolve GitHub PR comments |
+| `/uw:pr` | Create or update GitHub PRs with AI-generated descriptions |
 
 ## Agents
 
