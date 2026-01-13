@@ -79,7 +79,7 @@ During implementation, agent encounters a decision:
 |   -> recall --budget low                       |
 +-----------------------------------------------+
 | "How does X work?"                             |
-|   -> recall --budget mid --include-entities    |
+|   -> recall --budget mid --include-chunks      |
 +-----------------------------------------------+
 | "How do X and Y interact?"                     |
 |   -> recall --budget high --include-chunks     |
