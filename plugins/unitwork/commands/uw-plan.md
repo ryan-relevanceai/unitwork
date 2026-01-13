@@ -31,17 +31,54 @@ First, recall relevant memories from Hindsight:
 BANK_NAME=$(basename $(git rev-parse --show-toplevel 2>/dev/null || pwd))
 
 # Recall relevant context
-hindsight memory recall "$BANK_NAME" "location of code related to: <feature_description>" --budget mid --include-entities
+hindsight memory recall "$BANK_NAME" "location of code related to: <feature_description>" --budget mid --include-chunks
 ```
 
 ### Codebase Exploration
 
-Based on memory results, explore the codebase:
+Based on memory results, use **Explore subagents** to preserve main thread context.
 
-1. Navigate to relevant directories mentioned in memories
-2. Read entry points, models, routes, and tests
-3. Document existing patterns and conventions
-4. Research unknown terms/concepts in docs before asking user
+Spawn 3 Explore agents **in parallel** (single message, multiple Task tool calls) with specific focuses:
+
+**Agent 1 - Feature-Related Code:**
+```
+Task tool with subagent_type="Explore"
+prompt: "Explore this codebase to find code related to: <feature_description>
+1. Find files that implement similar or related functionality
+2. Identify the modules/directories where this feature should live
+3. Document existing patterns for this type of feature
+4. Note any integration points (APIs, services, models)
+
+Report: relevant files, existing patterns, and integration points."
+```
+
+**Agent 2 - Test Patterns:**
+```
+Task tool with subagent_type="Explore"
+prompt: "Explore this codebase to understand testing patterns for: <feature_description>
+1. Find existing tests for similar functionality
+2. Document test patterns and conventions used
+3. Note edge case handling patterns in related code
+4. Identify test fixtures and factories that could be reused
+
+Report: test patterns, conventions, and edge case handling."
+```
+
+**Agent 3 - Existing Utilities:**
+```
+Task tool with subagent_type="Explore"
+prompt: "Find existing utilities in this codebase that could help implement: <feature_description>
+1. Search for helper functions, service objects, and shared modules
+2. Find validation utilities, formatters, and data transformers
+3. Locate any abstraction layers (API clients, database helpers, etc.)
+4. Note which utilities have good test coverage (prefer tested utilities)
+5. Document the import paths and usage patterns
+
+Report: List of reusable utilities with their locations, what they do, and how to use them.
+IMPORTANT: Only include utilities that are already tested and production-ready."
+```
+
+After agents complete, synthesize their findings before interviewing the user. The utilities discovered by Agent 3 should inform the implementation approach.
 
 ### Framework Documentation (Context7)
 
@@ -81,15 +118,57 @@ mcp__unitwork_context7__query-docs
 
 ### Interview Questions
 
-Use AskUserQuestion to clarify:
+The interview should be **extensive**, covering non-obvious implementation details that cannot be discovered through codebase exploration. Continue until you have **high confidence** in all implementation details - there is no arbitrary minimum number of rounds.
 
-- Scope and behavior questions
-- Edge case handling
+Use AskUserQuestion to clarify across these categories:
+
+#### 1. Implementation Details
+Questions that affect how code will be written:
+- "How should errors be surfaced to the user?"
+- "What data format should X use?"
+- "Should this operation be sync or async?"
+- "What's the expected latency/performance requirement?"
+- "How should this integrate with existing X?"
+
+#### 2. Edge Cases
+Questions about boundary conditions and error states:
+- "What happens when X is empty or null?"
+- "How should we handle partial failures?"
+- "What's the behavior at size/rate limits?"
+- "What if the user cancels mid-operation?"
+- "How should concurrent requests be handled?"
+
+#### 3. Testing Strategy
+Questions about verification approach:
+- "What edge cases need explicit test coverage?"
+- "Should we mock X or use real instances?"
+- "Is integration testing needed for this?"
+- "What's the acceptance criteria for 'done'?"
+- "Are there existing test fixtures we should use?"
+
+#### 4. Dependencies & Integration
+Questions about external factors:
+- "Are there external services involved?"
+- "What happens if a dependency fails?"
+- "Are there rate limits or quotas to consider?"
+- "Does this need backwards compatibility?"
+
+#### 5. UI/UX (only when feature involves UI)
+Skip these for backend-only changes:
+- "What should the loading state look like?"
+- "How should validation errors be displayed?"
+- "Is there existing UI we should match?"
+- "What's the mobile/responsive behavior?"
+
+### Confidence Gate
+
+Continue interviewing until you have **high confidence** (>90%) that you understand:
+- All functional requirements
+- Key edge cases and how to handle them
+- Testing approach
 - Integration points
-- User experience decisions
-- Any ambiguous requirements
 
-Continue interviewing until requirements are clear.
+Do not proceed to spec writing with unresolved ambiguities about implementation details.
 
 ## Phase 3: Breakdown into Units
 

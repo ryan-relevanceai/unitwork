@@ -61,22 +61,19 @@ fi
 echo "Using bank name: $BANK_NAME"
 ```
 
-## Step 3: Configure Bank Disposition
+## Step 3: Configure Bank Background
 
 ```bash
-# Set bank background
+# Set bank background (disposition is automatically inferred from background content)
 hindsight bank background "$BANK_NAME" "I am a development assistant working on the $BANK_NAME codebase.
 I track file locations, architectural patterns, gotchas, and decision rationale to help
-navigate and understand the codebase efficiently."
-
-# Set disposition (high skepticism for code work)
-hindsight bank disposition "$BANK_NAME" --skepticism 5 --literalism 3 --empathy 2
+navigate and understand the codebase efficiently.
+I maintain high skepticism about past assumptions since code changes fast.
+I balance between flexible and literal interpretation of requirements.
+I focus on technical accuracy over emotional considerations."
 ```
 
-**Disposition Traits (1-5 scale):**
-- **Skepticism (5)**: Question past assumptions - code changes fast
-- **Literalism (3)**: Balance between flexible and literal interpretation
-- **Empathy (2)**: Focus on technical accuracy over emotional considerations
+The background content shapes the bank's disposition - Hindsight automatically infers skepticism, literalism, and empathy from the background text.
 
 ## Step 4: Ask User About Key Areas
 
@@ -96,23 +93,45 @@ Allow multiple selections.
 
 ## Step 5: Deep Exploration
 
-Based on user's selection (or defaults), explore key areas:
+Based on user's selection (or defaults), explore key areas using **Explore subagents** to preserve main thread context.
 
-### Default Exploration Targets
+### Launch Explore Agents
 
-1. **Entry points**: `main.*`, `app.*`, `index.*`
-2. **Configuration**: `config/`, `.env*`, settings files
-3. **Models/Schema**: `models/`, `schema.*`, migrations
-4. **Routes/Controllers**: `routes/`, `controllers/`, API definitions
-5. **Services**: `services/`, business logic
-6. **Tests**: `test/`, `spec/`, `__tests__/`
+Spawn 2 Explore agents **in parallel** (single message, multiple Task tool calls) with specific focuses:
 
-### For Each Area
+**Agent 1 - Architecture & Entry Points:**
+```
+Task tool with subagent_type="Explore"
+prompt: "Explore this codebase to understand architecture and entry points:
+1. Find entry points: main.*, app.*, index.*
+2. Locate configuration: config/, .env*, settings files
+3. Identify models/schema: models/, schema.*, migrations
+4. Map routes/controllers: routes/, controllers/, API definitions
+5. Document the overall architecture pattern (MVC, service-oriented, etc.)
+6. Note key dependencies from package.json, requirements.txt, Gemfile, etc.
 
-1. Read key files
-2. Document patterns discovered
-3. Note naming conventions
-4. Identify main services/modules
+Report: file locations, architecture patterns, and naming conventions discovered."
+```
+
+**Agent 2 - Tests & Utilities:**
+```
+Task tool with subagent_type="Explore"
+prompt: "Explore this codebase to understand testing patterns and utilities:
+1. Find test directories: test/, spec/, __tests__/
+2. Identify test framework (Jest, pytest, RSpec, etc.)
+3. Document test naming conventions and patterns
+4. Locate shared utilities and helpers
+5. Find service layer: services/, business logic
+6. Note any existing patterns for error handling, logging, validation
+
+Report: test framework, utility locations, and reusable patterns discovered."
+```
+
+### After Agents Complete
+
+1. Review agent outputs for key discoveries
+2. Identify main services/modules
+3. Note any gotchas or unusual patterns
 
 ### Retain Discoveries
 
@@ -137,8 +156,6 @@ mkdir -p .unitwork/verify
 mkdir -p .unitwork/review
 mkdir -p .unitwork/learnings
 ```
-
-Add `.unitwork/` to `.gitignore` if not already present (optional - some teams prefer to track these).
 
 ## Step 7: Report
 

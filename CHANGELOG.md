@@ -5,6 +5,28 @@ All notable changes to the Unit Work plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.1] - 2026-01-13
+
+### Changed
+
+- **uw-bootstrap**: Use Explore subagents (2 agents) for codebase exploration (preserves main thread context)
+- **uw-plan**: Use Explore subagents (3 agents) for codebase exploration (preserves main thread context)
+  - Agent 1: Feature-related code
+  - Agent 2: Test patterns
+  - Agent 3: Existing utilities (finds tested, reusable utilities for implementation)
+- **uw-plan**: Enhanced interview phase with extensive question categories (implementation, edge cases, testing, dependencies, UI/UX)
+- **uw-plan**: Added confidence gate - continue interviewing until high confidence in requirements
+
+### Fixed
+
+- **uw-bootstrap**: Fixed Hindsight `disposition` command - disposition is auto-inferred from background, not manually set
+- **uw-plan**: Fixed Hindsight `recall` flag - use `--include-chunks` not `--include-entities`
+- **decision-trees.md**: Fixed recall flag reference
+
+### Removed
+
+- **uw-bootstrap**: Removed .gitignore handling - `.unitwork/` is now always version controlled
+
 ## [0.1.0] - 2026-01-13
 
 ### Added
