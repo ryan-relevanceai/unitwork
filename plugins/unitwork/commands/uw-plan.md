@@ -6,6 +6,24 @@ argument-hint: "[feature description or empty to interview]"
 
 # Plan a new feature with Unit Work
 
+## CRITICAL: Read-Only Mode
+
+**NEVER EDIT ANY FILES during planning.** This command is strictly read-only except for writing the spec file to `.unitwork/specs/`.
+
+Allowed operations:
+- Reading files (Read, Glob, Grep)
+- Running read-only bash commands (git log, gh commands, ls, cat)
+- Spawning Explore subagents
+- Writing ONLY to `.unitwork/specs/{date}-{feature}.md`
+
+Forbidden operations:
+- Editing any existing files
+- Writing new files outside `.unitwork/specs/`
+- Running code/tests
+- Making any changes to the codebase
+
+If the user asks to make changes during planning, remind them: "Planning is read-only. Once the spec is approved, use `/uw:work` to implement."
+
 ## Introduction
 
 **Note: The current year is 2026.**

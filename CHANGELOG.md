@@ -5,6 +5,24 @@ All notable changes to the Unit Work plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0] - 2026-01-13
+
+### Added
+
+- **uw-pr**: New command to create or update GitHub PRs with AI-generated descriptions
+  - Creates draft PRs with concise, well-formatted descriptions
+  - Updates existing PR descriptions when new commits are pushed
+  - Supports natural language arguments for target branch and extra context
+  - Handles large diffs (>2000 lines) gracefully
+  - Excludes codegen/generated files from diff analysis
+
+### Changed
+
+- **uw-plan**: Added strict read-only mode constraint
+  - Planning phase now explicitly forbids editing any files
+  - Only allowed to write spec file to `.unitwork/specs/`
+  - Clear instructions to redirect users to `/uw:work` for implementation
+
 ## [0.1.1] - 2026-01-13
 
 ### Changed
