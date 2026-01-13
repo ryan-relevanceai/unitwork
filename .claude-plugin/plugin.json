@@ -1,0 +1,25 @@
+{
+  "name": "unitwork",
+  "version": "0.1.0",
+  "description": "Human-in-the-loop verification framework for AI development. 9 agents, 6 commands, 1 skill, 1 MCP server for checkpoint-based work with Hindsight memory integration.",
+  "author": {
+    "name": "Ryan"
+  },
+  "license": "MIT",
+  "keywords": [
+    "ai-powered",
+    "verification",
+    "checkpoints",
+    "human-in-the-loop",
+    "hindsight",
+    "code-review",
+    "workflow-automation",
+    "compound"
+  ],
+  "mcpServers": {
+    "context7": {
+      "type": "http",
+      "url": "https://mcp.context7.com/mcp"
+    }
+  }
+}
