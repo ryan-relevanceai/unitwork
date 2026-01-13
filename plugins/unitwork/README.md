@@ -7,7 +7,8 @@ Human-in-the-loop verification framework for AI-assisted development. Breaks wor
 ## Installation
 
 ```bash
-claude /plugin install unitwork
+/plugin marketplace add https://github.com/ryan-relevanceai/unitwork
+/plugin install unitwork
 ```
 
 ## Components

@@ -1,0 +1,31 @@
+{
+  "name": "unitwork-marketplace",
+  "owner": {
+    "name": "Ryan",
+    "url": "https://github.com/ryan-relevanceai"
+  },
+  "metadata": {
+    "description": "Unit Work plugin marketplace - human-in-the-loop verification framework for AI development",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "unitwork",
+      "description": "Human-in-the-loop verification framework for AI development. Break work into minimum reviewable units with checkpoints, confidence assessment, and Hindsight memory integration. Includes 9 agents, 6 commands, 1 skill, and 1 MCP server.",
+      "version": "0.1.0",
+      "author": {
+        "name": "Ryan"
+      },
+      "tags": [
+        "ai-powered",
+        "verification",
+        "checkpoints",
+        "human-in-the-loop",
+        "hindsight",
+        "code-review",
+        "workflow-automation"
+      ],
+      "source": "./plugins/unitwork"
+    }
+  ]
+}
