@@ -49,23 +49,17 @@ mcp__unitwork_context7__query-docs          # Query documentation
 
 ## Step 2: Derive Bank Name
 
+The bank name is derived from the git repo name or directory name:
 ```bash
-# Try git remote first
-BANK_NAME=$(git remote get-url origin 2>/dev/null | sed 's/.*\///' | sed 's/\.git$//')
-
-# Fall back to directory name
-if [ -z "$BANK_NAME" ]; then
-    BANK_NAME=$(basename $(pwd))
-fi
-
-echo "Using bank name: $BANK_NAME"
+# Inline derivation (git repo name or directory name)
+$(basename $(git rev-parse --show-toplevel 2>/dev/null || pwd))
 ```
 
 ## Step 3: Configure Bank Background
 
 ```bash
 # Set bank background (disposition is automatically inferred from background content)
-hindsight bank background "$BANK_NAME" "I am a development assistant working on the $BANK_NAME codebase.
+hindsight bank background "$(basename $(git rev-parse --show-toplevel 2>/dev/null || pwd))" "I am a development assistant working on this codebase.
 I track file locations, architectural patterns, gotchas, and decision rationale to help
 navigate and understand the codebase efficiently.
 I maintain high skepticism about past assumptions since code changes fast.
@@ -136,14 +130,14 @@ Report: test framework, utility locations, and reusable patterns discovered."
 ### Retain Discoveries
 
 ```bash
-hindsight memory retain "$BANK_NAME" "In repo $BANK_NAME, codebase structure:
+hindsight memory retain "$(basename $(git rev-parse --show-toplevel 2>/dev/null || pwd))" "Codebase structure:
 - Entry point: <file>
 - Models in: <path>
 - Routes defined in: <path>
 - Services pattern: <description>
 - Testing with: <framework>
 Key services: <list>" \
-  --context "$BANK_NAME: bootstrap exploration" \
+  --context "bootstrap exploration" \
   --doc-id "bootstrap" \
   --async
 ```
@@ -160,7 +154,7 @@ mkdir -p .unitwork/learnings
 ## Step 7: Report
 
 ```
-Bootstrap complete for: {BANK_NAME}
+Bootstrap complete for: {repo-name}
 
 **Dependencies:**
 - Hindsight CLI: {status}
