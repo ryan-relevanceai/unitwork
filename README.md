@@ -168,7 +168,7 @@ hindsight --version
 
 #### Alternative: Native Install
 
-See the [Hindsight Developer Docs](https://hindsight.vectorize.io/developer/) for running Hindsight without Docker.
+See the [Hindsight Developer Docs](https://hindsight.vectorize.io/) for running Hindsight without Docker.
 
 ---
 
