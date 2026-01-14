@@ -33,8 +33,7 @@ ls -la .unitwork/verify/ 2>/dev/null
 If checkpoints exist, query Hindsight for progress:
 
 ```bash
-BANK_NAME=$(basename $(git rev-parse --show-toplevel 2>/dev/null || pwd))
-hindsight memory recall "$BANK_NAME" "progress on <feature>" --budget low
+hindsight memory recall "$(basename $(git rev-parse --show-toplevel 2>/dev/null || pwd))" "progress on <feature>" --budget low
 ```
 
 Report resume status:
@@ -47,10 +46,8 @@ Report resume status:
 Before implementing, recall relevant learnings and gotchas from Hindsight:
 
 ```bash
-BANK_NAME=$(basename $(git rev-parse --show-toplevel 2>/dev/null || pwd))
-
 # Recall gotchas and learnings relevant to this work
-hindsight memory recall "$BANK_NAME" "gotchas and learnings for <feature-type>" --budget mid --include-chunks
+hindsight memory recall "$(basename $(git rev-parse --show-toplevel 2>/dev/null || pwd))" "gotchas and learnings for <feature-type>" --budget mid --include-chunks
 ```
 
 **Surface actionable reminders:** If recall returns relevant gotchas (e.g., "GOTCHA for committing: always update CHANGELOG"), display them prominently before starting:
@@ -213,8 +210,8 @@ When user provides feedback on a checkpoint:
 5. **Retain learning**:
 
 ```bash
-hindsight memory retain "$BANK_NAME" "Verification blind spot: <what was missed>. Similar patterns need <specific check>." \
-  --context "$BANK_NAME: verification learning" \
+hindsight memory retain "$(basename $(git rev-parse --show-toplevel 2>/dev/null || pwd))" "Verification blind spot: <what was missed>. Similar patterns need <specific check>." \
+  --context "verification learning" \
   --doc-id "learn-<feature-name>" \
   --async
 ```

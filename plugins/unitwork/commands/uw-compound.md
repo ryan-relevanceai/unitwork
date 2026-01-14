@@ -79,18 +79,15 @@ Spec: .unitwork/specs/{date}-{feature}.md
 Store learnings for future recall. Use feature *type* (e.g., "OAuth integration", "database migration") not just feature name, so insights transfer to related work.
 
 ```bash
-BANK_NAME=$(basename $(git rev-parse --show-toplevel 2>/dev/null || pwd))
-
 # Example: Retain a gotcha discovered during OAuth implementation
-hindsight memory retain "$BANK_NAME" "In repo $BANK_NAME, GOTCHA when working on OAuth integrations: token refresh must happen before expiry, not after. This matters because expired tokens cause silent auth failures. Similar auth flows should add 60-second buffer to token lifetime checks." \
-  --context "$BANK_NAME: gotcha from oauth-feature" \
+hindsight memory retain "$(basename $(git rev-parse --show-toplevel 2>/dev/null || pwd))" "GOTCHA when working on OAuth integrations: token refresh must happen before expiry, not after. This matters because expired tokens cause silent auth failures. Similar auth flows should add 60-second buffer to token lifetime checks." \
+  --context "gotcha from oauth-feature" \
   --doc-id "learnings-oauth-feature" \
   --async
 ```
 
 Retain each meaningful learning (deviations, gotchas, patterns, blind spots) as a separate memory with:
-- Repo name at start
-- Feature *type* for transferability
+- Feature *type* for transferability (not just feature name)
 - The "why" and actionable advice
 - `--async` to avoid blocking
 
