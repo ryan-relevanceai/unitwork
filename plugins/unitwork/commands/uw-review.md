@@ -145,6 +145,39 @@ problematic code
 fixed code
 ```
 
+## Finding Verification (Critical)
+
+**Agents are not oracles.** Their findings are hypotheses that must be verified before presenting to the user.
+
+For each finding from the review agents:
+
+1. **Check factual accuracy**: Does the claim hold up?
+   - "Utility exists at X" → Actually read the file, confirm it exists and does what's claimed
+   - "Pattern violation" → Verify the pattern actually applies to this context
+   - "Security issue" → Confirm the vulnerability is real and exploitable
+
+2. **Check scope relevance**: Is this finding in-scope for the current review?
+   - A real issue but unrelated to this change → Dismiss (note for existing code section)
+   - A stylistic preference vs actual problem → Dismiss
+   - Pre-existing issue not introduced by this change → Move to "Existing Code Issues"
+
+3. **Classify the finding**:
+   - **VERIFIED**: Factually correct and in-scope → Include in review
+   - **DISMISSED**: False positive or out of scope → Document rationale, don't include in main review
+
+**Only VERIFIED findings are presented to the user for action.**
+
+Document verification decisions internally:
+```markdown
+### Finding: {original finding summary}
+**Agent:** {type-safety|patterns-utilities|etc.}
+**Original Severity:** P1/P2/P3
+**Verification Status:** VERIFIED | DISMISSED
+**Rationale:** {why this was verified or dismissed}
+```
+
+This verification step prevents wasting user time on false positives and ensures all presented findings are actionable.
+
 ## Classify Findings by Scope
 
 Cross-reference each finding with the diff to classify scope:
