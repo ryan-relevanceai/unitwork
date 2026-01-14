@@ -5,6 +5,42 @@ All notable changes to the Unit Work plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.4] - 2026-01-14
+
+### Changed
+
+- **uw-review**: Added Context Recall section before review
+  - Recalls past review learnings and mistakes from Hindsight before spawning agents
+  - Routes domain-specific memories to appropriate agents (e.g., type safety learnings → type-safety agent)
+  - Ensures past mistakes inform current reviews without relying on agent knowledge alone
+
+## [0.2.3] - 2026-01-14
+
+### Added
+
+- **standards/**: New taxonomy reference files for code review
+  - `issue-patterns.md`: 47 issue patterns with frequency data, detection criteria, and fixes
+  - `review-standards.md`: Language-agnostic best practices (type safety, null handling, etc.)
+  - `checklists.md`: Pre/during/post implementation checklists
+
+### Changed
+
+- **uw-review**: Enhanced with taxonomy-based findings and tier system
+  - Multi-origin support: branch diff (default), PR number, codebase area audit
+  - Tier-based severity: Tier 1 (Correctness) always outranks Tier 2 (Cleanliness)
+  - Review agents reference issue patterns taxonomy
+  - Required reading step loads reference files before review
+
+- **Hindsight integration**: Fixed bank name derivation for git worktrees
+  - Changed from `git rev-parse --show-toplevel` to `git config --get remote.origin.url`
+  - All worktrees now share the same memory bank
+  - Fallback chain: remote URL → main worktree name → directory name
+
+- **uw-work**: Added mandatory checkpoint rules
+  - CRITICAL: Never ask "would you like me to commit?" - just commit
+  - All code changes get checkpointed, including follow-up fixes
+  - Added "When to Checkpoint (Mandatory)" section
+
 ## [0.2.2] - 2026-01-14
 
 ### Changed

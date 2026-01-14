@@ -49,17 +49,17 @@ mcp__unitwork_context7__query-docs          # Query documentation
 
 ## Step 2: Derive Bank Name
 
-The bank name is derived from the git repo name or directory name:
+The bank name is derived from the git remote URL (handles worktrees), falling back to main worktree name or directory:
 ```bash
-# Inline derivation (git repo name or directory name)
-$(basename $(git rev-parse --show-toplevel 2>/dev/null || pwd))
+# Inline derivation (handles worktrees - all worktrees share same bank)
+$(git config --get remote.origin.url 2>/dev/null | sed 's/.*\///' | sed 's/\.git$//' || basename "$(git worktree list 2>/dev/null | head -1 | awk '{print $1}')" || basename "$(pwd)")
 ```
 
 ## Step 3: Configure Bank Background
 
 ```bash
 # Set bank background (disposition is automatically inferred from background content)
-hindsight bank background "$(basename $(git rev-parse --show-toplevel 2>/dev/null || pwd))" "I am a development assistant working on this codebase.
+hindsight bank background "$(git config --get remote.origin.url 2>/dev/null | sed 's/.*\///' | sed 's/\.git$//' || basename "$(git worktree list 2>/dev/null | head -1 | awk '{print $1}')" || basename "$(pwd)")" "I am a development assistant working on this codebase.
 I track file locations, architectural patterns, gotchas, and decision rationale to help
 navigate and understand the codebase efficiently.
 I maintain high skepticism about past assumptions since code changes fast.
@@ -130,7 +130,7 @@ Report: test framework, utility locations, and reusable patterns discovered."
 ### Retain Discoveries
 
 ```bash
-hindsight memory retain "$(basename $(git rev-parse --show-toplevel 2>/dev/null || pwd))" "Codebase structure:
+hindsight memory retain "$(git config --get remote.origin.url 2>/dev/null | sed 's/.*\///' | sed 's/\.git$//' || basename "$(git worktree list 2>/dev/null | head -1 | awk '{print $1}')" || basename "$(pwd)")" "Codebase structure:
 - Entry point: <file>
 - Models in: <path>
 - Routes defined in: <path>

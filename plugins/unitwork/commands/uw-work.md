@@ -43,7 +43,7 @@ ls -la .unitwork/verify/ 2>/dev/null
 If checkpoints exist, query Hindsight for progress:
 
 ```bash
-hindsight memory recall "$(basename $(git rev-parse --show-toplevel 2>/dev/null || pwd))" "progress on <feature>" --budget low
+hindsight memory recall "$(git config --get remote.origin.url 2>/dev/null | sed 's/.*\///' | sed 's/\.git$//' || basename "$(git worktree list 2>/dev/null | head -1 | awk '{print $1}')" || basename "$(pwd)")" "progress on <feature>" --budget low
 ```
 
 Report resume status:
@@ -56,8 +56,8 @@ Report resume status:
 Before implementing, recall relevant learnings and gotchas from Hindsight:
 
 ```bash
-# Recall gotchas and learnings relevant to this work
-hindsight memory recall "$(basename $(git rev-parse --show-toplevel 2>/dev/null || pwd))" "gotchas and learnings for <feature-type>" --budget mid --include-chunks
+# Recall gotchas and learnings relevant to this work (handles worktrees)
+hindsight memory recall "$(git config --get remote.origin.url 2>/dev/null | sed 's/.*\///' | sed 's/\.git$//' || basename "$(git worktree list 2>/dev/null | head -1 | awk '{print $1}')" || basename "$(pwd)")" "gotchas and learnings for <feature-type>" --budget mid --include-chunks
 ```
 
 **Surface actionable reminders:** If recall returns relevant gotchas (e.g., "GOTCHA for committing: always update CHANGELOG"), display them prominently before starting:
@@ -232,7 +232,7 @@ When user provides feedback on a checkpoint:
 5. **Retain learning**:
 
 ```bash
-hindsight memory retain "$(basename $(git rev-parse --show-toplevel 2>/dev/null || pwd))" "Verification blind spot: <what was missed>. Similar patterns need <specific check>." \
+hindsight memory retain "$(git config --get remote.origin.url 2>/dev/null | sed 's/.*\///' | sed 's/\.git$//' || basename "$(git worktree list 2>/dev/null | head -1 | awk '{print $1}')" || basename "$(pwd)")" "Verification blind spot: <what was missed>. Similar patterns need <specific check>." \
   --context "verification learning" \
   --doc-id "learn-<feature-name>" \
   --async
