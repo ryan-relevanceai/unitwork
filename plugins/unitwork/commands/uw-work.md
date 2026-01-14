@@ -12,6 +12,16 @@ argument-hint: "[spec file path or empty to auto-detect]"
 
 Unit Work execution implements the plan with checkpoints at every verifiable boundary. Checkpoints are commits with verification documents that invite human review when confidence is below 95%.
 
+## When to Checkpoint (Mandatory)
+
+A checkpoint is required after ANY of these events:
+- Completing a unit from the spec
+- Fixing an issue found during verification
+- Implementing user feedback or corrections
+- Any code change, no matter how small
+
+**There is no "minor change" exemption.** If code was modified, it gets checkpointed.
+
 ## Spec Location
 
 <spec_path> #$ARGUMENTS </spec_path>
@@ -33,8 +43,7 @@ ls -la .unitwork/verify/ 2>/dev/null
 If checkpoints exist, query Hindsight for progress:
 
 ```bash
-BANK_NAME=$(basename $(git rev-parse --show-toplevel 2>/dev/null || pwd))
-hindsight memory recall "$BANK_NAME" "progress on <feature>" --budget low
+hindsight memory recall "$(basename $(git rev-parse --show-toplevel 2>/dev/null || pwd))" "progress on <feature>" --budget low
 ```
 
 Report resume status:
@@ -47,10 +56,8 @@ Report resume status:
 Before implementing, recall relevant learnings and gotchas from Hindsight:
 
 ```bash
-BANK_NAME=$(basename $(git rev-parse --show-toplevel 2>/dev/null || pwd))
-
 # Recall gotchas and learnings relevant to this work
-hindsight memory recall "$BANK_NAME" "gotchas and learnings for <feature-type>" --budget mid --include-chunks
+hindsight memory recall "$(basename $(git rev-parse --show-toplevel 2>/dev/null || pwd))" "gotchas and learnings for <feature-type>" --budget mid --include-chunks
 ```
 
 **Surface actionable reminders:** If recall returns relevant gotchas (e.g., "GOTCHA for committing: always update CHANGELOG"), display them prominently before starting:
@@ -72,6 +79,13 @@ This ensures past mistakes inform current work without requiring them in every s
 5. **Checkpoint at boundaries** - Every verifiable unit gets a checkpoint
 6. **Document uncertainty** - If unsure, say so in checkpoint
 7. **Never skip verification** - Even if confident, run subagents
+8. **Never ask permission to checkpoint** - Checkpoints are mandatory, not optional
+
+**CRITICAL: Checkpoints are git commits, not suggestions.**
+- NEVER say "would you like me to commit?" - just commit
+- NEVER treat follow-up fixes as casual changes - they get checkpoints too
+- ALL code changes during a work session get checkpointed
+- The checkpoint process (verify → document → commit) is non-negotiable
 
 ## For Each Unit
 
@@ -204,17 +218,22 @@ I can continue working while you review, but will incorporate any feedback.
 
 ## Handling Feedback
 
+**CRITICAL: User feedback during a work session is NOT a casual request - it triggers the full checkpoint workflow.**
+
 When user provides feedback on a checkpoint:
 
 1. **Acknowledge the gap**: "You're right - [description of issue]"
 2. **Document the blind spot**: What verification missed and why
 3. **Fix the issue**: Implement the correction
-4. **Create fix checkpoint**: `checkpoint({n}.1): {fix description}`
+4. **Create fix checkpoint** (MANDATORY): `checkpoint({n}.1): {fix description}`
+   - Create verification document at `.unitwork/verify/{date}-{n}.1-{name}.md`
+   - Commit with checkpoint format
+   - Do NOT ask "would you like me to commit?" - just do it
 5. **Retain learning**:
 
 ```bash
-hindsight memory retain "$BANK_NAME" "Verification blind spot: <what was missed>. Similar patterns need <specific check>." \
-  --context "$BANK_NAME: verification learning" \
+hindsight memory retain "$(basename $(git rev-parse --show-toplevel 2>/dev/null || pwd))" "Verification blind spot: <what was missed>. Similar patterns need <specific check>." \
+  --context "verification learning" \
   --doc-id "learn-<feature-name>" \
   --async
 ```
