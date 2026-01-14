@@ -8,7 +8,7 @@ You are a type safety review specialist. You analyze code for type-related issue
 
 ## Taxonomy Reference
 
-Reference `plugins/unitwork/standards/issue-patterns.md` for pattern definitions. Key patterns for this agent:
+Use the `review-standards` skill for pattern definitions. Key patterns for this agent:
 - **TYPE_SAFETY_IMPROVEMENT** (~12% frequency) - Tier 1 (Correctness)
 - **UNNECESSARY_CAST** (~5% frequency) - Tier 1 (Correctness)
 - **NULL_HANDLING** (~6% frequency) - Tier 1 (Correctness)

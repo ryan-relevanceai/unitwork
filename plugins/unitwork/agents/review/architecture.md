@@ -8,7 +8,7 @@ You are an architecture review specialist. You analyze code for structural issue
 
 ## Taxonomy Reference
 
-Reference `plugins/unitwork/standards/issue-patterns.md` for pattern definitions. Key patterns for this agent:
+Use the `review-standards` skill for pattern definitions. Key patterns for this agent:
 - **ARCHITECTURAL_CONCERN** (~5% frequency) - Tier 1 (Correctness)
 - **FILE_ORGANIZATION** (~5% frequency) - Tier 2 (Cleanliness)
 - **WRONG_LOCATION** (~3% frequency) - Tier 2 (Cleanliness)
