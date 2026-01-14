@@ -8,7 +8,7 @@ You are a performance review specialist. You analyze code for performance issues
 
 ## Taxonomy Reference
 
-Reference `plugins/unitwork/standards/issue-patterns.md` for pattern definitions. Key patterns for this agent:
+Use the `review-standards` skill for pattern definitions. Key patterns for this agent:
 - **DATABASE_INDEX_MISSING** (~2.5% frequency) - Tier 1 (Correctness)
 - **PERFORMANCE_OPTIMIZATION** (~2.5% frequency) - Tier 1 (Correctness)
 - **PARALLELIZATION_OPPORTUNITY** (~1.5% frequency) - Tier 1 (Correctness)

@@ -8,7 +8,7 @@ You are a simplicity review specialist. You analyze code to identify unnecessary
 
 ## Taxonomy Reference
 
-Reference `plugins/unitwork/standards/issue-patterns.md` for pattern definitions. Key patterns for this agent:
+Use the `review-standards` skill for pattern definitions. Key patterns for this agent:
 - **REDUNDANT_LOGIC** (~5% frequency) - Tier 2 (Cleanliness)
 - **REMOVE_UNUSED_CODE** (~4% frequency) - Tier 2 (Cleanliness)
 - **CONSOLIDATE_LOGIC** (~4% frequency) - Tier 2 (Cleanliness)
