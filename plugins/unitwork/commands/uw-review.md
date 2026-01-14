@@ -12,26 +12,38 @@ argument-hint: "[origin: branch|pr <number>|area <path>] [base: main]"
 
 Unit Work review spawns 6 parallel specialist agents to perform exhaustive code review. Reviews are taxonomy-based, mapping findings to 47 known issue patterns with tier-based severity ranking.
 
-## Required Reading
+---
 
-**Before reviewing, load the `review-standards` skill which contains:**
+## STEP 0: Memory Recall (MANDATORY - DO NOT SKIP)
 
-- 47 issue patterns with detection criteria and severity tiers
-- Team standards to enforce
-- Implementation checklists
+**This is the first thing you do. Before loading skills. Before reviewing any code. Before anything else.**
 
-The skill provides the taxonomy reference needed for categorizing findings.
+Memory recall is the foundation of compounding. Without it, you lose all accumulated learnings from past reviews and will miss patterns your team has already learned.
 
-## Context Recall
+> **If you skip this:** You will miss reviewing for issues that caused bugs in past PRs. The review-standards skill has patterns, but memory has which ones your team actually hit.
 
-Before reviewing, recall relevant learnings from past reviews and mistakes:
+### Execute Memory Recall NOW
 
 ```bash
-# Recall review-related learnings (handles worktrees)
+# MANDATORY: Recall review-related learnings BEFORE any other work (handles worktrees)
 hindsight memory recall "$(git config --get remote.origin.url 2>/dev/null | sed 's/.*\///' | sed 's/\.git$//' || basename "$(git worktree list 2>/dev/null | head -1 | awk '{print $1}')" || basename "$(pwd)")" "code review learnings, past mistakes, type safety issues, security issues, pattern violations" --budget mid --include-chunks
 ```
 
-**Route learnings to agents:** If recall returns relevant memories, include them in each review agent's context based on domain:
+### Display Learnings
+
+After recall, display relevant learnings:
+
+```
+**Relevant Learnings from Memory:**
+- {past review finding or gotcha}
+- {pattern violation discovered before}
+```
+
+If no relevant learnings found: "Memory recall complete - no relevant learnings found for this review."
+
+### Route Learnings to Agents
+
+Include recalled memories in each review agent's context based on domain:
 
 | Memory Topic | Route To Agent |
 |--------------|----------------|
@@ -44,6 +56,20 @@ hindsight memory recall "$(git config --get remote.origin.url 2>/dev/null | sed 
 | General gotchas | All agents |
 
 This ensures past mistakes inform current reviews without relying on agent knowledge alone.
+
+**DO NOT PROCEED to Required Reading until memory recall is complete.**
+
+---
+
+## Required Reading
+
+**Before reviewing, load the `review-standards` skill which contains:**
+
+- 47 issue patterns with detection criteria and severity tiers
+- Team standards to enforce
+- Implementation checklists
+
+The skill provides the taxonomy reference needed for categorizing findings.
 
 ## Determine Review Origin
 
