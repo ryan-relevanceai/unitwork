@@ -115,12 +115,7 @@ Run through this checklist BEFORE implementing:
 
 ## Quick Reference - Most Common Issues
 
-**Top 5 issues by frequency:**
-1. **BETTER_IMPLEMENTATION_APPROACH (18%)** - Search first, leverage framework features
-2. **TYPE_SAFETY_IMPROVEMENT (12%)** - No casting, complete type guards
-3. **EXISTING_UTILITY_AVAILABLE (10%)** - Search codebase before implementing
-4. **CODE_DUPLICATION (8%)** - Check for existing implementations
-5. **NULL_HANDLING (6%)** - Use null, not empty strings
+See [issue-patterns.md](./issue-patterns.md#quick-reference) for the full pattern reference.
 
 **Zero-tolerance items:**
 - No type casting to access properties
@@ -155,18 +150,6 @@ git diff --name-only | grep "index.ts"
 
 ## Severity Quick Reference
 
-**Tier 1 (Correctness) - Always Higher Priority:**
-- Security vulnerabilities (P1)
-- Architecture problems
-- Implementation bugs
-- Type safety violations
-- Functionality gaps
+See [issue-patterns.md](./issue-patterns.md#severity-tiers) for detailed tier definitions.
 
-**Tier 2 (Cleanliness) - Lower Priority:**
-- Naming clarity
-- File organization
-- Code duplication
-- Comment quality
-- Style consistency
-
-At the same P-level, address Tier 1 issues before Tier 2 issues.
+**Key principle:** At the same P-level, address Tier 1 (Correctness) issues before Tier 2 (Cleanliness) issues.

@@ -41,9 +41,9 @@ gh pr diff $PR_NUMBER
 
 **Codebase Area Audit:**
 ```bash
-# uw:review area <path>
+# uw:review area <dir_path>
 # Review all files in a directory/pattern
-find $PATH -type f \( -name "*.ts" -o -name "*.py" -o -name "*.rb" \)
+find "$AREA_PATH" -type f \( -name "*.ts" -o -name "*.py" -o -name "*.rb" \)
 ```
 
 ## Severity Tiers

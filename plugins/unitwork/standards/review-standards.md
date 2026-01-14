@@ -39,16 +39,12 @@ function isUser(x: unknown): x is User {
   return typeof x === 'object' && x !== null;
 }
 
-// GOOD - validates properties
+// GOOD - validates properties without casting
 function isUser(x: unknown): x is User {
-  return (
-    typeof x === 'object' &&
-    x !== null &&
-    'id' in x &&
-    typeof (x as Record<string, unknown>).id === 'string' &&
-    'email' in x &&
-    typeof (x as Record<string, unknown>).email === 'string'
-  );
+  if (typeof x !== 'object' || x === null) return false;
+  if (!('id' in x) || typeof x.id !== 'string') return false;
+  if (!('email' in x) || typeof x.email !== 'string') return false;
+  return true;
 }
 ```
 
