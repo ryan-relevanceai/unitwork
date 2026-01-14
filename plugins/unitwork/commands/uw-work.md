@@ -168,6 +168,8 @@ See: .unitwork/verify/{DD-MM-YYYY}-{checkpoint-number}-{short-name}.md
 
 Create `.unitwork/verify/{DD-MM-YYYY}-{checkpoint-number}-{short-name}.md`:
 
+**CRITICAL: Minimize human review.** If you can verify something with 100% certainty (grep, read, test output), verify it yourself and list in "AI-Verified". Only put items in "Human QA Checklist" that genuinely require human judgment.
+
 ```markdown
 # Checkpoint: {checkpoint-name}
 
@@ -177,25 +179,26 @@ What approach was used to verify this work
 ## Subagents Launched
 - List of verification subagents and their findings
 
+## AI-Verified (100% Confidence)
+Items verified by agent with certainty:
+- [x] {item} - Confirmed via {grep|read|test output}
+
 ## Confidence Assessment
 - Confidence level: {percentage}%
 - Rationale: Why this confidence level
 
 ## Learnings
 - What was discovered during implementation
-- Any patterns worth remembering
 
-## Human QA Checklist
+## Human QA Checklist (only if needed)
 
-### Prerequisites
-How to get the app into the required state for testing
+Only include items requiring human judgment:
+- Visual design, layout, spacing
+- Subjective UX decisions
+- Complex business logic edge cases
 
 ### Verification Steps
-- [ ] Step 1: {action} -> Expected: {outcome}
-- [ ] Step 2: {action} -> Expected: {outcome}
-
-### Notes
-Any special considerations or areas of uncertainty
+- [ ] {action} -> Expected: {outcome}
 ```
 
 ### Step 5: Continue or Pause
