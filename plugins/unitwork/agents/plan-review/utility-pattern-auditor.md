@@ -87,7 +87,7 @@ For each finding:
 
 **Finding Type:** [EXISTING_UTILITY|PATTERN_VIOLATION|MISSED_SEARCH|REINVENTING_INFRASTRUCTURE]
 
-**Plan proposes:** "{what the plan says to implement}"
+**Quote:** "{what the plan says to implement}"
 
 **Existing solution:**
 - File: `{path to existing utility/pattern}`
