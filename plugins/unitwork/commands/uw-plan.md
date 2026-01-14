@@ -45,11 +45,8 @@ Do not proceed until you have a clear feature description.
 First, recall relevant memories from Hindsight:
 
 ```bash
-# Derive bank name from git remote or directory
-BANK_NAME=$(basename $(git rev-parse --show-toplevel 2>/dev/null || pwd))
-
-# Recall relevant context
-hindsight memory recall "$BANK_NAME" "location of code related to: <feature_description>" --budget mid --include-chunks
+# Recall relevant context (bank name derived from repo/directory)
+hindsight memory recall "$(basename $(git rev-parse --show-toplevel 2>/dev/null || pwd))" "location of code related to: <feature_description>" --budget mid --include-chunks
 ```
 
 ### Codebase Exploration
@@ -275,8 +272,8 @@ Create the spec file:
 Retain discoveries to Hindsight:
 
 ```bash
-hindsight memory retain "$BANK_NAME" "Planning <feature>: Discovered <files/patterns/decisions>. Key integration points: <details>." \
-  --context "$BANK_NAME: planning <feature>" \
+hindsight memory retain "$(basename $(git rev-parse --show-toplevel 2>/dev/null || pwd))" "Planning <feature>: Discovered <files/patterns/decisions>. Key integration points: <details>." \
+  --context "planning <feature>" \
   --doc-id "plan-<feature-name>" \
   --async
 ```
