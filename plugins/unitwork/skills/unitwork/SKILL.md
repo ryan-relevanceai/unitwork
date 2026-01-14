@@ -13,9 +13,10 @@ Unit Work replaces arbitrary development phases with a verification-driven appro
 
 1. **Front-load work** in interview and planning stages
 2. **Use Hindsight memory** to compound learnings across sessions
-3. **Create checkpoints** at verifiable boundaries, not arbitrary phases
-4. **Treat commits as checkpoints** with verification documents
-5. **Know your gaps** and invite human verification where AI is weak
+3. **NEVER skip memory recall** - it's the foundation that makes compounding work
+4. **Create checkpoints** at verifiable boundaries, not arbitrary phases
+5. **Treat commits as checkpoints** with verification documents
+6. **Know your gaps** and invite human verification where AI is weak
 
 ## AI Capability Awareness
 
@@ -96,6 +97,10 @@ Unit Work creates this structure in your project:
 6. Precursor state documented - if testing needs setup, document how
 
 ### Memory Rules
+
+**CRITICAL: Memory recall is the foundation of compounding. Skip it and you lose all accumulated learnings.**
+
+0. **NEVER skip memory recall at session start** - this is non-negotiable
 1. Always async - never block on memory writes
 2. Always contextualized - include repo name and work context
 3. Document tracking - group by feature doc-id
