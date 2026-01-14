@@ -20,6 +20,29 @@ Unit Work review spawns 6 parallel specialist agents to perform exhaustive code 
 2. `plugins/unitwork/standards/review-standards.md` - Team standards to enforce
 3. `plugins/unitwork/standards/checklists.md` - Quick reference checklists
 
+## Context Recall
+
+Before reviewing, recall relevant learnings from past reviews and mistakes:
+
+```bash
+# Recall review-related learnings (handles worktrees)
+hindsight memory recall "$(git config --get remote.origin.url 2>/dev/null | sed 's/.*\///' | sed 's/\.git$//' || basename "$(git worktree list 2>/dev/null | head -1 | awk '{print $1}')" || basename "$(pwd)")" "code review learnings, past mistakes, type safety issues, security issues, pattern violations" --budget mid --include-chunks
+```
+
+**Route learnings to agents:** If recall returns relevant memories, include them in each review agent's context based on domain:
+
+| Memory Topic | Route To Agent |
+|--------------|----------------|
+| Type safety, casting, null handling | type-safety |
+| Security vulnerabilities, auth issues | security |
+| Patterns, utilities, duplication | patterns-utilities |
+| Performance, database, queries | performance-database |
+| Architecture, file organization | architecture |
+| Complexity, over-engineering | simplicity |
+| General gotchas | All agents |
+
+This ensures past mistakes inform current reviews without relying on agent knowledge alone.
+
 ## Determine Review Origin
 
 Parse the arguments to determine what to review:
@@ -86,6 +109,20 @@ Launch all 6 review agents in parallel with the diff context. Each agent should 
 4. **architecture** - ARCHITECTURAL_CONCERN, FILE_ORGANIZATION, WRONG_LOCATION
 5. **security** - INJECTION_VULNERABILITY, AUTHENTICATION_BYPASS, AUTHORIZATION_BYPASS, SENSITIVE_DATA_EXPOSURE
 6. **simplicity** - REDUNDANT_LOGIC, REMOVE_UNUSED_CODE, CONSOLIDATE_LOGIC
+
+**Include recalled context in agent prompts:**
+
+When spawning agents, include any relevant memories from Context Recall:
+
+```markdown
+**Past Learnings (from team memory):**
+- {learning 1 relevant to this agent's domain}
+- {learning 2}
+
+Watch for these patterns based on past issues.
+```
+
+This ensures agents are informed by past mistakes. For example, if there's a memory about "type guard examples must not use casting", the type-safety agent receives it and can catch similar issues.
 
 Each agent returns findings in this format:
 
