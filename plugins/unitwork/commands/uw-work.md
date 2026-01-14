@@ -42,6 +42,27 @@ Report resume status:
 - Which is next
 - Any pending human feedback
 
+## Context Recall
+
+Before implementing, recall relevant learnings and gotchas from Hindsight:
+
+```bash
+BANK_NAME=$(basename $(git rev-parse --show-toplevel 2>/dev/null || pwd))
+
+# Recall gotchas and learnings relevant to this work
+hindsight memory recall "$BANK_NAME" "gotchas and learnings for <feature-type>" --budget mid --include-chunks
+```
+
+**Surface actionable reminders:** If recall returns relevant gotchas (e.g., "GOTCHA for committing: always update CHANGELOG"), display them prominently before starting:
+
+```
+**Relevant Learnings:**
+- {gotcha or pattern from memory}
+- {another relevant learning}
+```
+
+This ensures past mistakes inform current work without requiring them in every spec.
+
 ## Implementation Rules
 
 1. **Follow the spec** - The spec is the contract, don't add features not in spec
