@@ -15,7 +15,7 @@ Human-in-the-loop verification framework for AI-assisted development. Breaks wor
 
 | Component | Count |
 |-----------|-------|
-| Agents | 9 |
+| Agents | 12 |
 | Commands | 7 |
 | Skills | 1 |
 | MCP Servers | 1 |
@@ -77,6 +77,16 @@ Unit Work addresses the "70-80% completion problem" - AI tends to complete featu
 | `architecture` | File locations, coupling, boundary violations |
 | `security` | Injection, auth bypasses, data exposure, OWASP top 10 |
 | `simplicity` | Over-engineering, YAGNI, premature abstraction |
+
+### Plan Review Agents (3)
+
+| Agent | Focus |
+|-------|-------|
+| `gap-detector` | Investigation language, unclear APIs, ambiguous requirements |
+| `utility-pattern-auditor` | Existing utilities, pattern violations, reinvented wheels |
+| `feasibility-validator` | Technical blockers, verification clarity, hidden dependencies |
+
+These agents validate draft plans during `/uw:plan` before presenting to the user. Findings are independently verified (agents are not oracles) before acting.
 
 ## Skills
 
