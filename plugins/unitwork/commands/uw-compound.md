@@ -10,7 +10,9 @@ argument-hint: "[feature name or empty to auto-detect from recent spec]"
 
 **Note: The current year is 2026.**
 
-The compound phase runs automatically after every feature to capture learnings while context is fresh. Learnings are stored in both local documentation and Hindsight memory for future sessions.
+The compound phase captures **the journey**, not the destination. Learnings document what deviated from the spec, what surprised you, and what patterns transfer to future work.
+
+**Key principle:** Learnings should help a future /plan or /work session that's working on a *different but related* task. They should NOT duplicate spec content.
 
 ## Feature Detection
 
@@ -29,111 +31,68 @@ Collect all artifacts from this feature:
 
 ## Extract Learnings
 
-### 1. Feature Paths Discovered
+Focus on the **delta** between plan and reality. Include only sections that have meaningful content - skip sections where nothing noteworthy occurred.
 
-Document file locations and their purposes:
-- Where does this feature live?
-- What are the key entry points?
-- How do files connect?
+### Summary (required)
 
-### 2. Architectural Decisions
+Write 1-2 sentences: what was built and why. This provides context without duplicating the spec.
 
-Capture decisions made during implementation:
-- What patterns were used?
-- Why were certain approaches chosen?
-- What was considered but rejected?
+### What Deviated from Spec (if any)
 
-### 3. Gotchas & Quirks
+Compare implementation to the original plan. What changed and why? What does this teach us about planning similar features?
 
-Note anything that caused friction or surprise:
-- Unexpected behaviors
-- Non-obvious requirements
-- Things that needed rework
+### Gotchas & Surprises (if any)
 
-### 4. Verification Insights
+Document friction and non-obvious discoveries. Frame for transferability: "When working on X type of task, watch out for Y"
 
-What worked and didn't work in verification:
-- What was verified automatically?
-- What needed human review and why?
-- Verification blind spots discovered
+### Generalizable Patterns (if any)
 
-### 5. For Next Time
+Extract insights that apply beyond this specific feature. Format: "{Pattern name}: {when to apply it}"
 
-Advice for similar future features:
-- What should be done differently?
-- What patterns should be reused?
-- What questions should be asked earlier?
+### Verification Blind Spots (if any)
+
+What did human QA find that automated checks missed? How should similar features be verified next time?
 
 ## Create Local Documentation
 
-Write `.unitwork/learnings/{DD-MM-YYYY}-{feature-name}.md`:
+Write `.unitwork/learnings/{DD-MM-YYYY}-{feature-name}.md` with only the sections that have content:
 
 ```markdown
 # Learnings: {Feature Name}
 Date: {DD-MM-YYYY}
 Spec: .unitwork/specs/{date}-{feature}.md
 
-## Feature Paths Discovered
-- {path}: {what it does}
+## Summary
+{1-2 sentences}
 
-## Architectural Decisions
-- {decision}: {rationale}
+## Gotchas & Surprises
+- {gotcha}: {why it matters for future similar work}
 
-## Gotchas & Quirks
-- {gotcha}: {why it matters}
-
-## Verification Insights
-- {what was verified automatically}
-- {what needed human review and why}
-
-## For Next Time
-- {advice for similar features}
+## Generalizable Patterns
+- {pattern}: {when to apply it}
 ```
+
+*(Include only sections with meaningful content - omit empty sections)*
 
 ## Retain to Hindsight
 
-Store learnings in Hindsight memory for future sessions:
+Store learnings for future recall. Use feature *type* (e.g., "OAuth integration", "database migration") not just feature name, so insights transfer to related work.
 
 ```bash
 BANK_NAME=$(basename $(git rev-parse --show-toplevel 2>/dev/null || pwd))
 
-# Retain feature paths
-hindsight memory retain "$BANK_NAME" "In repo $BANK_NAME, <feature> lives in <paths>. Key files: <file1> does <purpose1>, <file2> does <purpose2>." \
-  --context "$BANK_NAME: feature paths for <feature>" \
-  --doc-id "learnings-<feature-name>" \
-  --async
-
-# Retain architectural decisions
-hindsight memory retain "$BANK_NAME" "In repo $BANK_NAME, for <feature> we used <pattern> because <rationale>. This connects to <other-parts>." \
-  --context "$BANK_NAME: architecture decisions for <feature>" \
-  --doc-id "learnings-<feature-name>" \
-  --async
-
-# Retain gotchas (high priority)
-hindsight memory retain "$BANK_NAME" "In repo $BANK_NAME, GOTCHA for <feature>: <description>. This matters because <impact>. Similar situations should <advice>." \
-  --context "$BANK_NAME: gotcha for <feature>" \
-  --doc-id "learnings-<feature-name>" \
-  --async
-
-# Retain verification blind spots (critical)
-hindsight memory retain "$BANK_NAME" "In repo $BANK_NAME, verification blind spot: <what was missed>. Human found <issue>. Future similar code needs <specific check>." \
-  --context "$BANK_NAME: verification learning" \
-  --doc-id "learnings-<feature-name>" \
+# Example: Retain a gotcha discovered during OAuth implementation
+hindsight memory retain "$BANK_NAME" "In repo $BANK_NAME, GOTCHA when working on OAuth integrations: token refresh must happen before expiry, not after. This matters because expired tokens cause silent auth failures. Similar auth flows should add 60-second buffer to token lifetime checks." \
+  --context "$BANK_NAME: gotcha from oauth-feature" \
+  --doc-id "learnings-oauth-feature" \
   --async
 ```
 
-## Memory Format Guidelines
-
-**Always include:**
-- Repo name at start: "In repo myapp, ..."
-- Specific file paths (repo-qualified)
-- User intent / why changes were made
-- Connections to other parts of codebase
-
-**Use narrative format:**
-- Write as natural language, not structured data
-- Focus on "how to find feature sets and important files easier"
-- Include gotchas prominently
+Retain each meaningful learning (deviations, gotchas, patterns, blind spots) as a separate memory with:
+- Repo name at start
+- Feature *type* for transferability
+- The "why" and actionable advice
+- `--async` to avoid blocking
 
 ## Output
 
@@ -144,10 +103,7 @@ Learnings captured for: {Feature Name}
 - .unitwork/learnings/{date}-{feature}.md
 
 **Hindsight Memories:**
-- Feature paths
-- Architectural decisions
-- Gotchas & quirks
-- Verification insights
+- {count} insights retained
 
 These learnings will help with similar features in future sessions.
 ```
