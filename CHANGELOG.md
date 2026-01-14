@@ -5,6 +5,20 @@ All notable changes to the Unit Work plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.6] - 2026-01-14
+
+### Changed
+
+- **uw-work, uw-review, uw-plan**: Made memory recall STEP 0 (mandatory first action)
+  - Added visual separators and CRITICAL callouts
+  - Added failure mode examples explaining what goes wrong when skipped
+  - Added "DO NOT PROCEED" language to enforce execution
+  - Ensures agents never skip the foundation of compounding
+
+- **SKILL.md**: Added memory as core principle
+  - New Core Philosophy principle: "NEVER skip memory recall"
+  - New Memory Rule 0: "NEVER skip memory recall at session start"
+
 ## [0.2.5] - 2026-01-14
 
 ### Changed
