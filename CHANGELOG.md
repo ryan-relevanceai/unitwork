@@ -5,6 +5,19 @@ All notable changes to the Unit Work plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.5] - 2026-01-14
+
+### Changed
+
+- **review-standards**: Migrated from `standards/` directory to skill-based architecture
+  - Created `review-standards` skill with `references/` subdirectory
+  - Fixes path resolution failures when plugin runs from Claude's cache directory
+  - Updated uw-review command and all 6 review agents to load skill instead of hardcoded paths
+
+### Removed
+
+- **standards/**: Directory deleted (files moved to `skills/review-standards/references/`)
+
 ## [0.2.4] - 2026-01-14
 
 ### Changed

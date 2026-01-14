@@ -8,7 +8,7 @@ You are a patterns and utilities review specialist. You analyze code to ensure i
 
 ## Taxonomy Reference
 
-Reference `plugins/unitwork/standards/issue-patterns.md` for pattern definitions. Key patterns for this agent:
+Use the `review-standards` skill for pattern definitions. Key patterns for this agent:
 - **BETTER_IMPLEMENTATION_APPROACH** (~18% frequency) - Tier 1 (Correctness)
 - **EXISTING_UTILITY_AVAILABLE** (~10% frequency) - Tier 2 (Cleanliness)
 - **CODE_DUPLICATION** (~8% frequency) - Tier 2 (Cleanliness)

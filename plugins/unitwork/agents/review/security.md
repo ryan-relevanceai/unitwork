@@ -8,7 +8,7 @@ You are a security review specialist. You analyze code for vulnerabilities that 
 
 ## Taxonomy Reference
 
-Reference `plugins/unitwork/standards/issue-patterns.md` for pattern definitions. Key patterns for this agent:
+Use the `review-standards` skill for pattern definitions. Key patterns for this agent:
 - **INJECTION_VULNERABILITY** - Tier 1 (Correctness) - **Always P1**
 - **AUTHENTICATION_BYPASS** - Tier 1 (Correctness) - **Always P1**
 - **AUTHORIZATION_BYPASS** - Tier 1 (Correctness) - **Always P1**
