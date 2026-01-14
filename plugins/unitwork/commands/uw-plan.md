@@ -205,6 +205,136 @@ For each unit, estimate confidence ceiling:
 - **UI involved** - Lower confidence ceiling (70-80%)
 - **Data migration** - Requires extra scrutiny (flag for human review)
 
+## Phase 3.5: Plan Review
+
+**Before presenting the plan to the user, validate it with specialized review agents.**
+
+The goal is to catch gaps, missing utilities, and feasibility issues BEFORE the user sees the plan. All investigation should happen during planning, not during implementation.
+
+### Spawn Plan Review Agents (Parallel)
+
+Launch 3 plan-review agents in parallel with the draft plan:
+
+**Agent 1 - Gap Detector:**
+```
+Task tool with subagent_type="general-purpose"
+prompt: "You are acting as a gap-detector plan-review agent.
+
+Read the draft plan at: <plan-content>
+
+Analyze each unit for information gaps that would require investigation during implementation:
+- Investigation language ('investigate', 'explore', 'determine', 'research')
+- Unclear API contracts (integration without specified contract)
+- Ambiguous requirements (multiple interpretations possible)
+- Edge cases mentioned but handling not specified
+- Missing error handling strategy
+- Unclear data formats
+
+For each gap found, report:
+### GAP: {description} - Severity: P1/P2/P3
+**Location:** Unit N: {unit name}
+**Gap Type:** [INVESTIGATION_LANGUAGE|API_CONTRACT|REQUIREMENT_AMBIGUITY|EDGE_CASE|ERROR_HANDLING|DATA_FORMAT]
+**Quote:** '{exact text}'
+**Why it matters:** {impact}
+**Suggested resolution:** {ask user / explore codebase / clarify in spec}"
+```
+
+**Agent 2 - Utility Pattern Auditor:**
+```
+Task tool with subagent_type="general-purpose"
+prompt: "You are acting as a utility-pattern-auditor plan-review agent.
+
+Read the draft plan at: <plan-content>
+
+For each unit that proposes implementing something, search the codebase for:
+- Existing utilities that do the same thing
+- Established patterns that should be followed
+- Infrastructure the framework already provides
+
+For each finding, report:
+### UTILITY: {existing solution} - Severity: P1/P2/P3
+**Location:** Unit N: {unit name}
+**Finding Type:** [EXISTING_UTILITY|PATTERN_VIOLATION|MISSED_SEARCH|REINVENTING_INFRASTRUCTURE]
+**Plan proposes:** '{what the plan says}'
+**Existing solution:** {file path, function/class, usage}
+**Suggested plan revision:** {use existing utility / follow pattern}"
+```
+
+**Agent 3 - Feasibility Validator:**
+```
+Task tool with subagent_type="general-purpose"
+prompt: "You are acting as a feasibility-validator plan-review agent.
+
+Read the draft plan at: <plan-content>
+
+Assess each unit for:
+- Technical impossibilities or blockers
+- Unclear verification strategy
+- Hidden dependencies (external services, permissions, data)
+- Unrealistic confidence estimates
+- Units too large for one session
+
+For each concern, report:
+### FEASIBILITY: {concern} - Severity: P1/P2/P3
+**Location:** Unit N: {unit name}
+**Concern Type:** [IMPOSSIBILITY|UNCLEAR_VERIFICATION|HIDDEN_DEPENDENCY|UNREALISTIC_CONFIDENCE|UNIT_TOO_LARGE|SCOPE_CREEP]
+**Quote:** '{relevant text}'
+**Why this is a concern:** {explanation}
+**Suggested resolution:** {investigate / split unit / add dependency / adjust confidence}"
+```
+
+### Finding Verification (Critical)
+
+**Agents are not oracles.** Their findings are hypotheses that must be verified before acting.
+
+For each finding from the agents:
+
+1. **Check factual accuracy**: Does the claim hold up?
+   - "Utility exists at X" → Actually read the file, confirm it exists and does what's claimed
+   - "Pattern violation" → Verify the pattern actually applies to this context
+   - "Gap in requirements" → Check if it was actually addressed elsewhere in the plan
+
+2. **Check scope relevance**: Is this finding in-scope for the current work?
+   - A real issue but unrelated to this feature → Dismiss (note for future)
+   - A stylistic preference vs actual problem → Dismiss
+   - Pre-existing issue not introduced by this plan → Dismiss (or note as tech debt)
+
+3. **Classify the finding**:
+   - **VERIFIED**: Factually correct and in-scope → Act on it
+   - **DISMISSED**: False positive or out of scope → Document rationale, don't act
+
+**Only VERIFIED findings count toward convergence.**
+
+Document each finding's verification:
+```markdown
+### Finding: {original finding summary}
+**Agent:** {gap-detector|utility-pattern-auditor|feasibility-validator}
+**Original Severity:** P1/P2/P3
+**Verification Status:** VERIFIED | DISMISSED
+**Rationale:** {why this was verified or dismissed}
+**Action:** {what will be done, or "none - dismissed"}
+```
+
+### Convergence Criteria
+
+The plan is ready to present when:
+1. <3 total verified findings combined
+2. No verified P1 (BLOCKING) findings
+3. No verified P2 (IMPORTANT) findings
+
+### Loop Behavior
+
+If convergence criteria NOT met:
+1. For verified gaps requiring codebase search → Spawn Explore agents
+2. For verified ambiguities → Ask user questions via AskUserQuestion
+3. Revise the draft plan based on findings
+4. Re-run plan-review agents on revised plan
+5. Repeat until convergence
+
+**Soft iteration limit:** After 5 rounds without convergence, escalate to user with remaining verified findings and ask whether to proceed or continue iterating.
+
+**Dismissed findings are documented but don't block convergence.**
+
 ## Phase 4: Write Spec
 
 Create the spec file:
