@@ -1,6 +1,6 @@
 ---
 name: review-standards
-description: "Code review taxonomy and standards for Unit Work. Contains 47 issue patterns with severity tiers, team standards to enforce, and implementation checklists. Load this skill when running /uw:review or spawning review agents."
+description: "This skill should be used when reviewing code or running /uw:review. It contains 47 issue patterns with severity tiers, team standards to enforce, and implementation checklists for the Unit Work review system."
 ---
 
 # Review Standards
