@@ -45,8 +45,8 @@ Do not proceed until you have a clear feature description.
 First, recall relevant memories from Hindsight:
 
 ```bash
-# Recall relevant context (bank name derived from repo/directory)
-hindsight memory recall "$(basename $(git rev-parse --show-toplevel 2>/dev/null || pwd))" "location of code related to: <feature_description>" --budget mid --include-chunks
+# Recall relevant context (handles worktrees - all worktrees share same bank)
+hindsight memory recall "$(git config --get remote.origin.url 2>/dev/null | sed 's/.*\///' | sed 's/\.git$//' || basename "$(git worktree list 2>/dev/null | head -1 | awk '{print $1}')" || basename "$(pwd)")" "location of code related to: <feature_description>" --budget mid --include-chunks
 ```
 
 ### Codebase Exploration
@@ -272,7 +272,7 @@ Create the spec file:
 Retain discoveries to Hindsight:
 
 ```bash
-hindsight memory retain "$(basename $(git rev-parse --show-toplevel 2>/dev/null || pwd))" "Planning <feature>: Discovered <files/patterns/decisions>. Key integration points: <details>." \
+hindsight memory retain "$(git config --get remote.origin.url 2>/dev/null | sed 's/.*\///' | sed 's/\.git$//' || basename "$(git worktree list 2>/dev/null | head -1 | awk '{print $1}')" || basename "$(pwd)")" "Planning <feature>: Discovered <files/patterns/decisions>. Key integration points: <details>." \
   --context "planning <feature>" \
   --doc-id "plan-<feature-name>" \
   --async
