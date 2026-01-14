@@ -174,6 +174,7 @@ Document verification decisions internally:
 **Original Severity:** P1/P2/P3
 **Verification Status:** VERIFIED | DISMISSED
 **Rationale:** {why this was verified or dismissed}
+**Action:** {what will be done, or "none - dismissed"}
 ```
 
 This verification step prevents wasting user time on false positives and ensures all presented findings are actionable.
