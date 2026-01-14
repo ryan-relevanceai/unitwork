@@ -38,16 +38,40 @@ Unit Work planning combines interview and planning into a single phase. The goal
 
 Do not proceed until you have a clear feature description.
 
-## Phase 1: Context Gathering
+---
 
-### Memory Recall
+## STEP 0: Memory Recall (MANDATORY - DO NOT SKIP)
 
-First, recall relevant memories from Hindsight:
+**This is the first thing you do. Before exploration. Before interviewing. Before anything else.**
+
+Memory recall is the foundation of compounding. Without it, you lose all accumulated learnings from past planning sessions and may plan approaches that have already been tried.
+
+> **If you skip this:** You may plan an approach that was already tried and failed, miss architectural decisions that constrain the solution, or duplicate work that already exists.
+
+### Execute Memory Recall NOW
 
 ```bash
-# Recall relevant context (handles worktrees - all worktrees share same bank)
+# MANDATORY: Recall relevant context BEFORE exploration (handles worktrees)
 hindsight memory recall "$(git config --get remote.origin.url 2>/dev/null | sed 's/.*\///' | sed 's/\.git$//' || basename "$(git worktree list 2>/dev/null | head -1 | awk '{print $1}')" || basename "$(pwd)")" "location of code related to: <feature_description>" --budget mid --include-chunks
 ```
+
+### Display Learnings
+
+After recall, display relevant learnings:
+
+```
+**Relevant Learnings from Memory:**
+- {past planning decision or constraint}
+- {existing code location or pattern}
+```
+
+If no relevant learnings found: "Memory recall complete - no relevant learnings found for this feature type."
+
+**DO NOT PROCEED to codebase exploration until memory recall is complete.**
+
+---
+
+## Phase 1: Context Gathering
 
 ### Codebase Exploration
 

@@ -28,6 +28,40 @@ A checkpoint is required after ANY of these events:
 
 **If empty:** Check `.unitwork/specs/` for in-progress specs, read the most recent one.
 
+---
+
+## STEP 0: Memory Recall (MANDATORY - DO NOT SKIP)
+
+**This is the first thing you do. Before resume detection. Before reading the spec in detail. Before anything else.**
+
+Memory recall is the foundation of compounding. Without it, you lose all accumulated learnings from past sessions and will repeat mistakes that have already been documented.
+
+> **If you skip this:** You may recreate bugs that were already fixed, miss patterns the team learned to avoid, or ignore cross-cutting concerns (like versioning rules) that are documented in memory.
+
+### Execute Memory Recall NOW
+
+```bash
+# MANDATORY: Recall gotchas and learnings BEFORE any other work (handles worktrees)
+hindsight memory recall "$(git config --get remote.origin.url 2>/dev/null | sed 's/.*\///' | sed 's/\.git$//' || basename "$(git worktree list 2>/dev/null | head -1 | awk '{print $1}')" || basename "$(pwd)")" "gotchas and learnings for <feature-type>" --budget mid --include-chunks
+```
+
+### Display Learnings
+
+After recall, ALWAYS display relevant learnings before proceeding:
+
+```
+**Relevant Learnings from Memory:**
+- {gotcha or pattern from memory}
+- {another relevant learning}
+- {any cross-cutting concerns like versioning, changelog, etc.}
+```
+
+If no relevant learnings are found, explicitly state: "Memory recall complete - no relevant learnings found for this task type."
+
+**DO NOT PROCEED to resume detection or implementation until memory recall is complete and learnings are surfaced.**
+
+---
+
 ## Resume Detection
 
 Before starting, check for existing work:
@@ -50,25 +84,6 @@ Report resume status:
 - Which units are complete
 - Which is next
 - Any pending human feedback
-
-## Context Recall
-
-Before implementing, recall relevant learnings and gotchas from Hindsight:
-
-```bash
-# Recall gotchas and learnings relevant to this work (handles worktrees)
-hindsight memory recall "$(git config --get remote.origin.url 2>/dev/null | sed 's/.*\///' | sed 's/\.git$//' || basename "$(git worktree list 2>/dev/null | head -1 | awk '{print $1}')" || basename "$(pwd)")" "gotchas and learnings for <feature-type>" --budget mid --include-chunks
-```
-
-**Surface actionable reminders:** If recall returns relevant gotchas (e.g., "GOTCHA for committing: always update CHANGELOG"), display them prominently before starting:
-
-```
-**Relevant Learnings:**
-- {gotcha or pattern from memory}
-- {another relevant learning}
-```
-
-This ensures past mistakes inform current work without requiring them in every spec.
 
 ## Implementation Rules
 
@@ -153,6 +168,8 @@ See: .unitwork/verify/{DD-MM-YYYY}-{checkpoint-number}-{short-name}.md
 
 Create `.unitwork/verify/{DD-MM-YYYY}-{checkpoint-number}-{short-name}.md`:
 
+**CRITICAL: Minimize human review.** If you can verify something with 100% certainty (grep, read, test output), verify it yourself and list in "AI-Verified". Only put items in "Human QA Checklist" that genuinely require human judgment.
+
 ```markdown
 # Checkpoint: {checkpoint-name}
 
@@ -162,22 +179,29 @@ What approach was used to verify this work
 ## Subagents Launched
 - List of verification subagents and their findings
 
+## AI-Verified (100% Confidence)
+Items verified by agent with certainty:
+- [x] {item} - Confirmed via {grep|read|test output}
+
 ## Confidence Assessment
 - Confidence level: {percentage}%
 - Rationale: Why this confidence level
 
 ## Learnings
 - What was discovered during implementation
-- Any patterns worth remembering
 
-## Human QA Checklist
+## Human QA Checklist (only if needed)
+
+Only include items requiring human judgment:
+- Visual design, layout, spacing
+- Subjective UX decisions
+- Complex business logic edge cases
 
 ### Prerequisites
 How to get the app into the required state for testing
 
 ### Verification Steps
-- [ ] Step 1: {action} -> Expected: {outcome}
-- [ ] Step 2: {action} -> Expected: {outcome}
+- [ ] {action} -> Expected: {outcome}
 
 ### Notes
 Any special considerations or areas of uncertainty
