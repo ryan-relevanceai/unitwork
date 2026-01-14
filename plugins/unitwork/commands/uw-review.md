@@ -14,11 +14,13 @@ Unit Work review spawns 6 parallel specialist agents to perform exhaustive code 
 
 ## Required Reading
 
-**Before reviewing, read these reference files:**
+**Before reviewing, load the `review-standards` skill which contains:**
 
-1. `plugins/unitwork/standards/issue-patterns.md` - 47 patterns with detection criteria
-2. `plugins/unitwork/standards/review-standards.md` - Team standards to enforce
-3. `plugins/unitwork/standards/checklists.md` - Quick reference checklists
+- 47 issue patterns with detection criteria and severity tiers
+- Team standards to enforce
+- Implementation checklists
+
+The skill provides the taxonomy reference needed for categorizing findings.
 
 ## Context Recall
 
