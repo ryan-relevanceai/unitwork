@@ -197,8 +197,14 @@ Only include items requiring human judgment:
 - Subjective UX decisions
 - Complex business logic edge cases
 
+### Prerequisites
+How to get the app into the required state for testing
+
 ### Verification Steps
 - [ ] {action} -> Expected: {outcome}
+
+### Notes
+Any special considerations or areas of uncertainty
 ```
 
 ### Step 5: Continue or Pause
