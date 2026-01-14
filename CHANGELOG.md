@@ -5,6 +5,29 @@ All notable changes to the Unit Work plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.1] - 2026-01-14
+
+### Added
+
+- **install_deps.sh**: New installation script for automated dependency setup
+  - Checks prerequisites (Docker, Node.js 18+)
+  - Installs Hindsight CLI (brew on macOS, curl on Linux)
+  - Installs agent-browser via npm
+  - Prints Docker container setup instructions
+
+### Changed
+
+- **README.md**: Enhanced Requirements section with clearer installation docs
+  - Added Prerequisites section (Docker, Node.js 18+)
+  - Restructured Hindsight setup into 3 clear steps
+  - Changed Docker command to detached mode (-d) with named container
+  - Added recommended presets (OpenRouter + Gemini 3 Flash)
+  - Added container management commands (stop/start/logs)
+
+- **learnings template**: Refactored to capture implementation journey rather than duplicate spec
+  - Focus on gotchas, decisions, and advice for next time
+  - Removed redundant requirements recap
+
 ## [0.2.0] - 2026-01-13
 
 ### Added
