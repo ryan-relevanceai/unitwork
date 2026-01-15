@@ -75,14 +75,16 @@ If no relevant learnings found: "Memory recall complete - no relevant learnings 
 
 ### Codebase Exploration
 
-Based on memory results, use **Explore subagents** to preserve main thread context.
+Based on memory results, use **memory-aware exploration agents** to preserve main thread context and compound exploration findings across sessions.
 
-Spawn 3 Explore agents **in parallel** (single message, multiple Task tool calls) with specific focuses:
+Spawn 3 exploration agents **in parallel** (single message, multiple Task tool calls) with specific focuses:
 
 **Agent 1 - Feature-Related Code:**
 ```
-Task tool with subagent_type="Explore"
-prompt: "Explore this codebase to find code related to: <feature_description>
+Task tool with subagent_type="unitwork:exploration:memory-aware-explore"
+prompt: "Feature context: <feature_description>
+
+Explore this codebase to find code related to: <feature_description>
 1. Find files that implement similar or related functionality
 2. Identify the modules/directories where this feature should live
 3. Document existing patterns for this type of feature
@@ -93,8 +95,10 @@ Report: relevant files, existing patterns, and integration points."
 
 **Agent 2 - Test Patterns:**
 ```
-Task tool with subagent_type="Explore"
-prompt: "Explore this codebase to understand testing patterns for: <feature_description>
+Task tool with subagent_type="unitwork:exploration:memory-aware-explore"
+prompt: "Feature context: <feature_description>
+
+Explore this codebase to understand testing patterns for: <feature_description>
 1. Find existing tests for similar functionality
 2. Document test patterns and conventions used
 3. Note edge case handling patterns in related code
@@ -105,8 +109,10 @@ Report: test patterns, conventions, and edge case handling."
 
 **Agent 3 - Existing Utilities:**
 ```
-Task tool with subagent_type="Explore"
-prompt: "Find existing utilities in this codebase that could help implement: <feature_description>
+Task tool with subagent_type="unitwork:exploration:memory-aware-explore"
+prompt: "Feature context: <feature_description>
+
+Find existing utilities in this codebase that could help implement: <feature_description>
 1. Search for helper functions, service objects, and shared modules
 2. Find validation utilities, formatters, and data transformers
 3. Locate any abstraction layers (API clients, database helpers, etc.)
