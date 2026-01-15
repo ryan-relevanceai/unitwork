@@ -15,9 +15,9 @@ Human-in-the-loop verification framework for AI-assisted development. Breaks wor
 
 | Component | Count |
 |-----------|-------|
-| Agents | 12 |
-| Commands | 7 |
-| Skills | 1 |
+| Agents | 13 |
+| Commands | 8 |
+| Skills | 2 |
 | MCP Servers | 1 |
 
 ## Philosophy
@@ -29,13 +29,68 @@ Unit Work addresses the "70-80% completion problem" - AI tends to complete featu
 3. **Know your gaps** - AI is strong at backend verification, weak at visual/spatial
 4. **Compound learnings** via Hindsight memory across sessions
 
+## How Unit Work Compounds
+
+Each workflow phase contributes to a learning loop that compounds knowledge across sessions:
+
+```
+Session 1: Bootstrap → Plan → Work → Review → Compound
+                ↓         ↓       ↓        ↓         ↓
+           Codebase   Planning  Gotchas  Review   Feature
+           patterns   learnings         patterns  learnings
+                ↓         ↓       ↓        ↓         ↓
+                └─────────┴───────┴────────┴─────────┘
+                                  ↓
+                            Hindsight Memory
+                                  ↓
+Session 2: Plan ← recalls learnings from Session 1
+```
+
+**What gets compounded:**
+- **File purposes** - Where things live and what they do
+- **Architectural patterns** - How the codebase is structured
+- **Gotchas & quirks** - Things that cause friction or unexpected behavior
+- **Verification blind spots** - What automated checks miss
+
+**How it works:**
+1. Each phase starts with **Memory Recall** - loading relevant learnings before starting work
+2. During work, discoveries are noted in verification documents
+3. After completion, `/uw:compound` extracts reusable learnings and stores them to Hindsight
+4. Future sessions recall these learnings, avoiding repeated mistakes
+
+The result: AI assistance that gets better at YOUR codebase over time, not just better at coding in general.
+
 ## Workflow
 
 ```
-/uw:plan -> /uw:work -> /uw:review -> /uw:compound
-    |           |            |             |
-  Spec.md   Checkpoints   Code Review   Learnings
-            + Verify.md   + Fix Loop    to memory
+┌─────────────┐
+│ uw:bootstrap│  (First-time setup)
+└──────┬──────┘
+       ▼
+┌─────────────┐
+│  uw:plan    │  (Create spec)
+└──────┬──────┘
+       ▼
+┌─────────────┐
+│  uw:work    │  (Implement with checkpoints)
+└──────┬──────┘
+       ▼
+┌─────────────┐
+│  uw:review  │───► uw:compound (auto-triggered)
+└──────┬──────┘
+       ▼
+┌─────────────┐
+│   uw:pr     │  (Create PR)
+└──────┬──────┘
+       │
+  ┌────┴────┐
+  ▼         ▼
+uw:fix-ci  uw:action-comments
+(CI fails)  (PR comments)
+  │         │
+  └────┬────┘
+       ▼
+    (Merge)
 ```
 
 ## Commands
@@ -49,13 +104,110 @@ Unit Work addresses the "70-80% completion problem" - AI tends to complete featu
 | `/uw:review` | Spawn 6 parallel review agents for exhaustive code review |
 | `/uw:compound` | Extract and store learnings to Hindsight + local files |
 
+#### /uw:plan
+
+Creates a detailed spec by interviewing you and exploring the codebase. Ensures all requirements are captured before implementation begins.
+
+**Key phases:**
+1. **Memory Recall** - Loads relevant learnings from Hindsight to avoid repeating past mistakes
+2. **Context Gathering** - Spawns 3 parallel exploration agents to find related code, test patterns, and existing utilities
+3. **Interview** - Clarifies requirements, edge cases, testing strategy, and integration points
+4. **Plan Review** - Validates the draft plan with 3 review agents before presenting (convergence required)
+
+**Compounds:** Retains discovered file locations, patterns, and architectural decisions to Hindsight for future sessions.
+
+#### /uw:work
+
+Implements the spec with checkpoints at verifiable boundaries. Each checkpoint is a commit with verification documentation.
+
+**Key phases:**
+1. **Memory Recall** - Loads gotchas and learnings relevant to the task
+2. **Implement** - Works through each unit as specified, querying Context7 for unfamiliar APIs
+3. **Verify** - Launches subagents (test-runner, api-prober, browser-automation) based on what changed
+4. **Checkpoint** - Creates commit with confidence score; ≥95% continues, <95% pauses for review
+
+**Compounds:** Retains verification blind spots and unexpected issues as gotchas for future reference.
+
+#### /uw:review
+
+Runs exhaustive code review using 6 parallel agents. Finds issues that single-pass review misses.
+
+**Key phases:**
+1. **Memory Recall** - Loads past review learnings to inform current review
+2. **Parallel Review** - Spawns 6 agents (type-safety, patterns, performance, architecture, security, simplicity)
+3. **Finding Verification** - Each finding is independently verified (agents are not oracles)
+4. **Fix Loop** - P1 issues are fixed immediately; P2/P3 presented for decision
+
+**Compounds:** Auto-triggers `/uw:compound` to extract learnings from the implementation journey.
+
+#### /uw:compound
+
+Extracts learnings from the implementation and stores them for future sessions. Documents what deviated from the plan.
+
+**Key phases:**
+1. **Gather Context** - Collects spec, verification docs, review findings, and git history
+2. **Extract Learnings** - Focuses on delta between plan and reality (gotchas, surprises, patterns)
+3. **Local Documentation** - Creates `.unitwork/learnings/{date}-{feature}.md`
+4. **Hindsight Retention** - Stores learnings by feature *type* for transferability across projects
+
+**Compounds:** This IS the compounding phase - it transforms implementation experience into reusable knowledge.
+
 ### Utilities
 
 | Command | Description |
 |---------|-------------|
 | `/uw:bootstrap` | First-time setup: check deps, configure Hindsight, explore codebase |
-| `/uw:action-comments` | Bulk resolve GitHub PR comments |
 | `/uw:pr` | Create or update GitHub PRs with AI-generated descriptions |
+| `/uw:action-comments` | Bulk resolve GitHub PR comments |
+| `/uw:fix-ci` | Autonomously fix failing CI with analyze→fix→commit→push→verify loop |
+
+#### /uw:bootstrap
+
+One-time setup when adopting Unit Work on a new codebase. Configures Hindsight and builds initial codebase understanding.
+
+**Key phases:**
+1. **Check Dependencies** - Verifies Hindsight CLI (required), agent-browser (optional)
+2. **Configure Hindsight** - Sets up memory bank with high skepticism for the project
+3. **Deep Exploration** - Spawns 2 parallel agents to map architecture, entry points, tests, and utilities
+4. **Create Directory Structure** - Sets up `.unitwork/` folders for specs, verify, review, learnings
+
+**Compounds:** Retains initial codebase exploration findings (file purposes, patterns, key entry points) to Hindsight.
+
+#### /uw:pr
+
+Creates or updates GitHub PRs with AI-generated descriptions. Handles both new PR creation and updates to existing PRs.
+
+**Key phases:**
+1. **Verify Environment** - Checks git repo and gh CLI authentication
+2. **Gather Context** - Collects diff, commits, and file changes since branch divergence
+3. **Generate Description** - Creates PR description with context, changes summary, and notes
+4. **Create/Update PR** - Creates draft PR or updates existing PR description
+
+**Compounds:** Does not compound - PR metadata is transient and project-specific.
+
+#### /uw:action-comments
+
+Bulk resolves GitHub PR comments by categorizing each comment and implementing appropriate responses.
+
+**Key phases:**
+1. **Fetch Comments** - Retrieves pending PR comments with file/line references
+2. **Categorize** - Classifies each as VALID_FIX, ALREADY_HANDLED, QUESTION, DEFER, or DISAGREE
+3. **Implement Fixes** - Applies valid fixes with lightweight verification
+4. **Post Replies** - Responds to questions and documents deferrals
+
+**Compounds:** Does not compound - comment resolution is PR-specific.
+
+#### /uw:fix-ci
+
+Autonomously fixes failing CI by cycling through analyze→fix→commit→push→verify until CI passes or limits are reached.
+
+**Key phases:**
+1. **Memory Recall** - Loads past CI fix learnings
+2. **Analyze Failure** - Parses CI output to identify failing step and error
+3. **Fix and Verify** - Implements fix, runs local verification, commits with `fix(ci):` prefix
+4. **Poll and Loop** - Pushes, waits for CI, loops back if still failing (max 5 cycles)
+
+**Compounds:** Retains CI fix patterns and gotchas to Hindsight for future CI issues.
 
 ## Agents
 
@@ -88,6 +240,12 @@ Unit Work addresses the "70-80% completion problem" - AI tends to complete featu
 
 These agents validate draft plans during `/uw:plan` before presenting to the user. Findings are independently verified (agents are not oracles) before acting.
 
+### Exploration Agents (1)
+
+| Agent | Purpose |
+|-------|---------|
+| `memory-aware-explore` | Codebase exploration with Hindsight integration (recalls prior findings, retains discoveries) |
+
 ## Skills
 
 ### unitwork
@@ -97,6 +255,14 @@ Core skill containing:
 - Decision trees for checkpoints and verification
 - Agent behavior rules
 - Templates for specs, verification docs, and learnings
+
+### review-standards
+
+Code review standards and issue taxonomy:
+- 47 issue patterns across 6 review categories
+- Severity tiers (Tier 1: correctness, Tier 2: cleanliness)
+- Implementation checklists for common patterns
+- See: [plugins/unitwork/skills/review-standards/references/issue-patterns.md](plugins/unitwork/skills/review-standards/references/issue-patterns.md)
 
 ## MCP Servers
 
