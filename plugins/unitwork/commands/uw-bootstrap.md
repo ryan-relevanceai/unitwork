@@ -87,16 +87,18 @@ Allow multiple selections.
 
 ## Step 5: Deep Exploration
 
-Based on user's selection (or defaults), explore key areas using **Explore subagents** to preserve main thread context.
+Based on user's selection (or defaults), explore key areas using **memory-aware exploration agents** to preserve main thread context and compound findings across sessions.
 
-### Launch Explore Agents
+### Launch Memory-Aware Explore Agents
 
-Spawn 2 Explore agents **in parallel** (single message, multiple Task tool calls) with specific focuses:
+Spawn 2 memory-aware exploration agents **in parallel** (single message, multiple Task tool calls) with specific focuses:
 
 **Agent 1 - Architecture & Entry Points:**
 ```
-Task tool with subagent_type="Explore"
-prompt: "Explore this codebase to understand architecture and entry points:
+Task tool with subagent_type="unitwork:exploration:memory-aware-explore"
+prompt: "Feature context: codebase architecture
+
+Explore this codebase to understand architecture and entry points:
 1. Find entry points: main.*, app.*, index.*
 2. Locate configuration: config/, .env*, settings files
 3. Identify models/schema: models/, schema.*, migrations
@@ -109,8 +111,10 @@ Report: file locations, architecture patterns, and naming conventions discovered
 
 **Agent 2 - Tests & Utilities:**
 ```
-Task tool with subagent_type="Explore"
-prompt: "Explore this codebase to understand testing patterns and utilities:
+Task tool with subagent_type="unitwork:exploration:memory-aware-explore"
+prompt: "Feature context: testing and utilities
+
+Explore this codebase to understand testing patterns and utilities:
 1. Find test directories: test/, spec/, __tests__/
 2. Identify test framework (Jest, pytest, RSpec, etc.)
 3. Document test naming conventions and patterns
