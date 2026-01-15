@@ -5,6 +5,19 @@ All notable changes to the Unit Work plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.2] - 2026-01-16
+
+### Fixed
+
+- **install_deps.sh**: Fixed broken agent-browser installation
+  - Changed package from non-existent `@anthropic/agent-browser` to `agent-browser`
+  - Added `--with-deps` flag for Linux to install browser system dependencies
+  - Added architecture detection for macOS Hindsight CLI download (arm64 vs amd64)
+
+- **README.md**: Fixed installation documentation
+  - Corrected agent-browser npm package name
+  - Added Linux note for `--with-deps` flag
+
 ## [0.5.1] - 2026-01-15
 
 ### Changed
