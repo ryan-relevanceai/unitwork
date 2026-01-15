@@ -32,10 +32,34 @@ Unit Work addresses the "70-80% completion problem" - AI tends to complete featu
 ## Workflow
 
 ```
-/uw:plan -> /uw:work -> /uw:review -> /uw:compound
-    |           |            |             |
-  Spec.md   Checkpoints   Code Review   Learnings
-            + Verify.md   + Fix Loop    to memory
+┌─────────────┐
+│ uw:bootstrap│  (First-time setup)
+└──────┬──────┘
+       ▼
+┌─────────────┐
+│  uw:plan    │  (Create spec)
+└──────┬──────┘
+       ▼
+┌─────────────┐
+│  uw:work    │  (Implement with checkpoints)
+└──────┬──────┘
+       ▼
+┌─────────────┐
+│  uw:review  │───► uw:compound (auto-triggered)
+└──────┬──────┘
+       ▼
+┌─────────────┐
+│   uw:pr     │  (Create PR)
+└──────┬──────┘
+       │
+  ┌────┴────┐
+  ▼         ▼
+uw:fix-ci  uw:action-comments
+(CI fails)  (PR comments)
+  │         │
+  └────┬────┘
+       ▼
+    (Merge)
 ```
 
 ## Commands
