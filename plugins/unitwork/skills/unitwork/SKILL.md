@@ -108,17 +108,13 @@ Unit Work creates this structure in your project:
 5. Retain discoveries immediately - don't wait for phase end
 6. Blind spots are critical - always retain when human finds what agent missed
 
-## Checkpoint Commit Format
+## Checkpoint Protocol
 
-```
-checkpoint({unit-number}): {brief description}
-
-Unit: {unit-name from plan}
-Confidence: {percentage}%
-Verification: {test-runner|api-prober|browser|manual}
-
-See: .unitwork/verify/{DD-MM-YYYY}-{checkpoint-number}-{short-name}.md
-```
+See [checkpointing.md](./references/checkpointing.md) for the complete checkpointing reference including:
+- **Checkpoint Commit Format** - Standard commit message format
+- **When to Checkpoint** - Decision tree in [decision-trees.md](./references/decision-trees.md#when-to-checkpoint)
+- **Verification Document** - Template at [templates/verify.md](./templates/verify.md)
+- **Self-Correcting Review** - Protocol for fix checkpoints
 
 ## Hindsight Integration
 

@@ -1,6 +1,6 @@
 ---
 name: uw:action-comments
-description: Bulk resolve GitHub PR comments using lightweight verification flow
+description: Bulk resolve GitHub PR comments using checkpoint-based verification flow
 argument-hint: "<PR number>"
 ---
 
@@ -10,13 +10,47 @@ argument-hint: "<PR number>"
 
 **Note: The current year is 2026.**
 
-This command fetches PR comments, independently verifies each one, and implements confirmed fixes with lightweight verification (no full checkpoint cycle).
+This command fetches PR comments, independently verifies each one, and implements confirmed fixes with full checkpoint workflow. Each VALID_FIX gets its own checkpoint commit with verification.
 
 ## PR Number
 
 <pr_number> #$ARGUMENTS </pr_number>
 
 **If empty:** Ask user for PR number.
+
+---
+
+## STEP 0: Memory Recall (MANDATORY - DO NOT SKIP)
+
+**This is the first thing you do. Before fetching comments. Before reading any code. Before anything else.**
+
+Memory recall is the foundation of compounding. Without it, you lose all accumulated learnings from past sessions and will repeat mistakes that have already been documented.
+
+> **If you skip this:** You may miss review patterns the team learned, make the same fix mistakes twice, or forget cross-cutting concerns documented in memory.
+
+### Execute Memory Recall NOW
+
+```bash
+# MANDATORY: Recall PR review patterns and gotchas BEFORE any other work (handles worktrees)
+hindsight memory recall "$(git config --get remote.origin.url 2>/dev/null | sed 's/.*\///' | sed 's/\.git$//' || basename "$(git worktree list 2>/dev/null | head -1 | awk '{print $1}')" || basename "$(pwd)")" "PR review patterns, comment resolution gotchas, code review learnings" --budget mid --include-chunks
+```
+
+### Display Learnings
+
+After recall, ALWAYS display relevant learnings before proceeding:
+
+```
+**Relevant Learnings from Memory:**
+- {gotcha or pattern from memory}
+- {another relevant learning}
+- {any cross-cutting concerns like versioning, changelog, etc.}
+```
+
+If no relevant learnings are found, explicitly state: "Memory recall complete - no relevant learnings found for this task type."
+
+**DO NOT PROCEED to fetching comments until memory recall is complete and learnings are surfaced.**
+
+---
 
 ## Step 1: Fetch PR Comments
 
@@ -86,11 +120,11 @@ Verification:
 
 For each comment, categorize:
 
-- **VALID_FIX**: Concern is valid, needs fix
-- **ALREADY_HANDLED**: Code already addresses this
-- **QUESTION**: Needs explanation, no fix
-- **DEFER**: Valid but out of scope for this PR
-- **DISAGREE**: Reviewer concern is incorrect (explain why)
+- **VALID_FIX**: Concern is valid, needs fix → Gets checkpoint
+- **ALREADY_HANDLED**: Code already addresses this → Reply only
+- **QUESTION**: Needs explanation, no fix → Reply only
+- **DEFER**: Valid but out of scope for this PR → Document only
+- **DISAGREE**: Reviewer concern is incorrect → Reply with explanation
 
 ## Step 4: Present Findings
 
@@ -115,34 +149,81 @@ Proceed with fixes?
 ```
 
 Use AskUserQuestion:
-- **Fix all** - Implement all fixes
+- **Fix all** - Implement all fixes with checkpoints
 - **Review each** - Go through fixes one by one
 - **Skip fixes, just reply** - Only post clarifications
 
-## Step 5: Implement Fixes
+## Step 5: Implement Fixes (Checkpoint Per Fix)
 
-For each fix:
+For each VALID_FIX item:
+
+### 5.1 Implement the Fix
 
 1. Read the file
 2. Implement the change
-3. Run relevant tests (lightweight verification)
-4. Stage the change
 
-**NO full checkpoint cycle** - these are minor fixes, not new units of work.
+### 5.2 Verify
 
-## Step 6: Commit Fixes
+Launch appropriate verification subagents based on what changed. See [decision-trees.md](../skills/unitwork/references/decision-trees.md#which-verification-subagent-to-use) for guidance:
 
-Single commit for all PR comment fixes:
+- **Changed test files?** → Launch `test-runner`
+- **Changed API endpoints?** → Launch `test-runner` + `api-prober`
+- **Changed UI components?** → Launch `test-runner` + `browser-automation`
+
+### 5.3 Calculate Confidence
+
+Start at 100%, subtract for uncertainties:
+- -5% for each untested edge case
+- -20% if UI layout changes
+- -10% if complex state management
+- -15% if external API integration
+
+### 5.4 Create Checkpoint
+
+**Checkpoint format for PR comment fixes:**
 
 ```
-fix: address PR #$PR_NUMBER review comments
+checkpoint(pr-{PR_NUMBER}-{fix_number}): {brief description}
 
-- {fix 1 summary}
-- {fix 2 summary}
-- {clarification 1 summary}
+PR: #{PR_NUMBER}
+Comment: {comment summary}
+Confidence: {percentage}%
+Verification: {test-runner|api-prober|browser|manual}
+
+See: .unitwork/verify/{DD-MM-YYYY}-pr-{PR}-{fix_number}-{short-name}.md
 ```
 
-## Step 7: Post Replies (Optional)
+Create verification document at `.unitwork/verify/{DD-MM-YYYY}-pr-{PR}-{fix_number}-{short-name}.md` using [templates/verify.md](../skills/unitwork/templates/verify.md).
+
+### 5.5 Self-Correcting Review
+
+Apply the self-correcting review protocol from [checkpointing.md](../skills/unitwork/references/checkpointing.md#self-correcting-review-fix-checkpoints-only):
+
+1. **Risk Assessment** - Determine if review is needed based on change size
+2. **Selective Agent Invocation** - Spawn relevant review agent(s) if needed
+3. **Cycle Handling** - If new issues found, fix and checkpoint again (max 3 cycles)
+
+### 5.6 Continue or Pause
+
+**Confidence >= 95%:** Continue to next fix.
+
+**Confidence < 95%:** Present for review, then continue.
+
+## Step 6: Commit Clarifications
+
+After all VALID_FIX items are checkpointed, create a single commit for non-fix clarifications:
+
+```
+docs: clarifications for PR #{PR_NUMBER} review comments
+
+- {ALREADY_HANDLED item 1}
+- {QUESTION reply 1}
+- {DISAGREE explanation 1}
+```
+
+This commit contains no code changes, only documentation of responses.
+
+## Step 7: Post Replies
 
 For comments that need clarification (not fixes):
 
@@ -152,20 +233,44 @@ gh pr comment $PR_NUMBER --body "Thanks for the review! This is already handled 
 
 # Reply to questions
 gh pr comment $PR_NUMBER --body "Good question! The reason for this pattern is..."
+
+# Reply to disagreements
+gh pr comment $PR_NUMBER --body "I considered this, but decided against it because..."
 ```
 
-## Step 8: Report
+## Step 8: Compound Phase Prompt
+
+After all fixes are complete:
+
+```
+All comment fixes complete.
+
+**Checkpoints created:**
+- checkpoint(pr-{PR}-1): {description}
+- checkpoint(pr-{PR}-2): {description}
+...
+
+Run /uw:compound to capture learnings from this PR review cycle?
+```
+
+Use AskUserQuestion:
+- **Yes** - Run /uw:compound now
+- **No** - Skip compound phase
+- **Later** - Remind me after push
+
+## Step 9: Report and Push
 
 ```
 Addressed {X}/{Y} comments on PR #{PR_NUMBER}
 
-**Fixed:**
-- {count} issues fixed
+**Fixed ({count} checkpoints):**
+- checkpoint(pr-{PR}-1): {summary}
+- checkpoint(pr-{PR}-2): {summary}
 
-**Clarified:**
+**Clarified ({count}):**
 - {count} replies posted explaining existing code
 
-**Deferred:**
+**Deferred ({count}):**
 - {count} noted for future work
 
 Push changes and request re-review?
