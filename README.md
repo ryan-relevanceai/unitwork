@@ -130,6 +130,54 @@ Extracts learnings from the implementation and stores them for future sessions. 
 | `/uw:action-comments` | Bulk resolve GitHub PR comments |
 | `/uw:fix-ci` | Autonomously fix failing CI with analyze→fix→commit→push→verify loop |
 
+#### /uw:bootstrap
+
+One-time setup when adopting Unit Work on a new codebase. Configures Hindsight and builds initial codebase understanding.
+
+**Key phases:**
+1. **Check Dependencies** - Verifies Hindsight CLI (required), agent-browser (optional)
+2. **Configure Hindsight** - Sets up memory bank with high skepticism for the project
+3. **Deep Exploration** - Spawns 2 parallel agents to map architecture, entry points, tests, and utilities
+4. **Create Directory Structure** - Sets up `.unitwork/` folders for specs, verify, review, learnings
+
+**Compounds:** Retains initial codebase exploration findings (file purposes, patterns, key entry points) to Hindsight.
+
+#### /uw:pr
+
+Creates or updates GitHub PRs with AI-generated descriptions. Handles both new PR creation and updates to existing PRs.
+
+**Key phases:**
+1. **Verify Environment** - Checks git repo and gh CLI authentication
+2. **Gather Context** - Collects diff, commits, and file changes since branch divergence
+3. **Generate Description** - Creates PR description with context, changes summary, and notes
+4. **Create/Update PR** - Creates draft PR or updates existing PR description
+
+**Compounds:** Does not compound - PR metadata is transient and project-specific.
+
+#### /uw:action-comments
+
+Bulk resolves GitHub PR comments by categorizing each comment and implementing appropriate responses.
+
+**Key phases:**
+1. **Fetch Comments** - Retrieves pending PR comments with file/line references
+2. **Categorize** - Classifies each as VALID_FIX, ALREADY_HANDLED, QUESTION, DEFER, or DISAGREE
+3. **Implement Fixes** - Applies valid fixes with lightweight verification
+4. **Post Replies** - Responds to questions and documents deferrals
+
+**Compounds:** Does not compound - comment resolution is PR-specific.
+
+#### /uw:fix-ci
+
+Autonomously fixes failing CI by cycling through analyze→fix→commit→push→verify until CI passes or limits are reached.
+
+**Key phases:**
+1. **Memory Recall** - Loads past CI fix learnings
+2. **Analyze Failure** - Parses CI output to identify failing step and error
+3. **Fix and Verify** - Implements fix, runs local verification, commits with `fix(ci):` prefix
+4. **Poll and Loop** - Pushes, waits for CI, loops back if still failing (max 5 cycles)
+
+**Compounds:** Retains CI fix patterns and gotchas to Hindsight for future CI issues.
+
 ## Agents
 
 ### Verification Agents (3)
