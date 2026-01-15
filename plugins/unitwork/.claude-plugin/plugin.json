@@ -1,6 +1,6 @@
 {
   "name": "unitwork",
-  "version": "0.2.7",
+  "version": "0.3.0",
   "description": "Human-in-the-loop verification framework for AI development. 13 agents, 7 commands, 2 skills, 1 MCP server for checkpoint-based work with Hindsight memory integration.",
   "author": {
     "name": "Ryan"

@@ -5,6 +5,26 @@ All notable changes to the Unit Work plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0] - 2026-01-15
+
+### Added
+
+- **memory-aware-explore**: New exploration agent with Hindsight memory integration
+  - Recalls prior exploration findings before exploring
+  - Validates key recalled file locations (medium trust)
+  - Retains summarized findings including traversal strategies
+  - Graceful degradation when Hindsight unavailable
+
+### Changed
+
+- **uw-plan**: Replaced `Explore` with `unitwork:exploration:memory-aware-explore` (3 agents)
+  - Exploration findings now compound across sessions
+  - Added feature context to each exploration prompt
+
+- **uw-bootstrap**: Replaced `Explore` with `unitwork:exploration:memory-aware-explore` (2 agents)
+  - Bootstrap exploration now retained to memory
+  - Added feature context ("codebase architecture", "testing and utilities")
+
 ## [0.2.7] - 2026-01-14
 
 ### Changed
