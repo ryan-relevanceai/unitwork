@@ -354,8 +354,8 @@ Browser automation for UI verification during `/uw:work`.
 
 ```bash
 # Requires Node.js 18+
-npm install -g @anthropic/agent-browser
-agent-browser install
+npm install -g agent-browser
+agent-browser install  # On Linux, use: agent-browser install --with-deps
 
 # Verify
 agent-browser --version
