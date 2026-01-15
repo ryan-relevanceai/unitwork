@@ -73,6 +73,54 @@ uw:fix-ci  uw:action-comments
 | `/uw:review` | Spawn 6 parallel review agents for exhaustive code review |
 | `/uw:compound` | Extract and store learnings to Hindsight + local files |
 
+#### /uw:plan
+
+Creates a detailed spec by interviewing you and exploring the codebase. Ensures all requirements are captured before implementation begins.
+
+**Key phases:**
+1. **Memory Recall** - Loads relevant learnings from Hindsight to avoid repeating past mistakes
+2. **Context Gathering** - Spawns 3 parallel exploration agents to find related code, test patterns, and existing utilities
+3. **Interview** - Clarifies requirements, edge cases, testing strategy, and integration points
+4. **Plan Review** - Validates the draft plan with 3 review agents before presenting (convergence required)
+
+**Compounds:** Retains discovered file locations, patterns, and architectural decisions to Hindsight for future sessions.
+
+#### /uw:work
+
+Implements the spec with checkpoints at verifiable boundaries. Each checkpoint is a commit with verification documentation.
+
+**Key phases:**
+1. **Memory Recall** - Loads gotchas and learnings relevant to the task
+2. **Implement** - Works through each unit as specified, querying Context7 for unfamiliar APIs
+3. **Verify** - Launches subagents (test-runner, api-prober, browser-automation) based on what changed
+4. **Checkpoint** - Creates commit with confidence score; ≥95% continues, <95% pauses for review
+
+**Compounds:** Retains verification blind spots and unexpected issues as gotchas for future reference.
+
+#### /uw:review
+
+Runs exhaustive code review using 6 parallel agents. Finds issues that single-pass review misses.
+
+**Key phases:**
+1. **Memory Recall** - Loads past review learnings to inform current review
+2. **Parallel Review** - Spawns 6 agents (type-safety, patterns, performance, architecture, security, simplicity)
+3. **Finding Verification** - Each finding is independently verified (agents are not oracles)
+4. **Fix Loop** - P1 issues are fixed immediately; P2/P3 presented for decision
+
+**Compounds:** Auto-triggers `/uw:compound` to extract learnings from the implementation journey.
+
+#### /uw:compound
+
+Extracts learnings from the implementation and stores them for future sessions. Documents what deviated from the plan.
+
+**Key phases:**
+1. **Gather Context** - Collects spec, verification docs, review findings, and git history
+2. **Extract Learnings** - Focuses on delta between plan and reality (gotchas, surprises, patterns)
+3. **Local Documentation** - Creates `.unitwork/learnings/{date}-{feature}.md`
+4. **Hindsight Retention** - Stores learnings by feature *type* for transferability across projects
+
+**Compounds:** This IS the compounding phase - it transforms implementation experience into reusable knowledge.
+
 ### Utilities
 
 | Command | Description |
