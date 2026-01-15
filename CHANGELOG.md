@@ -5,6 +5,18 @@ All notable changes to the Unit Work plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.1] - 2026-01-15
+
+### Changed
+
+- **README**: Comprehensive audit and workflow documentation
+  - Updated component counts (12→13 agents, 7→8 commands, 1→2 skills)
+  - Expanded workflow diagram showing all 8 commands including feedback loops
+  - Added detailed workflow documentation for all commands (phases + compounding notes)
+  - Added "How Unit Work Compounds" section explaining the learning loop
+  - Added Exploration Agents section with memory-aware-explore
+  - Added review-standards skill with link to issue patterns
+
 ## [0.5.0] - 2026-01-15
 
 ### Added
