@@ -28,6 +28,8 @@ unitwork/
 ├── .claude-plugin/
 │   └── plugin.json              # Plugin metadata
 ├── agents/
+│   ├── exploration/             # Memory-aware codebase exploration
+│   │   └── memory-aware-explore.md
 │   ├── verification/            # Verification subagents
 │   │   ├── test-runner.md
 │   │   ├── api-prober.md
@@ -74,6 +76,10 @@ Commands use `uw:` prefix to namespace all Unit Work commands:
 ## Agent Organization
 
 Agents are organized by purpose:
+
+### exploration/
+Memory-aware codebase exploration for `/uw:plan` and `/uw:bootstrap`:
+- `memory-aware-explore.md` - Explore with Hindsight memory integration
 
 ### verification/
 Subagents for automated verification during `/uw:work`:
