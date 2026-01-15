@@ -15,9 +15,9 @@ Human-in-the-loop verification framework for AI-assisted development. Breaks wor
 
 | Component | Count |
 |-----------|-------|
-| Agents | 12 |
-| Commands | 7 |
-| Skills | 1 |
+| Agents | 13 |
+| Commands | 8 |
+| Skills | 2 |
 | MCP Servers | 1 |
 
 ## Philosophy
@@ -54,8 +54,9 @@ Unit Work addresses the "70-80% completion problem" - AI tends to complete featu
 | Command | Description |
 |---------|-------------|
 | `/uw:bootstrap` | First-time setup: check deps, configure Hindsight, explore codebase |
-| `/uw:action-comments` | Bulk resolve GitHub PR comments |
 | `/uw:pr` | Create or update GitHub PRs with AI-generated descriptions |
+| `/uw:action-comments` | Bulk resolve GitHub PR comments |
+| `/uw:fix-ci` | Autonomously fix failing CI with analyze→fix→commit→push→verify loop |
 
 ## Agents
 
@@ -88,6 +89,12 @@ Unit Work addresses the "70-80% completion problem" - AI tends to complete featu
 
 These agents validate draft plans during `/uw:plan` before presenting to the user. Findings are independently verified (agents are not oracles) before acting.
 
+### Exploration Agents (1)
+
+| Agent | Purpose |
+|-------|---------|
+| `memory-aware-explore` | Codebase exploration with Hindsight integration (recalls prior findings, retains discoveries) |
+
 ## Skills
 
 ### unitwork
@@ -97,6 +104,14 @@ Core skill containing:
 - Decision trees for checkpoints and verification
 - Agent behavior rules
 - Templates for specs, verification docs, and learnings
+
+### review-standards
+
+Code review standards and issue taxonomy:
+- 47 issue patterns across 6 review categories
+- Severity tiers (Tier 1: correctness, Tier 2: cleanliness)
+- Implementation checklists for common patterns
+- See: [plugins/unitwork/skills/review-standards/references/issue-patterns.md](plugins/unitwork/skills/review-standards/references/issue-patterns.md)
 
 ## MCP Servers
 
