@@ -45,13 +45,15 @@ unitwork/
 │       ├── architecture.md
 │       ├── security.md
 │       └── simplicity.md
-├── commands/                    # Slash commands
+├── commands/                    # Slash commands (8)
 │   ├── uw-plan.md
 │   ├── uw-work.md
 │   ├── uw-review.md
 │   ├── uw-compound.md
 │   ├── uw-bootstrap.md
-│   └── uw-action-comments.md
+│   ├── uw-pr.md
+│   ├── uw-action-comments.md
+│   └── uw-fix-ci.md
 ├── skills/
 │   └── unitwork/
 │       ├── SKILL.md
@@ -71,11 +73,13 @@ unitwork/
 
 Commands use `uw:` prefix to namespace all Unit Work commands:
 - `/uw:plan` - Planning phase
-- `/uw:work` - Implementation phase
+- `/uw:work` - Implementation phase (with self-correcting review cycles)
 - `/uw:review` - Review phase
 - `/uw:compound` - Learning extraction
 - `/uw:bootstrap` - First-time setup
+- `/uw:pr` - Create/update GitHub PRs
 - `/uw:action-comments` - PR comment resolution
+- `/uw:fix-ci` - Autonomously fix failing CI
 
 ## Agent Organization
 

@@ -5,6 +5,25 @@ All notable changes to the Unit Work plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] - 2026-01-15
+
+### Added
+
+- **uw-fix-ci**: New command to autonomously fix failing CI
+  - Requires existing PR (fail-fast if no PR)
+  - Cycles: analyze failure → fix → commit → push → wait for CI → repeat
+  - Limited workflow parsing (extracts `run:` steps only)
+  - Local verification for standard package managers (npm/yarn/pnpm/pip/cargo/go)
+  - Polling-based CI monitoring (30s intervals, 15min timeout)
+  - Hard limit: 5 cycles, stops on 3 consecutive same errors
+  - Gap collection presents all missing info together
+
+- **Self-correcting review cycles**: Fix checkpoints in uw-work now trigger automatic re-review
+  - Risk assessment determines review intensity (no review / light / full)
+  - Selective agent spawning based on fix type (matches Re-Review Protocol)
+  - Scope-guard prevents review agents from suggesting additional refactoring
+  - Hard limit: 3 cycles per fix
+
 ## [0.3.0] - 2026-01-15
 
 ### Added
