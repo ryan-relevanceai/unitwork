@@ -29,6 +29,37 @@ Unit Work addresses the "70-80% completion problem" - AI tends to complete featu
 3. **Know your gaps** - AI is strong at backend verification, weak at visual/spatial
 4. **Compound learnings** via Hindsight memory across sessions
 
+## How Unit Work Compounds
+
+Each workflow phase contributes to a learning loop that compounds knowledge across sessions:
+
+```
+Session 1: Bootstrap → Plan → Work → Review → Compound
+                ↓         ↓       ↓        ↓         ↓
+           Codebase   Planning  Gotchas  Review   Feature
+           patterns   learnings         patterns  learnings
+                ↓         ↓       ↓        ↓         ↓
+                └─────────┴───────┴────────┴─────────┘
+                                  ↓
+                            Hindsight Memory
+                                  ↓
+Session 2: Plan ← recalls learnings from Session 1
+```
+
+**What gets compounded:**
+- **File purposes** - Where things live and what they do
+- **Architectural patterns** - How the codebase is structured
+- **Gotchas & quirks** - Things that cause friction or unexpected behavior
+- **Verification blind spots** - What automated checks miss
+
+**How it works:**
+1. Each phase starts with **Memory Recall** - loading relevant learnings before starting work
+2. During work, discoveries are noted in verification documents
+3. After completion, `/uw:compound` extracts reusable learnings and stores them to Hindsight
+4. Future sessions recall these learnings, avoiding repeated mistakes
+
+The result: AI assistance that gets better at YOUR codebase over time, not just better at coding in general.
+
 ## Workflow
 
 ```
