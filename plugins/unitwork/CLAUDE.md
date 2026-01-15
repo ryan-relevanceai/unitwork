@@ -58,6 +58,7 @@ unitwork/
 │   └── unitwork/
 │       ├── SKILL.md
 │       ├── references/
+│       │   ├── checkpointing.md
 │       │   └── decision-trees.md
 │       └── templates/
 │           ├── spec.md

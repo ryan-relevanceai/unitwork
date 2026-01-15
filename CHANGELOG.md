@@ -5,6 +5,32 @@ All notable changes to the Unit Work plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.0] - 2026-01-15
+
+### Added
+
+- **checkpointing.md**: New consolidated reference document for checkpoint protocols
+  - Single source of truth for checkpoint commit format
+  - PR comment fix numbering: `checkpoint(pr-{PR}-{n})`
+  - Self-correcting review protocol (risk assessment, selective agents, cycle limits)
+  - References to decision-trees.md and templates/verify.md
+
+### Changed
+
+- **uw-action-comments**: Aligned with full Unit Work checkpoint workflow
+  - Added STEP 0: Memory Recall (mandatory)
+  - Per-fix checkpointing with `checkpoint(pr-{PR}-{n})` format
+  - Self-correcting review after each fix checkpoint
+  - Compound phase prompt at end (user chooses whether to run /uw:compound)
+
+- **uw-work.md**: Reduced duplication by referencing checkpointing.md
+  - Removed ~120 lines of inline checkpoint/verification content
+  - References checkpointing.md for protocol details
+
+- **SKILL.md**: Consolidated checkpoint section
+  - "Checkpoint Commit Format" → "Checkpoint Protocol"
+  - References checkpointing.md and related docs
+
 ## [0.4.0] - 2026-01-15
 
 ### Added
