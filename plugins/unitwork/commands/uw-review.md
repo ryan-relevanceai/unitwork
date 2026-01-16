@@ -10,7 +10,7 @@ argument-hint: "[origin: branch|pr <number>|area <path>] [base: main]"
 
 **Note: The current year is 2026.**
 
-Unit Work review spawns 6 parallel specialist agents to perform exhaustive code review. Reviews are taxonomy-based, mapping findings to 47 known issue patterns with tier-based severity ranking.
+Unit Work review spawns 7 parallel specialist agents to perform exhaustive code review. Reviews are taxonomy-based, mapping findings to 47 known issue patterns with tier-based severity ranking.
 
 ---
 
@@ -83,9 +83,37 @@ git diff $BASE_BRANCH...HEAD --stat
 git diff $BASE_BRANCH...HEAD
 ```
 
+When using branch diff mode, check if a PR exists for the current branch:
+```bash
+CURRENT_BRANCH=$(git branch --show-current)
+gh pr list --head "$CURRENT_BRANCH" --json number,title,url
+```
+
+**If PR exists:** Prompt user: "Found PR #{number}: {title}. Review PR or branch diff?"
+- **Review PR** - Switch to PR Review mode
+- **Review branch diff** - Continue with branch diff
+
 **PR Review:**
 ```bash
 # uw:review pr <number>
+# OR
+# uw:review pr (auto-detect)
+```
+
+**If `pr` is specified WITHOUT a number:** Auto-detect PR by current branch:
+```bash
+CURRENT_BRANCH=$(git branch --show-current)
+gh pr list --head "$CURRENT_BRANCH" --json number,title,url
+```
+
+- **If single PR found:** Confirm: "Found PR #{number}: {title}. Review this?"
+  - If user confirms: Proceed with PR review
+  - If user declines: Ask for PR number manually
+- **If multiple PRs found:** Present list and ask user to select
+- **If no PR found:** Ask for PR number manually
+
+**If PR number is provided:**
+```bash
 gh pr view $PR_NUMBER --json title,body,files,additions,deletions
 gh pr diff $PR_NUMBER
 ```
@@ -129,7 +157,7 @@ Issues affecting maintainability but not correctness:
 
 ## Spawn Parallel Review Agents
 
-Launch all 6 review agents in parallel with the diff context. Each agent should reference the issue patterns taxonomy.
+Launch all 7 review agents in parallel with the diff context. Each agent should reference the issue patterns taxonomy.
 
 1. **type-safety** - TYPE_SAFETY_IMPROVEMENT, UNNECESSARY_CAST, NULL_HANDLING
 2. **patterns-utilities** - EXISTING_UTILITY_AVAILABLE, CODE_DUPLICATION, BETTER_IMPLEMENTATION_APPROACH
@@ -137,6 +165,7 @@ Launch all 6 review agents in parallel with the diff context. Each agent should 
 4. **architecture** - ARCHITECTURAL_CONCERN, FILE_ORGANIZATION, WRONG_LOCATION
 5. **security** - INJECTION_VULNERABILITY, AUTHENTICATION_BYPASS, AUTHORIZATION_BYPASS, SENSITIVE_DATA_EXPOSURE
 6. **simplicity** - REDUNDANT_LOGIC, REMOVE_UNUSED_CODE, CONSOLIDATE_LOGIC
+7. **memory-validation** - MEMORY_LEARNING_VIOLATION (receives ALL learnings, not domain-filtered)
 
 **Include recalled context in agent prompts:**
 
@@ -276,10 +305,21 @@ Fix Tier 1 (correctness) P1 issues first, then Tier 2 (cleanliness) P1 issues:
      libraryId: "<from above>"
      query: "<specific fix pattern>"
    ```
-3. Implement the fix
-4. Create new checkpoint: `checkpoint({n}+1): fix {issue}`
-5. Re-run affected review agents on fixed code
-6. Repeat until no P1s remain
+3. **If fix approach is unclear after research:** Trigger interview loop.
+
+   See [interview-workflow.md](../skills/unitwork/references/interview-workflow.md) for question patterns.
+
+   Present to user via AskUserQuestion:
+   - **Clarify fix approach** - Answer questions about expected behavior
+   - **Skip this issue** - Defer to manual fix later
+   - **Accept current implementation** - Issue is acceptable as-is
+
+   After interview, re-run gap-detector to validate fix approach is clear before implementing.
+
+4. Implement the fix
+5. Create new checkpoint: `checkpoint({n}+1): fix {issue}`
+6. Re-run affected review agents on fixed code
+7. Repeat until no P1s remain
 
 ### For P2/P3 Issues
 
@@ -318,6 +358,7 @@ After fixes, re-run only the affected review agents:
 - If architecture issue fixed -> re-run architecture
 - If security issue fixed -> re-run security
 - If simplicity issue fixed -> re-run simplicity
+- If memory learning violation fixed -> re-run memory-validation
 
 Continue until review is clean or user accepts state.
 

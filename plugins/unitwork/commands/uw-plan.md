@@ -152,7 +152,9 @@ mcp__unitwork_context7__query-docs
 
 ## Phase 2: Interview
 
-**Rules for interviewing:**
+See [interview-workflow.md](../skills/unitwork/references/interview-workflow.md) for the complete interview protocol including confidence-based depth assessment, question categories, and stop conditions.
+
+**Rules for interviewing (kept inline for compliance):**
 
 1. **Research before asking** - Check Hindsight, codebase, and web docs before asking user to explain
 2. **Group related questions** - Batch related questions together using AskUserQuestion
@@ -161,59 +163,26 @@ mcp__unitwork_context7__query-docs
 5. **No premature solutions** - Don't propose implementation during requirements gathering
 6. **Confirm understanding** - Summarize requirements back before writing spec
 
-### Interview Questions
+### Confidence-Based Depth
 
-The interview should be **extensive**, covering non-obvious implementation details that cannot be discovered through codebase exploration. Continue until you have **high confidence** in all implementation details - there is no arbitrary minimum number of rounds.
+Before starting interview, assess confidence to determine depth:
 
-Use AskUserQuestion to clarify across these categories:
+| Confidence | Depth | Rounds |
+|------------|-------|--------|
+| >80% (high) | Minimal | 1-2 targeted questions |
+| 50-80% (medium) | Standard | 3-5 rounds |
+| <50% (low) | Comprehensive | Up to 10 rounds |
 
-#### 1. Implementation Details
-Questions that affect how code will be written:
-- "How should errors be surfaced to the user?"
-- "What data format should X use?"
-- "Should this operation be sync or async?"
-- "What's the expected latency/performance requirement?"
-- "How should this integrate with existing X?"
+### Interview Stop Condition
 
-#### 2. Edge Cases
-Questions about boundary conditions and error states:
-- "What happens when X is empty or null?"
-- "How should we handle partial failures?"
-- "What's the behavior at size/rate limits?"
-- "What if the user cancels mid-operation?"
-- "How should concurrent requests be handled?"
+Continue interviewing until **no P1/P2 gaps remain**. To validate:
 
-#### 3. Testing Strategy
-Questions about verification approach:
-- "What edge cases need explicit test coverage?"
-- "Should we mock X or use real instances?"
-- "Is integration testing needed for this?"
-- "What's the acceptance criteria for 'done'?"
-- "Are there existing test fixtures we should use?"
+```
+Task tool with subagent_type="unitwork:plan-review:gap-detector"
+prompt: "Review current understanding of {feature} for information gaps..."
+```
 
-#### 4. Dependencies & Integration
-Questions about external factors:
-- "Are there external services involved?"
-- "What happens if a dependency fails?"
-- "Are there rate limits or quotas to consider?"
-- "Does this need backwards compatibility?"
-
-#### 5. UI/UX (only when feature involves UI)
-Skip these for backend-only changes:
-- "What should the loading state look like?"
-- "How should validation errors be displayed?"
-- "Is there existing UI we should match?"
-- "What's the mobile/responsive behavior?"
-
-### Confidence Gate
-
-Continue interviewing until you have **high confidence** (>90%) that you understand:
-- All functional requirements
-- Key edge cases and how to handle them
-- Testing approach
-- Integration points
-
-Do not proceed to spec writing with unresolved ambiguities about implementation details.
+If gap-detector returns no P1/P2 findings, proceed to spec writing.
 
 ## Phase 3: Breakdown into Units
 
@@ -241,76 +210,54 @@ For each unit, estimate confidence ceiling:
 
 The goal is to catch gaps, missing utilities, and feasibility issues BEFORE the user sees the plan. All investigation should happen during planning, not during implementation.
 
-### Spawn Plan Review Agents (Parallel)
+### Conditional Plan Review
 
-Launch 3 plan-review agents in parallel with the draft plan:
+Before spawning review agents, count the implementation units in your draft plan.
 
-**Agent 1 - Gap Detector:**
+**Threshold rationale:** Small plans (1-3 units) don't benefit from full review overhead, but gap detection remains valuable for catching missing information that would block implementation.
+
+#### If >3 units: Full Review (3 agents in parallel)
+
+Launch all 3 plan-review agents in parallel:
+
 ```
-Task tool with subagent_type="general-purpose"
-prompt: "You are acting as a gap-detector plan-review agent.
+Task tool with subagent_type="unitwork:plan-review:gap-detector"
+prompt: "Review this draft plan for information gaps:
 
-Read the draft plan at: <plan-content>
+<plan-content>
 
-Analyze each unit for information gaps that would require investigation during implementation:
-- Investigation language ('investigate', 'explore', 'determine', 'research')
-- Unclear API contracts (integration without specified contract)
-- Ambiguous requirements (multiple interpretations possible)
-- Edge cases mentioned but handling not specified
-- Missing error handling strategy
-- Unclear data formats
-
-For each gap found, report:
-### GAP: {description} - Severity: P1/P2/P3
-**Location:** Unit N: {unit name}
-**Gap Type:** [INVESTIGATION_LANGUAGE|API_CONTRACT|REQUIREMENT_AMBIGUITY|EDGE_CASE|ERROR_HANDLING|DATA_FORMAT]
-**Quote:** '{exact text}'
-**Why it matters:** {impact}
-**Suggested resolution:** {ask user / explore codebase / clarify in spec}"
+Analyze each unit for missing information that would require investigation during implementation."
 ```
 
-**Agent 2 - Utility Pattern Auditor:**
 ```
-Task tool with subagent_type="general-purpose"
-prompt: "You are acting as a utility-pattern-auditor plan-review agent.
+Task tool with subagent_type="unitwork:plan-review:utility-pattern-auditor"
+prompt: "Review this draft plan for reinvented wheels:
 
-Read the draft plan at: <plan-content>
+<plan-content>
 
-For each unit that proposes implementing something, search the codebase for:
-- Existing utilities that do the same thing
-- Established patterns that should be followed
-- Infrastructure the framework already provides
-
-For each finding, report:
-### UTILITY: {existing solution} - Severity: P1/P2/P3
-**Location:** Unit N: {unit name}
-**Finding Type:** [EXISTING_UTILITY|PATTERN_VIOLATION|MISSED_SEARCH|REINVENTING_INFRASTRUCTURE]
-**Plan proposes:** '{what the plan says}'
-**Existing solution:** {file path, function/class, usage}
-**Suggested plan revision:** {use existing utility / follow pattern}"
+Search the codebase for existing utilities that could be reused instead of building new ones."
 ```
 
-**Agent 3 - Feasibility Validator:**
 ```
-Task tool with subagent_type="general-purpose"
-prompt: "You are acting as a feasibility-validator plan-review agent.
+Task tool with subagent_type="unitwork:plan-review:feasibility-validator"
+prompt: "Review this draft plan for feasibility issues:
 
-Read the draft plan at: <plan-content>
+<plan-content>
 
-Assess each unit for:
-- Technical impossibilities or blockers
-- Unclear verification strategy
-- Hidden dependencies (external services, permissions, data)
-- Unrealistic confidence estimates
-- Units too large for one session
+Assess each unit for technical blockers, unclear verification, and hidden dependencies."
+```
 
-For each concern, report:
-### FEASIBILITY: {concern} - Severity: P1/P2/P3
-**Location:** Unit N: {unit name}
-**Concern Type:** [IMPOSSIBILITY|UNCLEAR_VERIFICATION|HIDDEN_DEPENDENCY|UNREALISTIC_CONFIDENCE|UNIT_TOO_LARGE|SCOPE_CREEP]
-**Quote:** '{relevant text}'
-**Why this is a concern:** {explanation}
-**Suggested resolution:** {investigate / split unit / add dependency / adjust confidence}"
+#### If <=3 units: Light Review (gap-detector only)
+
+Launch only the gap-detector agent:
+
+```
+Task tool with subagent_type="unitwork:plan-review:gap-detector"
+prompt: "Review this draft plan for information gaps:
+
+<plan-content>
+
+Analyze each unit for missing information that would require investigation during implementation."
 ```
 
 ### Finding Verification (Critical)
