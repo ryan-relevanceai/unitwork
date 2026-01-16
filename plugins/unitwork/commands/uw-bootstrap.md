@@ -47,6 +47,39 @@ mcp__unitwork_context7__resolve-library-id  # Find library ID
 mcp__unitwork_context7__query-docs          # Query documentation
 ```
 
+## Step 1.5: Detect Existing Setup
+
+Check if this repo already has Unit Work setup:
+
+```bash
+# Check .unitwork dir
+test -d .unitwork && UNITWORK_EXISTS="yes" || UNITWORK_EXISTS="no"
+
+# Derive bank name
+BANK=$(git config --get remote.origin.url 2>/dev/null | sed 's/.*\///' | sed 's/\.git$//' || basename "$(git worktree list 2>/dev/null | head -1 | awk '{print $1}')" || basename "$(pwd)")
+
+# Check bank exists in Hindsight
+BANK_EXISTS=$(hindsight bank list -o json 2>&1 | grep -q "\"bank_id\": \"$BANK\"" && echo "yes" || echo "no")
+```
+
+**If EITHER `.unitwork` exists OR bank exists:**
+
+Use AskUserQuestion to prompt:
+
+**Question:** "Existing setup detected. What would you like to do?"
+
+**Options:**
+- **Full setup** - Re-run exploration and import team learnings
+- **Sync learnings only** - Skip exploration, just import team learnings from .unitwork/learnings/
+- **Exit** - Keep current state
+
+**If user selects:**
+- **Full setup:** Continue to Step 2 (proceed with normal bootstrap)
+- **Sync learnings only:** Skip to Step 7.5 (learnings import section)
+- **Exit:** Stop bootstrap with message "Bootstrap cancelled. Current setup preserved."
+
+**If NEITHER exists:** Continue to Step 2 (fresh setup).
+
 ## Step 2: Derive Bank Name
 
 The bank name is derived from the git remote URL (handles worktrees), falling back to main worktree name or directory:
@@ -184,7 +217,112 @@ Bootstrap complete for: {repo-name}
 Ready for /uw:plan to start planning your first feature.
 ```
 
-## First Feature Suggestion
+## Step 7.5: Import Team Learnings
+
+**Note:** This step runs for both full setup (after Step 7) and sync-only mode (skipping directly here from Step 1.5).
+
+### Check for Learnings Directory
+
+```bash
+# Check if learnings directory exists and has .md files
+if [ -d ".unitwork/learnings" ] && [ "$(find .unitwork/learnings -name '*.md' 2>/dev/null | head -1)" ]; then
+    LEARNINGS_EXIST="yes"
+else
+    LEARNINGS_EXIST="no"
+fi
+```
+
+**If no learnings exist:** Skip to Step 8 with message "No team learnings found to import."
+
+### Identify Non-User Learnings
+
+Get current user email (exact match only):
+```bash
+CURRENT_USER=$(git config user.email)
+```
+
+For each file in `.unitwork/learnings/*.md`:
+```bash
+# Get original author email (who first created the file)
+AUTHOR=$(git log --follow --diff-filter=A --format='%ae' -- "$file" | head -1)
+
+# Include in import list only if author != current user
+if [ "$AUTHOR" != "$CURRENT_USER" ]; then
+    # Add to list of files to import
+fi
+```
+
+**Note:** If file has no git history (untracked), skip it.
+
+### Filter by Last Import Timestamp
+
+Read last import timestamp from `.unitwork/.bootstrap.json`:
+```bash
+LAST_IMPORT=$(jq -r '.lastLearningsImport // "1970-01-01T00:00:00Z"' .unitwork/.bootstrap.json 2>/dev/null || echo "1970-01-01T00:00:00Z")
+```
+
+Filter to only files modified after last import:
+```bash
+find .unitwork/learnings -name "*.md" -newermt "$LAST_IMPORT"
+```
+
+Combine both filters: file must be (1) authored by someone else AND (2) modified after last import.
+
+### Prompt User Before Import
+
+If filtered list is empty:
+- Report "No new team learnings to import."
+- Skip to Step 8
+
+If files to import exist, use AskUserQuestion:
+
+**Question:** "Found {N} team learning(s) to import. Import to Hindsight memory?"
+
+Show list of files to import.
+
+**Options:**
+- **Yes, import all** - Import all filtered learnings
+- **No, skip** - Skip import this time
+
+### Execute Import
+
+If user confirms:
+
+```bash
+# Create temp directory with filtered files
+TEMP_DIR=$(mktemp -d)
+# Copy filtered .md files to temp directory
+# (preserving directory structure is optional)
+
+# Import using retain-files
+BANK=$(git config --get remote.origin.url 2>/dev/null | sed 's/.*\///' | sed 's/\.git$//' || basename "$(git worktree list 2>/dev/null | head -1 | awk '{print $1}')" || basename "$(pwd)")
+
+hindsight memory retain-files "$BANK" "$TEMP_DIR" \
+  --recursive \
+  --context "unitwork team learnings" \
+  --async
+
+# Cleanup temp directory
+rm -rf "$TEMP_DIR"
+```
+
+### Update Import Timestamp
+
+After successful import, update `.unitwork/.bootstrap.json`:
+```bash
+# Create or update .bootstrap.json with current timestamp
+TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+echo "{\"lastLearningsImport\": \"$TIMESTAMP\"}" > .unitwork/.bootstrap.json
+# Or if file exists, use jq to update just the timestamp field
+```
+
+### Report Import Result
+
+```
+**Team Learnings:**
+- Imported {N} learning(s) to Hindsight memory
+- Last import: {timestamp}
+```
 
 After bootstrap, suggest:
 
