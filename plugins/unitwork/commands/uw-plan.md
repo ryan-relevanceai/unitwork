@@ -241,76 +241,54 @@ For each unit, estimate confidence ceiling:
 
 The goal is to catch gaps, missing utilities, and feasibility issues BEFORE the user sees the plan. All investigation should happen during planning, not during implementation.
 
-### Spawn Plan Review Agents (Parallel)
+### Conditional Plan Review
 
-Launch 3 plan-review agents in parallel with the draft plan:
+Before spawning review agents, count the implementation units in your draft plan.
 
-**Agent 1 - Gap Detector:**
+**Threshold rationale:** Small plans (1-3 units) don't benefit from full review overhead, but gap detection remains valuable for catching missing information that would block implementation.
+
+#### If >3 units: Full Review (3 agents in parallel)
+
+Launch all 3 plan-review agents in parallel:
+
 ```
-Task tool with subagent_type="general-purpose"
-prompt: "You are acting as a gap-detector plan-review agent.
+Task tool with subagent_type="unitwork:plan-review:gap-detector"
+prompt: "Review this draft plan for information gaps:
 
-Read the draft plan at: <plan-content>
+<plan-content>
 
-Analyze each unit for information gaps that would require investigation during implementation:
-- Investigation language ('investigate', 'explore', 'determine', 'research')
-- Unclear API contracts (integration without specified contract)
-- Ambiguous requirements (multiple interpretations possible)
-- Edge cases mentioned but handling not specified
-- Missing error handling strategy
-- Unclear data formats
-
-For each gap found, report:
-### GAP: {description} - Severity: P1/P2/P3
-**Location:** Unit N: {unit name}
-**Gap Type:** [INVESTIGATION_LANGUAGE|API_CONTRACT|REQUIREMENT_AMBIGUITY|EDGE_CASE|ERROR_HANDLING|DATA_FORMAT]
-**Quote:** '{exact text}'
-**Why it matters:** {impact}
-**Suggested resolution:** {ask user / explore codebase / clarify in spec}"
+Analyze each unit for missing information that would require investigation during implementation."
 ```
 
-**Agent 2 - Utility Pattern Auditor:**
 ```
-Task tool with subagent_type="general-purpose"
-prompt: "You are acting as a utility-pattern-auditor plan-review agent.
+Task tool with subagent_type="unitwork:plan-review:utility-pattern-auditor"
+prompt: "Review this draft plan for reinvented wheels:
 
-Read the draft plan at: <plan-content>
+<plan-content>
 
-For each unit that proposes implementing something, search the codebase for:
-- Existing utilities that do the same thing
-- Established patterns that should be followed
-- Infrastructure the framework already provides
-
-For each finding, report:
-### UTILITY: {existing solution} - Severity: P1/P2/P3
-**Location:** Unit N: {unit name}
-**Finding Type:** [EXISTING_UTILITY|PATTERN_VIOLATION|MISSED_SEARCH|REINVENTING_INFRASTRUCTURE]
-**Plan proposes:** '{what the plan says}'
-**Existing solution:** {file path, function/class, usage}
-**Suggested plan revision:** {use existing utility / follow pattern}"
+Search the codebase for existing utilities that could be reused instead of building new ones."
 ```
 
-**Agent 3 - Feasibility Validator:**
 ```
-Task tool with subagent_type="general-purpose"
-prompt: "You are acting as a feasibility-validator plan-review agent.
+Task tool with subagent_type="unitwork:plan-review:feasibility-validator"
+prompt: "Review this draft plan for feasibility issues:
 
-Read the draft plan at: <plan-content>
+<plan-content>
 
-Assess each unit for:
-- Technical impossibilities or blockers
-- Unclear verification strategy
-- Hidden dependencies (external services, permissions, data)
-- Unrealistic confidence estimates
-- Units too large for one session
+Assess each unit for technical blockers, unclear verification, and hidden dependencies."
+```
 
-For each concern, report:
-### FEASIBILITY: {concern} - Severity: P1/P2/P3
-**Location:** Unit N: {unit name}
-**Concern Type:** [IMPOSSIBILITY|UNCLEAR_VERIFICATION|HIDDEN_DEPENDENCY|UNREALISTIC_CONFIDENCE|UNIT_TOO_LARGE|SCOPE_CREEP]
-**Quote:** '{relevant text}'
-**Why this is a concern:** {explanation}
-**Suggested resolution:** {investigate / split unit / add dependency / adjust confidence}"
+#### If <=3 units: Light Review (gap-detector only)
+
+Launch only the gap-detector agent:
+
+```
+Task tool with subagent_type="unitwork:plan-review:gap-detector"
+prompt: "Review this draft plan for information gaps:
+
+<plan-content>
+
+Analyze each unit for missing information that would require investigation during implementation."
 ```
 
 ### Finding Verification (Critical)
