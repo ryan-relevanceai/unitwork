@@ -83,9 +83,37 @@ git diff $BASE_BRANCH...HEAD --stat
 git diff $BASE_BRANCH...HEAD
 ```
 
+When using branch diff mode, check if a PR exists for the current branch:
+```bash
+CURRENT_BRANCH=$(git branch --show-current)
+gh pr list --head "$CURRENT_BRANCH" --json number,title,url
+```
+
+**If PR exists:** Prompt user: "Found PR #{number}: {title}. Review PR or branch diff?"
+- **Review PR** - Switch to PR Review mode
+- **Review branch diff** - Continue with branch diff
+
 **PR Review:**
 ```bash
 # uw:review pr <number>
+# OR
+# uw:review pr (auto-detect)
+```
+
+**If `pr` is specified WITHOUT a number:** Auto-detect PR by current branch:
+```bash
+CURRENT_BRANCH=$(git branch --show-current)
+gh pr list --head "$CURRENT_BRANCH" --json number,title,url
+```
+
+- **If single PR found:** Confirm: "Found PR #{number}: {title}. Review this?"
+  - If user confirms: Proceed with PR review
+  - If user declines: Ask for PR number manually
+- **If multiple PRs found:** Present list and ask user to select
+- **If no PR found:** Ask for PR number manually
+
+**If PR number is provided:**
+```bash
 gh pr view $PR_NUMBER --json title,body,files,additions,deletions
 gh pr diff $PR_NUMBER
 ```
