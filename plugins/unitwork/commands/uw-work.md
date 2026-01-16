@@ -43,7 +43,7 @@ A checkpoint is required after ANY of these events:
 
 **When triggered:**
 
-1. Run gap-detector once (single round, no convergence loop):
+1. Run gap-detector:
 
 ```
 Task tool with subagent_type="unitwork:plan-review:gap-detector"
@@ -59,12 +59,21 @@ Analyze for missing information that would block implementation:
 Report any P1 or P2 gaps found."
 ```
 
-2. If P1 or P2 gaps found, present via AskUserQuestion:
-   - **Address gaps now** - Answer questions to clarify requirements
-   - **Proceed anyway** - Acknowledge gaps and continue (may need to ask during implementation)
-   - **Create full spec first** - Run `/uw:plan` to create a proper spec
+2. **If P1/P2 gaps found:** Start interview loop.
 
-3. If no gaps or only P3 gaps: Proceed automatically to memory recall.
+   See [interview-workflow.md](../skills/unitwork/references/interview-workflow.md) for question patterns.
+
+   a. Present gaps via AskUserQuestion:
+      - **Address gaps now** - Answer questions to clarify requirements
+      - **Proceed anyway** - Acknowledge gaps, continue (may ask during implementation)
+      - **Create full spec first** - Run `/uw:plan` to create a proper spec
+
+   b. If user chooses "Address gaps now":
+      - Interview using question categories from interview-workflow.md
+      - After interview, re-run gap-detector to validate gaps addressed
+      - Repeat until no P1/P2 gaps remain or user chooses different option
+
+3. **If no gaps or only P3 gaps:** Proceed automatically to memory recall.
 
 ---
 
