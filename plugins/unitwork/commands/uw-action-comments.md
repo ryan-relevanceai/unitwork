@@ -12,11 +12,24 @@ argument-hint: "<PR number>"
 
 This command fetches PR comments, independently verifies each one, and implements confirmed fixes with full checkpoint workflow. Each VALID_FIX gets its own checkpoint commit with verification.
 
-## PR Number
+## PR Detection
 
 <pr_number> #$ARGUMENTS </pr_number>
 
-**If empty:** Ask user for PR number.
+**If empty or not a number:** Auto-detect PR by current branch:
+
+```bash
+CURRENT_BRANCH=$(git branch --show-current)
+gh pr list --head "$CURRENT_BRANCH" --json number,title,url
+```
+
+**If single PR found:** Confirm with user: "Found PR #{number}: {title}. Use this?"
+- If user confirms: Use this PR
+- If user declines: Ask for PR number manually
+
+**If multiple PRs found:** Present list and ask user to select
+
+**If no PR found:** Ask for PR number manually
 
 ---
 
@@ -153,6 +166,31 @@ Use AskUserQuestion:
 - **Review each** - Go through fixes one by one
 - **Skip fixes, just reply** - Only post clarifications
 
+## Step 4.5: Plan-Verify Before Fixes
+
+Before implementing any VALID_FIX items, run gap-detector once for all fixes collectively:
+
+```
+Task tool with subagent_type="unitwork:plan-review:gap-detector"
+prompt: "Review these PR comment fixes for information gaps:
+
+VALID_FIX items:
+<list of VALID_FIX items from Step 4>
+
+For each fix, check for:
+- Missing context (what exactly needs to change?)
+- Unclear scope (which files/functions?)
+- Edge cases not addressed in the comment
+
+Report any P1 or P2 gaps that would block implementation."
+```
+
+**If P1/P2 gaps found:** Present to user via AskUserQuestion:
+- **Address gaps now** - Clarify before implementing
+- **Proceed anyway** - May need to ask during implementation
+
+**If no gaps or only P3:** Proceed to Step 5.
+
 ## Step 5: Implement Fixes (Checkpoint Per Fix)
 
 For each VALID_FIX item:
@@ -164,7 +202,7 @@ For each VALID_FIX item:
 
 ### 5.2 Verify
 
-Launch appropriate verification subagents based on what changed. See [decision-trees.md](../skills/unitwork/references/decision-trees.md#which-verification-subagent-to-use) for guidance:
+Launch appropriate verification subagents based on what changed. See [verification-flow.md](../skills/unitwork/references/verification-flow.md#which-verification-subagent-to-use) for guidance:
 
 - **Changed test files?** → Launch `test-runner`
 - **Changed API endpoints?** → Launch `test-runner` + `api-prober`
@@ -197,7 +235,7 @@ Create verification document at `.unitwork/verify/{DD-MM-YYYY}-pr-{PR}-{fix_numb
 
 ### 5.5 Self-Correcting Review
 
-Apply the self-correcting review protocol from [checkpointing.md](../skills/unitwork/references/checkpointing.md#self-correcting-review-fix-checkpoints-only):
+Apply the self-correcting review protocol from [verification-flow.md](../skills/unitwork/references/verification-flow.md#self-correcting-review-fix-checkpoints-only):
 
 1. **Risk Assessment** - Determine if review is needed based on change size
 2. **Selective Agent Invocation** - Spawn relevant review agent(s) if needed

@@ -117,43 +117,7 @@ During implementation, agent encounters a decision:
 
 ## Which Verification Subagent to Use
 
-```
-Code changes to verify:
-                    |
-+-----------------------------------------------+
-| Changed test files?                            |
-|   YES -> Test Runner (run the changed tests)   |
-+-----------------------------------------------+
-                    |
-+-----------------------------------------------+
-| Changed API endpoints?                         |
-|   YES -> Test Runner + API Prober              |
-|         (API Prober: read-only without         |
-|          permission, mutating requires         |
-|          user confirmation)                    |
-+-----------------------------------------------+
-                    |
-+-----------------------------------------------+
-| Changed UI components?                         |
-|   YES -> Test Runner + Browser Automation      |
-|         (Browser: screenshots + element        |
-|          verification, flag layout for         |
-|          human review)                         |
-+-----------------------------------------------+
-                    |
-+-----------------------------------------------+
-| Changed database schema/migrations?            |
-|   YES -> Test Runner only                      |
-|         (NEVER run migrations automatically)   |
-|         (Flag for human verification)          |
-+-----------------------------------------------+
-                    |
-+-----------------------------------------------+
-| Changed configuration/environment?             |
-|   YES -> No automated verification             |
-|         (Document changes, flag for human)     |
-+-----------------------------------------------+
-```
+See [verification-flow.md](./verification-flow.md#which-verification-subagent-to-use) for the complete decision tree.
 
 ## Bug Discovery Decision
 
