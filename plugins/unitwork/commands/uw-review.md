@@ -10,7 +10,7 @@ argument-hint: "[origin: branch|pr <number>|area <path>] [base: main]"
 
 **Note: The current year is 2026.**
 
-Unit Work review spawns 6 parallel specialist agents to perform exhaustive code review. Reviews are taxonomy-based, mapping findings to 47 known issue patterns with tier-based severity ranking.
+Unit Work review spawns 7 parallel specialist agents to perform exhaustive code review. Reviews are taxonomy-based, mapping findings to 47 known issue patterns with tier-based severity ranking.
 
 ---
 
@@ -157,7 +157,7 @@ Issues affecting maintainability but not correctness:
 
 ## Spawn Parallel Review Agents
 
-Launch all 6 review agents in parallel with the diff context. Each agent should reference the issue patterns taxonomy.
+Launch all 7 review agents in parallel with the diff context. Each agent should reference the issue patterns taxonomy.
 
 1. **type-safety** - TYPE_SAFETY_IMPROVEMENT, UNNECESSARY_CAST, NULL_HANDLING
 2. **patterns-utilities** - EXISTING_UTILITY_AVAILABLE, CODE_DUPLICATION, BETTER_IMPLEMENTATION_APPROACH
@@ -165,6 +165,7 @@ Launch all 6 review agents in parallel with the diff context. Each agent should 
 4. **architecture** - ARCHITECTURAL_CONCERN, FILE_ORGANIZATION, WRONG_LOCATION
 5. **security** - INJECTION_VULNERABILITY, AUTHENTICATION_BYPASS, AUTHORIZATION_BYPASS, SENSITIVE_DATA_EXPOSURE
 6. **simplicity** - REDUNDANT_LOGIC, REMOVE_UNUSED_CODE, CONSOLIDATE_LOGIC
+7. **memory-validation** - MEMORY_LEARNING_VIOLATION (receives ALL learnings, not domain-filtered)
 
 **Include recalled context in agent prompts:**
 
@@ -357,6 +358,7 @@ After fixes, re-run only the affected review agents:
 - If architecture issue fixed -> re-run architecture
 - If security issue fixed -> re-run security
 - If simplicity issue fixed -> re-run simplicity
+- If memory learning violation fixed -> re-run memory-validation
 
 Continue until review is clean or user accepts state.
 
