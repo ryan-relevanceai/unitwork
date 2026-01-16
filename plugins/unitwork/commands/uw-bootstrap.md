@@ -308,12 +308,22 @@ rm -rf "$TEMP_DIR"
 
 ### Update Import Timestamp
 
-After successful import, update `.unitwork/.bootstrap.json`:
+After successful import (or if no new learnings to import), update `.unitwork/.bootstrap.json`:
 ```bash
-# Create or update .bootstrap.json with current timestamp
 TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-echo "{\"lastLearningsImport\": \"$TIMESTAMP\"}" > .unitwork/.bootstrap.json
-# Or if file exists, use jq to update just the timestamp field
+
+# Create .unitwork if needed
+mkdir -p .unitwork
+
+# Create or update .bootstrap.json
+if [ -f ".unitwork/.bootstrap.json" ]; then
+    # Update existing file preserving other fields
+    jq --arg ts "$TIMESTAMP" '.lastLearningsImport = $ts' .unitwork/.bootstrap.json > .unitwork/.bootstrap.json.tmp && \
+    mv .unitwork/.bootstrap.json.tmp .unitwork/.bootstrap.json
+else
+    # Create new file
+    echo "{\"lastLearningsImport\": \"$TIMESTAMP\"}" > .unitwork/.bootstrap.json
+fi
 ```
 
 ### Report Import Result
