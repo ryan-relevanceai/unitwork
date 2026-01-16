@@ -5,6 +5,34 @@ All notable changes to the Unit Work plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.0] - 2026-01-16
+
+### Added
+
+- **uw:fix-conflicts**: New command for intelligent conflict resolution during rebase
+  - Detects default branch via `gh` CLI with fallbacks
+  - Pre-rebase checks: dirty tree (stash offer), existing rebase (abort/continue)
+  - Multi-agent analysis spawns Intent Analyst + Impact Explorer in parallel
+  - Confidence-based auto-resolution (>80% → auto, ≤80% → interview user)
+  - Test verification after each resolution via test-runner agent
+  - Verification documents at `.unitwork/verify/{date}-conflict-resolution.md`
+  - Cycle limits: 10 conflicts max, 5 interviews per session
+
+- **conflict-intent-analyst.md**: New agent for understanding branch intents
+  - Reads git history for both branches touching conflicted files
+  - Determines if goals are parallel (can merge) or conflicting (need decision)
+  - Outputs: ours_intent, theirs_intent, conflicting_goals, confidence
+
+- **conflict-impact-explorer.md**: New agent for analyzing resolution impact
+  - Identifies test coverage for conflicted files
+  - Maps downstream dependencies
+  - Analyzes behavior changes for each resolution option
+  - Outputs: affected_tests, downstream_files, behavior_changes, recommendations
+
+### Changed
+
+- **plugin.json**: Updated counts (14→16 agents, 8→9 commands)
+
 ## [0.6.0] - 2026-01-16
 
 ### Added

@@ -28,6 +28,9 @@ unitwork/
 ├── .claude-plugin/
 │   └── plugin.json              # Plugin metadata
 ├── agents/
+│   ├── conflict-resolution/     # Rebase conflict analysis
+│   │   ├── conflict-intent-analyst.md
+│   │   └── conflict-impact-explorer.md
 │   ├── exploration/             # Memory-aware codebase exploration
 │   │   └── memory-aware-explore.md
 │   ├── plan-review/             # Plan validation specialists
@@ -44,8 +47,9 @@ unitwork/
 │       ├── performance-database.md
 │       ├── architecture.md
 │       ├── security.md
-│       └── simplicity.md
-├── commands/                    # Slash commands (8)
+│       ├── simplicity.md
+│       └── memory-validation.md
+├── commands/                    # Slash commands (9)
 │   ├── uw-plan.md
 │   ├── uw-work.md
 │   ├── uw-review.md
@@ -53,7 +57,8 @@ unitwork/
 │   ├── uw-bootstrap.md
 │   ├── uw-pr.md
 │   ├── uw-action-comments.md
-│   └── uw-fix-ci.md
+│   ├── uw-fix-ci.md
+│   └── uw-fix-conflicts.md
 ├── skills/
 │   └── unitwork/
 │       ├── SKILL.md
@@ -81,6 +86,7 @@ Commands use `uw:` prefix to namespace all Unit Work commands:
 - `/uw:pr` - Create/update GitHub PRs
 - `/uw:action-comments` - PR comment resolution
 - `/uw:fix-ci` - Autonomously fix failing CI
+- `/uw:fix-conflicts` - Intelligent rebase conflict resolution
 
 ## Agent Organization
 
