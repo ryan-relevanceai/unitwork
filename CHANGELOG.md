@@ -5,6 +5,21 @@ All notable changes to the Unit Work plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.1] - 2026-01-16
+
+### Added
+
+- **uw-bootstrap.md**: Team learnings import capability
+  - Detect existing setup (.unitwork dir or Hindsight bank) and offer sync-only mode
+  - Filter learnings by git author to import only team content
+  - Track last import timestamp in `.unitwork/.bootstrap.json` for incremental imports
+  - Validate bank names against safe character set (security hardening)
+  - Uses `hindsight memory retain-files` with `--async` for bulk import
+
+### Changed
+
+- **uw-bootstrap.md**: Simplified learnings directory check using bash glob vs find
+
 ## [0.7.0] - 2026-01-16
 
 ### Added
