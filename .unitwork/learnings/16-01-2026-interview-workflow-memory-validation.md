@@ -22,3 +22,15 @@ Extracted interview logic into reusable `interview-workflow.md` reference and cr
 - **Cross-reference consolidation**: When extracting reusable content (like interview-workflow), use the move-then-reference pattern: create the canonical reference first, then update each consumer to link to it. This maintains self-contained documentation while eliminating duplication.
 
 - **Review agent scope verification**: Before accepting a review finding, verify the issue exists in the diff (added/modified lines), not just in context lines or unchanged files. Use `git diff main...HEAD -- <file>` to confirm.
+
+## Addendum: Hindsight Reference (checkpoint 15)
+
+### Additional Gotchas
+
+- **Hindsight ANSI output breaks parsing**: Hindsight CLI outputs colored text with ANSI escape sequences like `[38;2;0;117;214m`. When capturing output to variables or processing programmatically, these break text parsing. Always pipe through `sed 's/\x1b\[[0-9;]*m//g'` to strip them.
+
+- **Reference file timing**: We had Hindsight patterns duplicated across 13+ files before consolidating into hindsight-reference.md. Should have created the reference file when the pattern appeared in 3+ places, not 13+.
+
+### Additional Patterns
+
+- **STEP numbering for bash procedures**: Using explicit STEP 1, STEP 2, STEP 3 with bash code blocks in agent instructions ensures procedures aren't skipped. Agents tend to skip undifferentiated prose; numbered steps with code force compliance.
