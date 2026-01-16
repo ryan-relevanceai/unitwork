@@ -28,6 +28,44 @@ A checkpoint is required after ANY of these events:
 
 **If empty:** Check `.unitwork/specs/` for in-progress specs, read the most recent one.
 
+**If argument is a feature description (not a file path):** See Step 0.5 below for minimal plan verification.
+
+---
+
+## Step 0.5: Minimal Plan Verification (Inline Tasks Only)
+
+**This step ONLY applies when the argument is a feature description** (e.g., "add a logout button") rather than a spec file path. Skip this step if a spec file is provided or auto-detected.
+
+**Detection criteria:**
+- Argument does NOT end in `.md`
+- Argument does NOT start with `.unitwork/` or contain a file path separator followed by a filename
+- No matching spec exists in `.unitwork/specs/` for this feature
+
+**When triggered:**
+
+1. Run gap-detector once (single round, no convergence loop):
+
+```
+Task tool with subagent_type="unitwork:plan-review:gap-detector"
+prompt: "Review this inline task for information gaps:
+
+Task: <feature_description from argument>
+
+Analyze for missing information that would block implementation:
+- Unclear requirements (what exactly should be built?)
+- Missing edge cases (what happens in error states?)
+- Ambiguous scope (where does this change live?)
+
+Report any P1 or P2 gaps found."
+```
+
+2. If P1 or P2 gaps found, present via AskUserQuestion:
+   - **Address gaps now** - Answer questions to clarify requirements
+   - **Proceed anyway** - Acknowledge gaps and continue (may need to ask during implementation)
+   - **Create full spec first** - Run `/uw:plan` to create a proper spec
+
+3. If no gaps or only P3 gaps: Proceed automatically to memory recall.
+
 ---
 
 ## STEP 0: Memory Recall (MANDATORY - DO NOT SKIP)
@@ -160,7 +198,7 @@ See [checkpointing.md](../skills/unitwork/references/checkpointing.md) for the c
 
 ### Step 4.5: Self-Correcting Review (Fix Checkpoints Only)
 
-See [checkpointing.md](../skills/unitwork/references/checkpointing.md#self-correcting-review-fix-checkpoints-only) for the complete self-correcting review protocol including:
+See [verification-flow.md](../skills/unitwork/references/verification-flow.md#self-correcting-review-fix-checkpoints-only) for the complete self-correcting review protocol including:
 - **Risk Assessment** - When to skip, light review, or full review
 - **Selective Agent Invocation** - Which agents to spawn based on issue type
 - **Cycle Handling** - Max 3 cycles, user options when limit reached
