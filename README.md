@@ -15,8 +15,8 @@ Human-in-the-loop verification framework for AI-assisted development. Breaks wor
 
 | Component | Count |
 |-----------|-------|
-| Agents | 13 |
-| Commands | 8 |
+| Agents | 16 |
+| Commands | 9 |
 | Skills | 2 |
 | MCP Servers | 1 |
 
@@ -83,12 +83,13 @@ The result: AI assistance that gets better at YOUR codebase over time, not just 
 │   uw:pr     │  (Create PR)
 └──────┬──────┘
        │
-  ┌────┴────┐
-  ▼         ▼
-uw:fix-ci  uw:action-comments
-(CI fails)  (PR comments)
-  │         │
-  └────┬────┘
+  ┌────┴────┬────────────────┐
+  ▼         ▼                ▼
+uw:fix-ci  uw:action-       uw:fix-conflicts
+(CI fails) comments         (rebase conflicts)
+           (PR comments)
+  │         │                │
+  └────┬────┴────────────────┘
        ▼
     (Merge)
 ```
@@ -160,6 +161,7 @@ Extracts learnings from the implementation and stores them for future sessions. 
 | `/uw:pr` | Create or update GitHub PRs with AI-generated descriptions |
 | `/uw:action-comments` | Bulk resolve GitHub PR comments |
 | `/uw:fix-ci` | Autonomously fix failing CI with analyze→fix→commit→push→verify loop |
+| `/uw:fix-conflicts` | Intelligent rebase conflict resolution with multi-agent analysis |
 
 #### /uw:bootstrap
 
@@ -209,6 +211,19 @@ Autonomously fixes failing CI by cycling through analyze→fix→commit→push�
 
 **Compounds:** Retains CI fix patterns and gotchas to Hindsight for future CI issues.
 
+#### /uw:fix-conflicts
+
+Intelligently rebases onto the default branch using multi-agent analysis to resolve conflicts. Auto-resolves high-confidence conflicts and interviews for complex decisions.
+
+**Key phases:**
+1. **Memory Recall** - Loads past conflict resolution learnings and file context
+2. **Pre-flight Checks** - Handles dirty tree, existing rebase, default branch detection
+3. **Parallel Analysis** - Spawns Intent Analyst + Impact Explorer for each conflict
+4. **Resolution** - Auto-resolves if confidence >80%, interviews user otherwise
+5. **Verification** - Runs affected tests after each resolution
+
+**Compounds:** Retains successful resolution patterns to Hindsight for similar future conflicts.
+
 ## Agents
 
 ### Verification Agents (3)
@@ -219,7 +234,14 @@ Autonomously fixes failing CI by cycling through analyze→fix→commit→push�
 | `api-prober` | Make API calls to verify endpoints (read-only unless permitted) |
 | `browser-automation` | UI verification via agent-browser (flags layout for human review) |
 
-### Review Agents (6)
+### Conflict Resolution Agents (2)
+
+| Agent | Purpose |
+|-------|---------|
+| `conflict-intent-analyst` | Analyzes git history to understand what each branch was trying to achieve |
+| `conflict-impact-explorer` | Maps test coverage, dependencies, and behavioral impact of resolutions |
+
+### Review Agents (7)
 
 | Agent | Focus |
 |-------|-------|
@@ -229,6 +251,7 @@ Autonomously fixes failing CI by cycling through analyze→fix→commit→push�
 | `architecture` | File locations, coupling, boundary violations |
 | `security` | Injection, auth bypasses, data exposure, OWASP top 10 |
 | `simplicity` | Over-engineering, YAGNI, premature abstraction |
+| `memory-validation` | Validates code against team learnings from Hindsight |
 
 ### Plan Review Agents (3)
 

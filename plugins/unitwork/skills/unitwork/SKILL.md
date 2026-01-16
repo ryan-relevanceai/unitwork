@@ -210,3 +210,4 @@ Start at 100%, subtract:
 - `/uw:pr` - Create/update GitHub PRs
 - `/uw:action-comments` - Resolve PR comments
 - `/uw:fix-ci` - Autonomously fix failing CI
+- `/uw:fix-conflicts` - Intelligent rebase conflict resolution

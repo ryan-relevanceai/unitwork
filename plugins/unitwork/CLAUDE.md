@@ -28,6 +28,9 @@ unitwork/
 ├── .claude-plugin/
 │   └── plugin.json              # Plugin metadata
 ├── agents/
+│   ├── conflict-resolution/     # Rebase conflict analysis
+│   │   ├── conflict-intent-analyst.md
+│   │   └── conflict-impact-explorer.md
 │   ├── exploration/             # Memory-aware codebase exploration
 │   │   └── memory-aware-explore.md
 │   ├── plan-review/             # Plan validation specialists
@@ -44,8 +47,9 @@ unitwork/
 │       ├── performance-database.md
 │       ├── architecture.md
 │       ├── security.md
-│       └── simplicity.md
-├── commands/                    # Slash commands (8)
+│       ├── simplicity.md
+│       └── memory-validation.md
+├── commands/                    # Slash commands (9)
 │   ├── uw-plan.md
 │   ├── uw-work.md
 │   ├── uw-review.md
@@ -53,13 +57,17 @@ unitwork/
 │   ├── uw-bootstrap.md
 │   ├── uw-pr.md
 │   ├── uw-action-comments.md
-│   └── uw-fix-ci.md
+│   ├── uw-fix-ci.md
+│   └── uw-fix-conflicts.md
 ├── skills/
 │   └── unitwork/
 │       ├── SKILL.md
 │       ├── references/
 │       │   ├── checkpointing.md
-│       │   └── decision-trees.md
+│       │   ├── decision-trees.md
+│       │   ├── hindsight-reference.md
+│       │   ├── interview-workflow.md
+│       │   └── verification-flow.md
 │       └── templates/
 │           ├── spec.md
 │           ├── verify.md
@@ -81,6 +89,7 @@ Commands use `uw:` prefix to namespace all Unit Work commands:
 - `/uw:pr` - Create/update GitHub PRs
 - `/uw:action-comments` - PR comment resolution
 - `/uw:fix-ci` - Autonomously fix failing CI
+- `/uw:fix-conflicts` - Intelligent rebase conflict resolution
 
 ## Agent Organization
 
@@ -96,6 +105,11 @@ Plan validation specialists for `/uw:plan`:
 - `gap-detector.md` - Detect gaps in plan coverage
 - `utility-pattern-auditor.md` - Audit for reusable patterns
 
+### conflict-resolution/
+Conflict analysis agents for `/uw:fix-conflicts`:
+- `conflict-intent-analyst.md` - Analyze intent behind each branch's changes
+- `conflict-impact-explorer.md` - Assess downstream impact of resolutions
+
 ### verification/
 Subagents for automated verification during `/uw:work`:
 - `test-runner.md` - Execute tests
@@ -110,6 +124,7 @@ Parallel specialists for `/uw:review`:
 - `architecture.md`
 - `security.md`
 - `simplicity.md`
+- `memory-validation.md`
 
 ## Skill Compliance
 
@@ -157,13 +172,14 @@ Three specialized agents for verification:
 
 ### Review Agents
 
-Six parallel specialists for code review:
+Seven parallel specialists for code review:
 1. Type Safety
 2. Patterns & Utilities
 3. Performance & Database
 4. Architecture
 5. Security
 6. Simplicity
+7. Memory Validation
 
 ## Testing Changes
 
