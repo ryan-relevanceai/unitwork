@@ -152,7 +152,9 @@ mcp__unitwork_context7__query-docs
 
 ## Phase 2: Interview
 
-**Rules for interviewing:**
+See [interview-workflow.md](../skills/unitwork/references/interview-workflow.md) for the complete interview protocol including confidence-based depth assessment, question categories, and stop conditions.
+
+**Rules for interviewing (kept inline for compliance):**
 
 1. **Research before asking** - Check Hindsight, codebase, and web docs before asking user to explain
 2. **Group related questions** - Batch related questions together using AskUserQuestion
@@ -161,59 +163,26 @@ mcp__unitwork_context7__query-docs
 5. **No premature solutions** - Don't propose implementation during requirements gathering
 6. **Confirm understanding** - Summarize requirements back before writing spec
 
-### Interview Questions
+### Confidence-Based Depth
 
-The interview should be **extensive**, covering non-obvious implementation details that cannot be discovered through codebase exploration. Continue until you have **high confidence** in all implementation details - there is no arbitrary minimum number of rounds.
+Before starting interview, assess confidence to determine depth:
 
-Use AskUserQuestion to clarify across these categories:
+| Confidence | Depth | Rounds |
+|------------|-------|--------|
+| >80% (high) | Minimal | 1-2 targeted questions |
+| 50-80% (medium) | Standard | 3-5 rounds |
+| <50% (low) | Comprehensive | Up to 10 rounds |
 
-#### 1. Implementation Details
-Questions that affect how code will be written:
-- "How should errors be surfaced to the user?"
-- "What data format should X use?"
-- "Should this operation be sync or async?"
-- "What's the expected latency/performance requirement?"
-- "How should this integrate with existing X?"
+### Interview Stop Condition
 
-#### 2. Edge Cases
-Questions about boundary conditions and error states:
-- "What happens when X is empty or null?"
-- "How should we handle partial failures?"
-- "What's the behavior at size/rate limits?"
-- "What if the user cancels mid-operation?"
-- "How should concurrent requests be handled?"
+Continue interviewing until **no P1/P2 gaps remain**. To validate:
 
-#### 3. Testing Strategy
-Questions about verification approach:
-- "What edge cases need explicit test coverage?"
-- "Should we mock X or use real instances?"
-- "Is integration testing needed for this?"
-- "What's the acceptance criteria for 'done'?"
-- "Are there existing test fixtures we should use?"
+```
+Task tool with subagent_type="unitwork:plan-review:gap-detector"
+prompt: "Review current understanding of {feature} for information gaps..."
+```
 
-#### 4. Dependencies & Integration
-Questions about external factors:
-- "Are there external services involved?"
-- "What happens if a dependency fails?"
-- "Are there rate limits or quotas to consider?"
-- "Does this need backwards compatibility?"
-
-#### 5. UI/UX (only when feature involves UI)
-Skip these for backend-only changes:
-- "What should the loading state look like?"
-- "How should validation errors be displayed?"
-- "Is there existing UI we should match?"
-- "What's the mobile/responsive behavior?"
-
-### Confidence Gate
-
-Continue interviewing until you have **high confidence** (>90%) that you understand:
-- All functional requirements
-- Key edge cases and how to handle them
-- Testing approach
-- Integration points
-
-Do not proceed to spec writing with unresolved ambiguities about implementation details.
+If gap-detector returns no P1/P2 findings, proceed to spec writing.
 
 ## Phase 3: Breakdown into Units
 
