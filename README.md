@@ -285,40 +285,10 @@ Run the install script to set up all dependencies:
 ./install_deps.sh
 ```
 
-This script installs the Hindsight CLI and agent-browser, then prints instructions for starting the Hindsight Docker container.
-
-Or install manually using the commands below.
-
----
-
-### Required: Hindsight
-
-Memory system for persistent learning across sessions.
-
-#### Step 1: Set Environment Variables
-
-Add to your `~/.bashrc` or `~/.zshrc`:
-
-```bash
-export HINDSIGHT_API_LLM_PROVIDER=openai
-export HINDSIGHT_API_LLM_BASE_URL=https://openrouter.ai/api/v1
-export HINDSIGHT_API_LLM_API_KEY=<your-openrouter-key>
-export HINDSIGHT_API_LLM_MODEL=google/gemini-3-flash-preview
-```
-
-**Recommended:** OpenRouter with Gemini 3 Flash provides good performance at low cost.
-
-#### Step 2: Start Hindsight Container
-
-```bash
-docker run -d --name hindsight --pull always -p 8888:8888 -p 9999:9999 \
-  -e HINDSIGHT_API_LLM_API_KEY=$HINDSIGHT_API_LLM_API_KEY \
-  -e HINDSIGHT_API_LLM_PROVIDER=$HINDSIGHT_API_LLM_PROVIDER \
-  -e HINDSIGHT_API_LLM_BASE_URL=$HINDSIGHT_API_LLM_BASE_URL \
-  -e HINDSIGHT_API_LLM_MODEL=$HINDSIGHT_API_LLM_MODEL \
-  -v $HOME/.hindsight-docker:/home/hindsight/.pg0 \
-  ghcr.io/vectorize-io/hindsight:latest
-```
+The script will:
+1. Install agent-browser for UI verification
+2. Prompt for your OpenRouter API key (get one at [openrouter.ai/keys](https://openrouter.ai/keys))
+3. Start the Hindsight Docker container
 
 **Container management:**
 
@@ -328,37 +298,32 @@ docker start hindsight   # Start it again
 docker logs hindsight    # View logs
 ```
 
-#### Step 3: Install Hindsight CLI
-
-```bash
-# macOS
-brew install vectorize-io/tap/hindsight
-
-# Linux (x86_64)
-curl -L https://github.com/vectorize-io/hindsight/releases/latest/download/hindsight-linux-x86_64 -o hindsight
-chmod +x hindsight && sudo mv hindsight /usr/local/bin/
-
-# Verify
-hindsight --version
-```
-
-#### Alternative: Native Install
-
-See the [Hindsight Developer Docs](https://hindsight.vectorize.io/) for running Hindsight without Docker.
-
 ---
 
-### Optional: agent-browser
+### Manual Install
 
-Browser automation for UI verification during `/uw:work`.
+If you prefer to set up manually:
 
+**agent-browser:**
 ```bash
-# Requires Node.js 18+
 npm install -g agent-browser
 agent-browser install  # On Linux, use: agent-browser install --with-deps
+```
 
-# Verify
-agent-browser --version
+**Hindsight:** Set env vars and run the Docker container:
+```bash
+export HINDSIGHT_API_LLM_API_KEY=<your-openrouter-key>
+export HINDSIGHT_API_LLM_PROVIDER=openai
+export HINDSIGHT_API_LLM_BASE_URL=https://openrouter.ai/api/v1
+export HINDSIGHT_API_LLM_MODEL=google/gemini-3-flash-preview
+
+docker run -d --name hindsight --pull always -p 8888:8888 -p 9999:9999 \
+  -e HINDSIGHT_API_LLM_API_KEY=$HINDSIGHT_API_LLM_API_KEY \
+  -e HINDSIGHT_API_LLM_PROVIDER=$HINDSIGHT_API_LLM_PROVIDER \
+  -e HINDSIGHT_API_LLM_BASE_URL=$HINDSIGHT_API_LLM_BASE_URL \
+  -e HINDSIGHT_API_LLM_MODEL=$HINDSIGHT_API_LLM_MODEL \
+  -v $HOME/.hindsight-docker:/home/hindsight/.pg0 \
+  ghcr.io/vectorize-io/hindsight:latest
 ```
 
 ## Directory Structure
