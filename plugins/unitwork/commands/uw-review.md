@@ -304,10 +304,21 @@ Fix Tier 1 (correctness) P1 issues first, then Tier 2 (cleanliness) P1 issues:
      libraryId: "<from above>"
      query: "<specific fix pattern>"
    ```
-3. Implement the fix
-4. Create new checkpoint: `checkpoint({n}+1): fix {issue}`
-5. Re-run affected review agents on fixed code
-6. Repeat until no P1s remain
+3. **If fix approach is unclear after research:** Trigger interview loop.
+
+   See [interview-workflow.md](../skills/unitwork/references/interview-workflow.md) for question patterns.
+
+   Present to user via AskUserQuestion:
+   - **Clarify fix approach** - Answer questions about expected behavior
+   - **Skip this issue** - Defer to manual fix later
+   - **Accept current implementation** - Issue is acceptable as-is
+
+   After interview, re-run gap-detector to validate fix approach is clear before implementing.
+
+4. Implement the fix
+5. Create new checkpoint: `checkpoint({n}+1): fix {issue}`
+6. Re-run affected review agents on fixed code
+7. Repeat until no P1s remain
 
 ### For P2/P3 Issues
 
