@@ -212,4 +212,6 @@ Start at 100%, subtract:
 - `/uw:review` - Parallel code review
 - `/uw:compound` - Extract learnings
 - `/uw:bootstrap` - First-time setup
+- `/uw:pr` - Create/update GitHub PRs
 - `/uw:action-comments` - Resolve PR comments
+- `/uw:fix-ci` - Autonomously fix failing CI
