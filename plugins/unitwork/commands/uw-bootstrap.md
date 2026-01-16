@@ -234,39 +234,53 @@ fi
 
 **If no learnings exist:** Skip to Step 8 with message "No team learnings found to import."
 
-### Identify Non-User Learnings
+### Build Filtered Import List
 
-Get current user email (exact match only):
+Get setup variables:
 ```bash
 CURRENT_USER=$(git config user.email)
-```
-
-For each file in `.unitwork/learnings/*.md`:
-```bash
-# Get original author email (who first created the file)
-AUTHOR=$(git log --follow --diff-filter=A --format='%ae' -- "$file" | head -1)
-
-# Include in import list only if author != current user
-if [ "$AUTHOR" != "$CURRENT_USER" ]; then
-    # Add to list of files to import
-fi
-```
-
-**Note:** If file has no git history (untracked), skip it.
-
-### Filter by Last Import Timestamp
-
-Read last import timestamp from `.unitwork/.bootstrap.json`:
-```bash
 LAST_IMPORT=$(jq -r '.lastLearningsImport // "1970-01-01T00:00:00Z"' .unitwork/.bootstrap.json 2>/dev/null || echo "1970-01-01T00:00:00Z")
 ```
 
-Filter to only files modified after last import:
+Build list of files to import (must satisfy BOTH conditions):
+1. Authored by someone else (exact email match)
+2. Modified after last import timestamp
+
 ```bash
-find .unitwork/learnings -name "*.md" -newermt "$LAST_IMPORT"
+IMPORT_LIST=()
+
+for file in .unitwork/learnings/*.md; do
+    [ -f "$file" ] || continue
+
+    # Skip untracked files (no git history)
+    if ! git ls-files --error-unmatch "$file" &>/dev/null; then
+        continue
+    fi
+
+    # Get original author email (who first created the file)
+    AUTHOR=$(git log --follow --diff-filter=A --format='%ae' -- "$file" | head -1)
+
+    # Skip if authored by current user (exact email match)
+    if [ "$AUTHOR" = "$CURRENT_USER" ]; then
+        continue
+    fi
+
+    # Skip if not modified after last import
+    # Get file mtime in ISO format for comparison
+    FILE_MTIME=$(git log -1 --format='%aI' -- "$file")
+    if [[ "$FILE_MTIME" < "$LAST_IMPORT" ]]; then
+        continue
+    fi
+
+    # File passes both filters - add to import list
+    IMPORT_LIST+=("$file")
+done
 ```
 
-Combine both filters: file must be (1) authored by someone else AND (2) modified after last import.
+**Filter Logic Summary:**
+- Uses git file tracking (not filesystem mtime) for timestamp comparison
+- Exact email match for author filtering (no partial matches)
+- Untracked files are skipped (they have no author to check)
 
 ### Prompt User Before Import
 
