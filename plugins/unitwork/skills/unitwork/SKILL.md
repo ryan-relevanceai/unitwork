@@ -121,28 +121,23 @@ See [checkpointing.md](./references/checkpointing.md) for the complete checkpoin
 
 ## Hindsight Integration
 
-### Bank Configuration
-- One bank per project (isolated memories)
-- Bank name derived from git remote or directory
-- High skepticism (5) - question assumptions, code changes fast
-- Moderate literalism (3) - balance flexibility
-- Low empathy (2) - focus on technical accuracy
+See [hindsight-reference.md](./references/hindsight-reference.md) for complete patterns including:
+- **Bank Name Derivation** - Worktree-safe bank name extraction
+- **ANSI Stripping** - Required when processing output programmatically
+- **Memory Operations** - Recall, retain, and reflect patterns
+- **Error Handling** - Graceful degradation when Hindsight unavailable
 
-### Memory Operations
+### Quick Reference
 
-**Recall (cheap, use freely):**
 ```bash
-hindsight memory recall $BANK "query" --budget low|mid|high
-```
+# Bank name (worktree-safe)
+BANK=$(git config --get remote.origin.url 2>/dev/null | sed 's/.*\///' | sed 's/\.git$//' || basename "$(git worktree list 2>/dev/null | head -1 | awk '{print $1}')" || basename "$(pwd)")
 
-**Retain (expensive, always async):**
-```bash
-hindsight memory retain $BANK "narrative" --context "context" --doc-id "id" --async
-```
+# Recall with ANSI stripping
+hindsight memory recall "$BANK" "query" --budget mid --include-chunks 2>&1 | sed 's/\x1b\[[0-9;]*m//g'
 
-**Reflect (for reasoning):**
-```bash
-hindsight memory reflect $BANK "question" --context "context"
+# Retain (always async)
+hindsight memory retain "$BANK" "narrative" --context "context" --doc-id "id" --async
 ```
 
 ## Context7 Integration

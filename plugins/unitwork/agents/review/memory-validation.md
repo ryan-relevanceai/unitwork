@@ -15,6 +15,37 @@ Other review agents focus on code patterns and best practices. This agent focuse
 - Decisions about how things should be done
 - Verification blind spots that were discovered
 
+## Hindsight Integration
+
+See [hindsight-reference.md](../../skills/unitwork/references/hindsight-reference.md) for complete Hindsight patterns.
+
+### STEP 1: Derive Bank Name
+
+```bash
+BANK=$(git config --get remote.origin.url 2>/dev/null | sed 's/.*\///' | sed 's/\.git$//' || basename "$(git worktree list 2>/dev/null | head -1 | awk '{print $1}')" || basename "$(pwd)")
+```
+
+### STEP 2: Recall ALL Learnings
+
+Unlike other agents that receive filtered memories, this agent recalls everything:
+
+```bash
+LEARNINGS=$(hindsight memory recall "$BANK" "all learnings, gotchas, patterns, conventions, decisions" --budget high --include-chunks 2>&1 | sed 's/\x1b\[[0-9;]*m//g')
+```
+
+**CRITICAL:** Strip ANSI codes with `sed 's/\x1b\[[0-9;]*m//g'` before processing.
+
+### STEP 3: Handle Failures
+
+```bash
+if [[ $? -ne 0 ]] || [[ -z "$LEARNINGS" ]] || [[ "$LEARNINGS" == *"error"* ]]; then
+  echo "Hindsight unavailable - skipping memory validation"
+  exit 0  # Silent skip, do not block review
+fi
+```
+
+---
+
 ## Input
 
 You receive:
