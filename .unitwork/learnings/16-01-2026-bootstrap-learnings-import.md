@@ -20,3 +20,7 @@ Added automatic import of team learnings to Hindsight memory during bootstrap, e
 - **State tracking for incremental operations:** When building features that shouldn't re-process already-handled items, use a state file (like `.bootstrap.json` with `lastLearningsImport`) rather than relying on external state. This makes the feature self-contained and predictable.
 
 - **Two-filter pattern for team content:** When identifying "team content" (not authored by current user), combine: (1) author filtering via git blame/log, and (2) timestamp filtering for incrementality. Both filters must pass (AND logic).
+
+## Verification Blind Spots
+
+- **Changelog and version bump forgotten AGAIN:** Despite being a known gotcha from previous features, we still forgot to update CHANGELOG.md and bump version in plugin.json before creating the PR. This happens because these are "release steps" that feel separate from implementation. Must add explicit checklist item to /uw:pr or /uw:review workflow.
