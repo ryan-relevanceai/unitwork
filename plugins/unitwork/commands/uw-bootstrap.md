@@ -58,6 +58,12 @@ test -d .unitwork && UNITWORK_EXISTS="yes" || UNITWORK_EXISTS="no"
 # Derive bank name
 BANK=$(git config --get remote.origin.url 2>/dev/null | sed 's/.*\///' | sed 's/\.git$//' || basename "$(git worktree list 2>/dev/null | head -1 | awk '{print $1}')" || basename "$(pwd)")
 
+# Validate bank name contains only safe characters
+if ! [[ "$BANK" =~ ^[a-zA-Z0-9._-]+$ ]]; then
+    echo "Error: Invalid bank name '$BANK'. Bank names must contain only alphanumeric characters, dashes, underscores, or dots."
+    exit 1
+fi
+
 # Check bank exists in Hindsight
 BANK_EXISTS=$(hindsight bank list -o json 2>&1 | grep -q "\"bank_id\": \"$BANK\"" && echo "yes" || echo "no")
 ```
@@ -228,12 +234,11 @@ Ready for /uw:plan to start planning your first feature.
 ### Check for Learnings Directory
 
 ```bash
-# Check if learnings directory exists and has .md files
-if [ -d ".unitwork/learnings" ] && [ "$(find .unitwork/learnings -name '*.md' 2>/dev/null | head -1)" ]; then
-    LEARNINGS_EXIST="yes"
-else
-    LEARNINGS_EXIST="no"
-fi
+# Check if learnings directory has .md files (glob handles missing dir gracefully)
+shopt -s nullglob
+LEARNINGS_FILES=(.unitwork/learnings/*.md)
+LEARNINGS_EXIST=$([ ${#LEARNINGS_FILES[@]} -gt 0 ] && echo "yes" || echo "no")
+shopt -u nullglob
 ```
 
 **If no learnings exist:** Report "No team learnings found to import." and proceed to Final Report.
