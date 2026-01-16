@@ -5,27 +5,60 @@ All notable changes to the Unit Work plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.5.2] - 2026-01-16
+## [0.6.0] - 2026-01-16
 
 ### Added
+
+- **memory-validation.md**: New review agent (14 agents total)
+  - Validates code against ALL team learnings from Hindsight memory
+  - Severity inherits from learning context (production bug → P1, convention → P2)
+  - Graceful degradation when Hindsight unavailable
+  - Spawned as 7th parallel agent in uw-review
+
+- **interview-workflow.md**: New reference document for interview protocols
+  - Confidence-based depth (high/medium/low → minimal/standard/comprehensive)
+  - Stop conditions: no P1/P2 gaps remaining
+  - 5 question categories with AskUserQuestion patterns
+  - Reusable from uw-plan, uw-work, uw-review
+
+- **verification-flow.md**: New reference document consolidating verification protocols
+  - Decision tree for which verification subagent to use
+  - Confidence calculation rules
+  - Self-correcting review protocol for fix checkpoints
 
 - **hindsight-reference.md**: New reference document for Hindsight memory operations
   - Worktree-safe bank name derivation (uses remote origin URL)
   - ANSI color code stripping for programmatic output processing
   - Complete patterns for recall, retain, and reflect operations
   - Error handling and graceful degradation guidance
-  - Context and doc-id conventions table
 
 ### Changed
 
-- **memory-validation.md**: Added explicit Hindsight bash commands
-  - References hindsight-reference.md for complete patterns
-  - Includes ANSI stripping in recall command
-  - Step-by-step instructions for bank name, recall, and error handling
+- **uw-plan.md**: Interview workflow integration
+  - Phase 2 Interview references interview-workflow.md
+  - Retains 6 interview rules inline for compliance
 
-- **SKILL.md**: Updated Hindsight Integration section
-  - References hindsight-reference.md for complete patterns
+- **uw-work.md**: Interview loop and minimal plan-verify
+  - Step 0.5: Interview loop when gap-detector finds P1/P2 gaps
+  - Re-runs gap-detector after interview to validate gaps addressed
+  - Minimal plan-verify step before implementation
+
+- **uw-review.md**: Interview trigger and memory-validation
+  - Auto-detects current PR from git branch
+  - Interview trigger in fix loop (before Context7 research)
+  - Spawns 7 review agents (added memory-validation)
+  - Memory routing: memory-validation receives ALL memories
+
+- **uw-action-comments.md**: Aligned with plan/work flow
+  - Uses same checkpoint workflow as uw-work
+  - Self-correcting review after fix checkpoints
+
+- **SKILL.md**: Updated references and Hindsight integration
+  - Links to interview-workflow.md, verification-flow.md, hindsight-reference.md
   - Quick reference with ANSI stripping example
+  - Command list now shows all 8 commands
+
+- **plugin.json**: Agent count 13→14
 
 ### Fixed
 
