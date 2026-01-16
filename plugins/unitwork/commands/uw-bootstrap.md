@@ -217,9 +217,13 @@ Bootstrap complete for: {repo-name}
 Ready for /uw:plan to start planning your first feature.
 ```
 
+**After Step 7:** Proceed to Step 7.5 (Import Team Learnings).
+
 ## Step 7.5: Import Team Learnings
 
-**Note:** This step runs for both full setup (after Step 7) and sync-only mode (skipping directly here from Step 1.5).
+**This step runs for:**
+- **Full setup flow:** After Step 7 completes
+- **Sync-only flow:** Directly from Step 1.5 (skipping Steps 2-7)
 
 ### Check for Learnings Directory
 
@@ -232,7 +236,7 @@ else
 fi
 ```
 
-**If no learnings exist:** Skip to Step 8 with message "No team learnings found to import."
+**If no learnings exist:** Report "No team learnings found to import." and proceed to Final Report.
 
 ### Build Filtered Import List
 
@@ -286,7 +290,7 @@ done
 
 If filtered list is empty:
 - Report "No new team learnings to import."
-- Skip to Step 8
+- Proceed to Final Report
 
 If files to import exist, use AskUserQuestion:
 
@@ -352,6 +356,23 @@ fi
 - Imported {N} learning(s) to Hindsight memory
 - Last import: {timestamp}
 ```
+
+## Final Report
+
+For **sync-only flow** (skipped exploration), report:
+```
+Learnings sync complete for: {repo-name}
+
+**Team Learnings:**
+- Imported {N} learning(s) to Hindsight memory
+- Last import: {timestamp}
+
+Ready for /uw:plan to start planning your next feature.
+```
+
+For **full setup flow**, the Step 7 report was already shown, so just add the Team Learnings section to that output.
+
+## Next Steps
 
 After bootstrap, suggest:
 
