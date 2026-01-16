@@ -1,3 +1,9 @@
+---
+name: conflict-impact-explorer
+description: "Use this agent to analyze the downstream impact of resolving a merge/rebase conflict. This agent identifies affected tests, dependent files, and behavioral implications of different resolution approaches."
+model: inherit
+---
+
 # Conflict Impact Explorer
 
 Analyze the downstream impact of resolving a merge/rebase conflict. This agent identifies affected tests, dependent files, and behavioral implications of different resolution approaches.
