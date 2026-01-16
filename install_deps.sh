@@ -108,7 +108,13 @@ install_hindsight_cli() {
             brew install vectorize-io/tap/hindsight
         else
             print_warning "Homebrew not found, using direct download..."
-            curl -fsSL https://github.com/vectorize-io/hindsight/releases/latest/download/hindsight-darwin-arm64 -o /tmp/hindsight
+            ARCH=$(uname -m)
+            if [ "$ARCH" == "arm64" ]; then
+                HINDSIGHT_ARCH="arm64"
+            else
+                HINDSIGHT_ARCH="amd64"
+            fi
+            curl -fsSL https://github.com/vectorize-io/hindsight/releases/latest/download/hindsight-darwin-${HINDSIGHT_ARCH} -o /tmp/hindsight
             chmod +x /tmp/hindsight
             sudo mv /tmp/hindsight /usr/local/bin/hindsight
         fi
@@ -139,8 +145,13 @@ install_agent_browser() {
         return 0
     fi
 
-    npm install -g @anthropic/agent-browser
-    agent-browser install
+    npm install -g agent-browser
+
+    if [ "$OS" == "linux" ]; then
+        agent-browser install --with-deps
+    else
+        agent-browser install
+    fi
 
     if command -v agent-browser &> /dev/null; then
         print_success "agent-browser installed"
