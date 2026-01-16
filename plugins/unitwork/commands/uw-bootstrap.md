@@ -300,17 +300,19 @@ Show list of files to import.
 
 ### Execute Import
 
-If user confirms:
+If user confirms (selects "Yes, import all"):
 
 ```bash
-# Create temp directory with filtered files
-TEMP_DIR=$(mktemp -d)
-# Copy filtered .md files to temp directory
-# (preserving directory structure is optional)
-
-# Import using retain-files
+# Derive bank name
 BANK=$(git config --get remote.origin.url 2>/dev/null | sed 's/.*\///' | sed 's/\.git$//' || basename "$(git worktree list 2>/dev/null | head -1 | awk '{print $1}')" || basename "$(pwd)")
 
+# Create temp directory and copy filtered files
+TEMP_DIR=$(mktemp -d)
+for file in "${IMPORT_LIST[@]}"; do
+    cp "$file" "$TEMP_DIR/"
+done
+
+# Import using retain-files (async to avoid blocking)
 hindsight memory retain-files "$BANK" "$TEMP_DIR" \
   --recursive \
   --context "unitwork team learnings" \
@@ -319,6 +321,9 @@ hindsight memory retain-files "$BANK" "$TEMP_DIR" \
 # Cleanup temp directory
 rm -rf "$TEMP_DIR"
 ```
+
+If user declines (selects "No, skip"):
+- Skip import, proceed to update timestamp anyway (so same files aren't prompted again)
 
 ### Update Import Timestamp
 
