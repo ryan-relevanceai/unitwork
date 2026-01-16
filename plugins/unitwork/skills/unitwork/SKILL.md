@@ -72,6 +72,9 @@ Unit Work creates this structure in your project:
 ## Agent Behavior Rules
 
 ### Interview Phase
+
+See [interview-workflow.md](./references/interview-workflow.md) for the complete interview protocol including confidence-based depth assessment and stop conditions.
+
 1. Research before asking - check Hindsight, codebase, then web docs
 2. Group related questions - don't ask one at a time
 3. Push back on scope - "That sounds like a separate feature"
@@ -189,6 +192,7 @@ mcp__unitwork_context7__query-docs
 | architecture | Structure, coupling, boundaries |
 | security | Injection, auth, data exposure |
 | simplicity | Over-engineering, YAGNI |
+| memory-validation | Learnings from Hindsight memory |
 
 ## Confidence Assessment
 
