@@ -47,6 +47,45 @@ mcp__unitwork_context7__resolve-library-id  # Find library ID
 mcp__unitwork_context7__query-docs          # Query documentation
 ```
 
+## Step 1.5: Detect Existing Setup
+
+Check if this repo already has Unit Work setup:
+
+```bash
+# Check .unitwork dir
+test -d .unitwork && UNITWORK_EXISTS="yes" || UNITWORK_EXISTS="no"
+
+# Derive bank name
+BANK=$(git config --get remote.origin.url 2>/dev/null | sed 's/.*\///' | sed 's/\.git$//' || basename "$(git worktree list 2>/dev/null | head -1 | awk '{print $1}')" || basename "$(pwd)")
+
+# Validate bank name contains only safe characters
+if ! [[ "$BANK" =~ ^[a-zA-Z0-9._-]+$ ]]; then
+    echo "Error: Invalid bank name '$BANK'. Bank names must contain only alphanumeric characters, dashes, underscores, or dots."
+    exit 1
+fi
+
+# Check bank exists in Hindsight
+BANK_EXISTS=$(hindsight bank list -o json 2>&1 | grep -q "\"bank_id\": \"$BANK\"" && echo "yes" || echo "no")
+```
+
+**If EITHER `.unitwork` exists OR bank exists:**
+
+Use AskUserQuestion to prompt:
+
+**Question:** "Existing setup detected. What would you like to do?"
+
+**Options:**
+- **Full setup** - Re-run exploration and import team learnings
+- **Sync learnings only** - Skip exploration, just import team learnings from .unitwork/learnings/
+- **Exit** - Keep current state
+
+**If user selects:**
+- **Full setup:** Continue to Step 2 (proceed with normal bootstrap)
+- **Sync learnings only:** Skip to Step 7.5 (learnings import section)
+- **Exit:** Stop bootstrap with message "Bootstrap cancelled. Current setup preserved."
+
+**If NEITHER exists:** Continue to Step 2 (fresh setup).
+
 ## Step 2: Derive Bank Name
 
 The bank name is derived from the git remote URL (handles worktrees), falling back to main worktree name or directory:
@@ -184,7 +223,161 @@ Bootstrap complete for: {repo-name}
 Ready for /uw:plan to start planning your first feature.
 ```
 
-## First Feature Suggestion
+**After Step 7:** Proceed to Step 7.5 (Import Team Learnings).
+
+## Step 7.5: Import Team Learnings
+
+**This step runs for:**
+- **Full setup flow:** After Step 7 completes
+- **Sync-only flow:** Directly from Step 1.5 (skipping Steps 2-7)
+
+### Check for Learnings Directory
+
+```bash
+# Check if learnings directory has .md files (glob handles missing dir gracefully)
+shopt -s nullglob
+LEARNINGS_FILES=(.unitwork/learnings/*.md)
+LEARNINGS_EXIST=$([ ${#LEARNINGS_FILES[@]} -gt 0 ] && echo "yes" || echo "no")
+shopt -u nullglob
+```
+
+**If no learnings exist:** Report "No team learnings found to import." and proceed to Final Report.
+
+### Build Filtered Import List
+
+Get setup variables:
+```bash
+CURRENT_USER=$(git config user.email)
+LAST_IMPORT=$(jq -r '.lastLearningsImport // "1970-01-01T00:00:00Z"' .unitwork/.bootstrap.json 2>/dev/null || echo "1970-01-01T00:00:00Z")
+```
+
+Build list of files to import (must satisfy BOTH conditions):
+1. Authored by someone else (exact email match)
+2. Modified after last import timestamp
+
+```bash
+IMPORT_LIST=()
+
+for file in .unitwork/learnings/*.md; do
+    [ -f "$file" ] || continue
+
+    # Skip untracked files (no git history)
+    if ! git ls-files --error-unmatch "$file" &>/dev/null; then
+        continue
+    fi
+
+    # Get original author email (who first created the file)
+    AUTHOR=$(git log --follow --diff-filter=A --format='%ae' -- "$file" | head -1)
+
+    # Skip if authored by current user (exact email match)
+    if [ "$AUTHOR" = "$CURRENT_USER" ]; then
+        continue
+    fi
+
+    # Skip if not modified after last import
+    # Get file mtime in ISO format for comparison
+    FILE_MTIME=$(git log -1 --format='%aI' -- "$file")
+    if [[ "$FILE_MTIME" < "$LAST_IMPORT" ]]; then
+        continue
+    fi
+
+    # File passes both filters - add to import list
+    IMPORT_LIST+=("$file")
+done
+```
+
+**Filter Logic Summary:**
+- Uses git file tracking (not filesystem mtime) for timestamp comparison
+- Exact email match for author filtering (no partial matches)
+- Untracked files are skipped (they have no author to check)
+
+### Prompt User Before Import
+
+If filtered list is empty:
+- Report "No new team learnings to import."
+- Proceed to Final Report
+
+If files to import exist, use AskUserQuestion:
+
+**Question:** "Found {N} team learning(s) to import. Import to Hindsight memory?"
+
+Show list of files to import.
+
+**Options:**
+- **Yes, import all** - Import all filtered learnings
+- **No, skip** - Skip import this time
+
+### Execute Import
+
+If user confirms (selects "Yes, import all"):
+
+```bash
+# Derive bank name
+BANK=$(git config --get remote.origin.url 2>/dev/null | sed 's/.*\///' | sed 's/\.git$//' || basename "$(git worktree list 2>/dev/null | head -1 | awk '{print $1}')" || basename "$(pwd)")
+
+# Create temp directory and copy filtered files
+TEMP_DIR=$(mktemp -d)
+for file in "${IMPORT_LIST[@]}"; do
+    cp "$file" "$TEMP_DIR/"
+done
+
+# Import using retain-files (async to avoid blocking)
+hindsight memory retain-files "$BANK" "$TEMP_DIR" \
+  --recursive \
+  --context "unitwork team learnings" \
+  --async
+
+# Cleanup temp directory
+rm -rf "$TEMP_DIR"
+```
+
+If user declines (selects "No, skip"):
+- Skip import, proceed to update timestamp anyway (so same files aren't prompted again)
+
+### Update Import Timestamp
+
+After successful import (or if no new learnings to import), update `.unitwork/.bootstrap.json`:
+```bash
+TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+# Create .unitwork if needed
+mkdir -p .unitwork
+
+# Create or update .bootstrap.json
+if [ -f ".unitwork/.bootstrap.json" ]; then
+    # Update existing file preserving other fields
+    jq --arg ts "$TIMESTAMP" '.lastLearningsImport = $ts' .unitwork/.bootstrap.json > .unitwork/.bootstrap.json.tmp && \
+    mv .unitwork/.bootstrap.json.tmp .unitwork/.bootstrap.json
+else
+    # Create new file
+    echo "{\"lastLearningsImport\": \"$TIMESTAMP\"}" > .unitwork/.bootstrap.json
+fi
+```
+
+### Report Import Result
+
+```
+**Team Learnings:**
+- Imported {N} learning(s) to Hindsight memory
+- Last import: {timestamp}
+```
+
+## Final Report
+
+For **sync-only flow** (skipped exploration), report:
+```
+Learnings sync complete for: {repo-name}
+
+**Team Learnings:**
+- Imported {N} learning(s) to Hindsight memory
+- Last import: {timestamp}
+
+Ready for /uw:plan to start planning your next feature.
+```
+
+For **full setup flow**, the Step 7 report was already shown, so just add the Team Learnings section to that output.
+
+## Next Steps
 
 After bootstrap, suggest:
 
