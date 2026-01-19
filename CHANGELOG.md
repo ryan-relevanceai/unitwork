@@ -5,6 +5,22 @@ All notable changes to the Unit Work plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.2] - 2026-01-20
+
+### Added
+
+- **uw:investigate**: New read-only investigation command
+  - Deep codebase exploration without modifying production code
+  - Goal transformation converts write-oriented tasks to investigation form
+  - Memory-aware exploration with Hindsight integration
+  - Hypothesis verification via test-runner and temporary scripts
+  - Bulletproof temp script cleanup in `/tmp/uw-investigate-*/`
+  - In-conversation summary output (no file artifacts)
+
+### Changed
+
+- **plugin.json**: Updated command count (9 → 10)
+
 ## [0.7.1] - 2026-01-16
 
 ### Added
