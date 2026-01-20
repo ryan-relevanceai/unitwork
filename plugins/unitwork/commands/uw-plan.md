@@ -11,10 +11,13 @@ argument-hint: "[feature description or empty to interview]"
 **NEVER EDIT ANY FILES during planning.** This command is strictly read-only except for writing the spec file to `.unitwork/specs/`.
 
 Allowed operations:
-- Reading files (Read, Glob, Grep)
-- Running read-only bash commands (git log, gh commands, ls, cat)
-- Spawning Explore subagents
+- Single-file reads for verification (Read tool for one specific file)
+- Running read-only bash commands (git log, gh commands, ls)
+- Spawning memory-aware-explore subagents for **all multi-file exploration**
 - Writing ONLY to `.unitwork/specs/{date}-{feature}.md`
+
+**CRITICAL: Exploration Delegation Rule**
+Any exploration that would read ~4+ files or require significant context MUST be delegated to a `memory-aware-explore` agent. Do NOT use Glob/Grep/Read directly in the main thread for multi-file searches. This preserves context window and compounds exploration findings across sessions.
 
 Forbidden operations:
 - Editing any existing files
@@ -156,12 +159,21 @@ See [interview-workflow.md](../skills/unitwork/references/interview-workflow.md)
 
 **Rules for interviewing (kept inline for compliance):**
 
-1. **Research before asking** - Check Hindsight, codebase, and web docs before asking user to explain
+1. **Research before asking** - Check Hindsight, then spawn memory-aware-explore agent for codebase research, and web docs before asking user to explain. **Do NOT read files directly in main thread.**
 2. **Group related questions** - Batch related questions together using AskUserQuestion
 3. **Push back on scope** - If something sounds like a separate feature, say: "That sounds like a separate feature - should we defer it?"
 4. **Advocate once** - State recommendation with reasoning, then accept user decision
 5. **No premature solutions** - Don't propose implementation during requirements gathering
 6. **Confirm understanding** - Summarize requirements back before writing spec
+
+**Research via explore agent (for rule 1):**
+```
+Task tool with subagent_type="unitwork:exploration:memory-aware-explore"
+prompt: "Research for interview question: {what you need to know}
+
+Check if the codebase already has: {existing implementation to look for}
+Find: {relevant patterns, files, or examples}"
+```
 
 ### Confidence-Based Depth
 
@@ -264,12 +276,27 @@ Analyze each unit for missing information that would require investigation durin
 
 **Agents are not oracles.** Their findings are hypotheses that must be verified before acting.
 
+**IMPORTANT: Delegate all multi-file exploration to explore agents.** Do NOT read files directly in the main thread. Any verification that requires reading codebase files should spawn a memory-aware-explore agent.
+
 For each finding from the agents:
 
 1. **Check factual accuracy**: Does the claim hold up?
-   - "Utility exists at X" → Actually read the file, confirm it exists and does what's claimed
-   - "Pattern violation" → Verify the pattern actually applies to this context
+   - "Utility exists at X" → Spawn explore agent to verify the file exists and does what's claimed
+   - "Pattern violation" → Spawn explore agent to verify the pattern actually applies
    - "Gap in requirements" → Check if it was actually addressed elsewhere in the plan
+
+   **Verification via explore agent:**
+   ```
+   Task tool with subagent_type="unitwork:exploration:memory-aware-explore"
+   prompt: "Verify finding from plan review:
+
+   Finding: {agent finding summary}
+   Claimed location: {file path or pattern}
+
+   1. Verify the claimed file/utility exists
+   2. Confirm it does what the finding claims
+   3. Report: VERIFIED (with evidence) or NOT_FOUND (file missing or doesn't match claim)"
+   ```
 
 2. **Check scope relevance**: Is this finding in-scope for the current work?
    - A real issue but unrelated to this feature → Dismiss (note for future)

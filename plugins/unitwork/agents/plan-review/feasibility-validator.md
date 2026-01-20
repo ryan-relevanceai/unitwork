@@ -119,12 +119,32 @@ For each concern:
 **Why this is a concern:** {explanation of the risk}
 
 **Suggested resolution:**
-- Investigate: "{what to verify before implementation}"
+- Delegate investigation: "{what to verify}" (via memory-aware-explore agent)
 - OR split unit: "{how to break it down}"
 - OR add dependency: "{what's missing from the plan}"
 - OR adjust confidence: "{recommended confidence and why}"
 - OR clarify verification: "{what verification strategy to use}"
 ```
+
+## Search Delegation
+
+**CRITICAL: All multi-file codebase exploration MUST be delegated to memory-aware-explore agents.** Do NOT use Glob/Grep/Read directly for searches spanning multiple files.
+
+When validating feasibility requires checking existing code, spawn an explore agent:
+
+```
+Task tool with subagent_type="unitwork:exploration:memory-aware-explore"
+prompt: "Validate feasibility: {what needs validation}
+
+1. Check if {capability/API/pattern} exists in the codebase
+2. Verify dependencies are available
+3. Report findings with evidence (file paths, code examples)"
+```
+
+**Why delegate?**
+- Preserves main thread context window
+- Memory-aware agents recall prior exploration
+- Findings are retained for future sessions
 
 ## Review Process
 
@@ -135,7 +155,8 @@ For each concern:
    - How would the implementer know when it's done?
    - Is the confidence estimate realistic?
    - Can this be done in one focused session?
-3. Document concerns with specific suggestions
+3. **For any assessment requiring codebase exploration:** Delegate to memory-aware-explore agent
+4. Document concerns with specific suggestions
 
 ## Verification Strategy Guidelines
 

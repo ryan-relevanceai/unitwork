@@ -118,9 +118,29 @@ For each gap found:
 
 **Suggested resolution:**
 - Ask user: "{specific question to resolve the gap}"
-- OR explore codebase: "{what to search for}"
+- OR delegate exploration: "{what to search for}" (via memory-aware-explore agent)
 - OR clarify in spec: "{what needs to be specified}"
 ```
+
+## Search Delegation
+
+**CRITICAL: All multi-file codebase exploration MUST be delegated to memory-aware-explore agents.** Do NOT use Glob/Grep/Read directly for searches spanning multiple files.
+
+When a gap requires codebase investigation, spawn an explore agent:
+
+```
+Task tool with subagent_type="unitwork:exploration:memory-aware-explore"
+prompt: "Investigate gap: {gap description}
+
+1. Search for existing implementations related to {topic}
+2. Find API contracts or integration patterns
+3. Report findings with file paths and relevant details"
+```
+
+**Why delegate?**
+- Preserves main thread context window
+- Memory-aware agents recall prior exploration
+- Findings are retained for future sessions
 
 ## Review Process
 
@@ -131,6 +151,8 @@ For each gap found:
 5. Find edge cases mentioned but not specified
 6. Verify error handling strategy is concrete
 7. Check data operations have format specifications
+
+**For any check requiring codebase exploration:** Delegate to memory-aware-explore agent
 
 ## Key Questions
 

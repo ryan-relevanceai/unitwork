@@ -22,7 +22,7 @@ Units describing functionality that likely exists in the codebase:
 - "Build validation logic" (search for validators)
 - "Add error handling wrapper" (search for existing patterns)
 
-**Action:** Search codebase using Glob/Grep for similar functionality.
+**Action:** Delegate search to memory-aware-explore agent (see Search Delegation below).
 
 ### 2. Pattern Violations
 
@@ -34,7 +34,7 @@ Not following established conventions in the codebase:
 - Different naming convention than codebase
 - Direct database access when repository pattern is used elsewhere
 
-**Action:** Search for similar features and note the patterns they follow.
+**Action:** Delegate search for similar features to memory-aware-explore agent.
 
 ### 3. Missing Utility Search
 
@@ -105,32 +105,47 @@ For each finding:
 
 1. Read each unit in the draft plan
 2. For each unit that proposes implementing something:
-   a. Search codebase for similar functionality (Glob for file names, Grep for function names)
-   b. Check if framework provides this capability
-   c. Look for established patterns in similar features
+   a. Delegate codebase search to memory-aware-explore agent (see Search Delegation)
+   b. Check if framework provides this capability (via Context7 if needed)
+   c. Review explore agent findings for established patterns
 3. Document any existing solutions that could replace or simplify the unit
 
-## Search Strategies
+## Search Delegation
 
-When reviewing a unit, search for:
+**CRITICAL: All multi-file codebase exploration MUST be delegated to memory-aware-explore agents.** Do NOT use Glob/Grep/Read directly for searches spanning multiple files.
+
+When a unit proposes implementing functionality, spawn an explore agent:
+
+```
+Task tool with subagent_type="unitwork:exploration:memory-aware-explore"
+prompt: "Search for existing utilities related to: {what the unit proposes}
+
+1. Search for existing implementations of {functionality}
+2. Find similar patterns in the codebase
+3. Check utils/, helpers/, services/ directories
+4. Report any existing solutions with file paths and usage examples"
+```
+
+**Why delegate?**
+- Preserves main thread context window
+- Memory-aware agents recall prior exploration (avoid duplicate searches)
+- Findings are retained for future sessions (compounding)
+
+## Search Strategy Guidance
+
+When formulating explore agent prompts, guide them toward:
 
 **For utility functions:**
-```
-Glob: **/utils/**/*.{ts,js,rb,py}
-Grep: function name patterns, method signatures
-```
+- Search paths: `**/utils/**`, `**/helpers/**`, `**/lib/**`
+- Search terms: function names, method signatures
 
 **For patterns:**
-```
-Glob: similar feature directories
-Grep: class names, service patterns
-```
+- Search paths: similar feature directories
+- Search terms: class names, service patterns
 
 **For infrastructure:**
-```
-Grep: middleware, config, initializers
-Check: framework documentation via Context7
-```
+- Search paths: middleware, config, initializers
+- Also check: framework documentation via Context7
 
 ## Key Questions
 
