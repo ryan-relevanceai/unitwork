@@ -12,16 +12,18 @@ argument-hint: "<investigation goal, e.g., 'why is the API slow'>"
 
 Allowed operations:
 - Reading files (Read, Glob, Grep)
-- Running read-only bash commands (git log, gh commands, ls, cat)
+- Running read-only bash commands (git log, gh commands, ls)
 - Spawning memory-aware-explore agents
 - Running existing tests via test-runner agent
-- Creating and executing temporary scripts in `/tmp/uw-investigate-*/`
+- Running inline Python scripts via `uv run python -c`
+- Creating temporary Python scripts in `.unitwork/tmp/`
 
 Forbidden operations:
-- Editing any existing files
-- Writing new files outside `/tmp/`
+- Editing any existing files (except `.unitwork/tmp/`)
+- Writing new files outside `.unitwork/tmp/`
 - Running mutating API requests (POST/PUT/DELETE)
 - Making any changes to the codebase
+- Creating shell scripts directly via bash heredocs
 
 If the user asks to make changes during investigation, remind them: "Investigation is read-only. Use `/uw:plan` to plan changes or `/uw:work` to implement fixes."
 
@@ -198,7 +200,7 @@ Expected outcome: {what would confirm/reject hypothesis}"
 
 ### Using Temporary Scripts
 
-When existing tests don't cover the specific hypothesis, create a temporary verification script.
+When existing tests don't cover the specific hypothesis, create a temporary verification script using Python.
 
 **When to Use Temporary Scripts:**
 - When existing tests don't cover the specific hypothesis
@@ -206,39 +208,44 @@ When existing tests don't cover the specific hypothesis, create a temporary veri
 - When you need to measure performance with specific data
 - When no test file exists for the code under investigation
 
-**Script Lifecycle:**
+**Approach 1: Inline Python (Preferred)**
+
+For simple, one-off verification scripts, use `uv run python -c` which is ephemeral and requires no cleanup:
 
 ```bash
-# 1. Create temp directory with timestamp
-TEMP_DIR="/tmp/uw-investigate-$(date +%s)"
-mkdir -p "$TEMP_DIR"
+uv run python -c "
+import json
+from pathlib import Path
 
-# 2. Write the verification script
-cat > "$TEMP_DIR/verify.{ext}" << 'SCRIPT_EOF'
-# Script content here (max 50 lines)
-# Read-only operations only
-# Must complete within 30 seconds
-# Must not require user input
-SCRIPT_EOF
-
-# 3. Make executable and run with cleanup
-chmod +x "$TEMP_DIR/verify.{ext}" && \
-  "$TEMP_DIR/verify.{ext}"; \
-  RESULT=$?; \
-  rm -rf "$TEMP_DIR"; \
-  exit $RESULT
+# Read-only verification code (max 50 lines)
+# Example: verify a JSON file structure
+data = json.loads(Path('config.json').read_text())
+assert 'required_key' in data, 'Missing required_key'
+print('Verification passed')
+"
 ```
 
+**Approach 2: Persistent Script (for reuse)**
+
+When you need to run the same verification multiple times or the script is complex, use `.unitwork/tmp`:
+
+```bash
+# Ensure tmp directory exists
+mkdir -p .unitwork/tmp
+
+# Use Write tool to create the script at .unitwork/tmp/verify_<topic>.py
+# Then run with:
+uv run python .unitwork/tmp/verify_<topic>.py
+```
+
+The `.unitwork/tmp` directory can be cleaned up later or added to `.gitignore`.
+
 **Script Constraints:**
-- Read-only operations only (no DB writes, no file modifications outside /tmp)
+- Read-only operations only (no DB writes, no file modifications)
 - Max 50 lines
 - Must complete within 30 seconds
 - Must not require user input
-
-**Cleanup Guarantee:**
-- Delete in same bash command chain
-- On script error: Still delete (cleanup happens via `;` not `&&`)
-- Never leave temp directories behind
+- Use Python standard library or packages available via `uv run`
 
 ### Verification Results
 
