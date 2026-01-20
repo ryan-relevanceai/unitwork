@@ -26,7 +26,23 @@ A checkpoint is required after ANY of these events:
 
 <spec_path> #$ARGUMENTS </spec_path>
 
-**If empty:** Check `.unitwork/specs/` for in-progress specs, read the most recent one.
+**If empty:** Auto-detect spec using the following priority:
+
+1. **Branch-based detection** (preferred):
+   ```bash
+   # Find unitwork spec files that exist only on this branch (not in main)
+   git diff main --name-only --diff-filter=A 2>/dev/null | grep "^\.unitwork/specs/" | head -1
+   ```
+   If a spec file is found, use it.
+
+2. **Checkpoint commit detection** (fallback):
+   ```bash
+   # Extract verify doc paths from checkpoint commits on this branch
+   git log main..HEAD --grep="checkpoint(" --format="%B" | grep "^See: " | head -1 | sed 's/^See: //'
+   ```
+   If a verify doc path is found, look for a corresponding spec in `.unitwork/specs/` with matching date and feature name.
+
+3. **No detection** - If neither approach finds a spec, proceed to Step 0.5 (inline planning).
 
 **If argument is a feature description (not a file path):** See Step 0.5 below for minimal plan verification.
 
