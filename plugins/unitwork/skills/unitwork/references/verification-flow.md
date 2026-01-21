@@ -15,6 +15,7 @@ Code changes to verify:
 +-----------------------------------------------+
 | Changed API endpoints?                         |
 |   YES -> Test Runner + API Prober              |
+|         + Browser Automation (for e2e via UI)  |
 |         (API Prober: read-only without         |
 |          permission, mutating requires         |
 |          user confirmation)                    |
@@ -41,6 +42,30 @@ Code changes to verify:
 |         (Document changes, flag for human)     |
 +-----------------------------------------------+
 ```
+
+## Browser-Automation for All Change Types
+
+Browser-automation is NOT limited to UI changes. Use it when:
+- Verifying API endpoints through the app UI
+- Testing end-to-end flows that involve backend changes
+- Validating that frontend correctly displays data from backend
+- Any change that affects user-visible behavior
+
+**Setup for backend testing:**
+1. Determine app URL based on repository (see table below)
+2. Determine backend port (agent's server, user-specified, or default 8000)
+3. Ensure local backend is running
+4. Agent sets `localStorage.setItem('api-url', 'http://localhost:{PORT}')`
+5. Browser uses local backend for all API calls
+
+**Repository to URL mapping:**
+| Repository | App URL |
+|------------|---------|
+| `relevance-app` | `https://app-development.relevanceai.com` |
+| `relevance-chat-app` | `https://chat-development.relevanceai.com` |
+| Other | Ask user |
+
+**Note:** Both apps use the same localStorage key (`api-url`).
 
 ## Confidence Calculation
 
