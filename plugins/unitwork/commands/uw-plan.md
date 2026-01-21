@@ -71,6 +71,50 @@ If no relevant learnings found: "Memory recall complete - no relevant learnings 
 
 ---
 
+## Phase 0.5: Linear Ticket Context (If Available)
+
+Before interviewing the user, check for existing context from Linear tickets:
+
+### 1. Get Current Branch Name
+
+```bash
+git branch --show-current
+```
+
+### 2. Check for Associated Linear Ticket
+
+Parse the branch name for a ticket ID pattern and fetch ticket details:
+
+1. Look for ticket ID in branch name (e.g., `myz96/PROJ-123-feature-name` → `PROJ-123`)
+2. If ticket ID found, fetch ticket details:
+   ```
+   mcp__linear-server__get_issue(id: "PROJ-123", includeRelations: true)
+   ```
+3. Extract from ticket:
+   - Title
+   - Description
+   - Comments (for additional context)
+   - Labels
+   - Related issues
+
+### 3. Use Ticket Context
+
+If a Linear ticket exists with a description:
+- Use the ticket description as **initial context** for planning
+- Skip or minimize interview questions that are already answered in the ticket
+- Reference the ticket in the spec file
+
+Example context extraction:
+> "I found Linear ticket PROJ-123 associated with this branch. The ticket describes: [ticket description]. I'll use this as the starting point for planning. Let me know if anything has changed or if you'd like to add more details."
+
+### 4. No Ticket Found
+
+If no Linear ticket is associated:
+- Proceed with normal interview workflow
+- Optionally offer to create a Linear ticket after planning is complete
+
+---
+
 ## Phase 1: Context Gathering
 
 ### Codebase Exploration
@@ -324,6 +368,10 @@ Create the spec file:
 
 ```markdown
 # {Feature Name}
+
+## Linear Ticket
+- **Ticket ID:** {PROJ-123 or "None"}
+- **URL:** {linear_url or "N/A"}
 
 ## Purpose & Impact
 - Why this feature exists
