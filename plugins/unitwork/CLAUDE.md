@@ -39,8 +39,7 @@ unitwork/
 │   │   └── utility-pattern-auditor.md
 │   ├── verification/            # Verification subagents
 │   │   ├── test-runner.md
-│   │   ├── api-prober.md
-│   │   └── browser-automation.md
+│   │   └── api-prober.md
 │   └── review/                  # Code review specialists
 │       ├── type-safety.md
 │       ├── patterns-utilities.md
@@ -60,6 +59,10 @@ unitwork/
 │   ├── uw-fix-ci.md
 │   └── uw-fix-conflicts.md
 ├── skills/
+│   ├── agent-browser/
+│   │   └── SKILL.md
+│   ├── review-standards/
+│   │   └── ...
 │   └── unitwork/
 │       ├── SKILL.md
 │       ├── references/
@@ -114,7 +117,8 @@ Conflict analysis agents for `/uw:fix-conflicts`:
 Subagents for automated verification during `/uw:work`:
 - `test-runner.md` - Execute tests
 - `api-prober.md` - Probe API endpoints
-- `browser-automation.md` - UI verification
+
+**Note:** UI verification is now handled by the `agent-browser` skill instead of a subagent.
 
 ### review/
 Parallel specialists for `/uw:review`:
@@ -165,10 +169,10 @@ Memory operations:
 
 ### Verification Subagents
 
-Three specialized agents for verification:
+Two specialized agents + one skill for verification:
 1. **test-runner**: Execute and parse tests
 2. **api-prober**: Make API calls (read-only safe)
-3. **browser-automation**: UI verification with screenshots
+3. **agent-browser** (skill): UI verification with screenshots
 
 ### Review Agents
 
