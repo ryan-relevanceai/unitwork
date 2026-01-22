@@ -171,11 +171,11 @@ mcp__unitwork_context7__query-docs
 
 ## Verification Subagents
 
-| Subagent | Purpose | When to Use |
-|----------|---------|-------------|
+| Subagent/Skill | Purpose | When to Use |
+|----------------|---------|-------------|
 | test-runner | Execute tests | Changed test files or tested code |
 | api-prober | Probe API endpoints | Changed API endpoints |
-| browser-automation | UI verification | Changed UI components |
+| agent-browser (skill) | UI verification | Changed UI components |
 
 ## Review Agents (Parallel)
 
