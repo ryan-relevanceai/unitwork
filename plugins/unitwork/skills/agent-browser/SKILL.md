@@ -268,6 +268,85 @@ agent-browser errors
 
 Report any console errors.
 
+## Local Development Setup
+
+Full workflow to start backend, frontend, and browser for local E2E testing. The agent should determine paths and ports by inspecting the environment, but defaults are provided.
+
+### Prerequisites
+
+Before starting local dev, verify these are available:
+
+```bash
+# Node v22 (NOT v25 - native module incompatibility with @datadog/pprof)
+node --version
+
+# AWS SSO access
+aws sts get-caller-identity --profile relevance-development.AdministratorAccess
+
+# agent-browser CLI
+command -v agent-browser
+
+# pnpm
+/opt/homebrew/bin/pnpm --version
+```
+
+Defaults: backend repo at `~/code/saskatoon`, frontend repo at `~/code/asmara`, Node v22 at `$HOME/.nvm/versions/node/v22.18.0/bin`, backend port `8001`, frontend port `8081`, session name `debug`.
+
+### Phase 1: Authentication & Secrets
+
+```bash
+# AWS SSO Login (opens browser for OAuth)
+aws sso login --profile relevance-development.AdministratorAccess
+
+# Bootstrap secrets (must complete before backend starts)
+cd <nodeapi-repo> && /opt/homebrew/bin/pnpm run bootstrapsecrets
+```
+
+### Phase 2: Start Backend
+
+```bash
+cd <nodeapi-repo>/apps/nodeapi && \
+export PATH="$HOME/.nvm/versions/node/v22.18.0/bin:$PATH" && \
+export PORT=<backend-port> && \
+/opt/homebrew/bin/pnpm run dev 2>&1 | tee /tmp/backend-debug.log
+```
+
+**Ready signal:** `Server listening on <backend-port>` (timeout: 60s)
+
+### Phase 3: Start Frontend
+
+```bash
+cd <frontend-repo> && \
+export PATH="$HOME/.nvm/versions/node/v22.18.0/bin:$PATH" && \
+/opt/homebrew/bin/pnpm run web
+```
+
+**Ready signal:** `Waiting on http://localhost:<frontend-port>` (timeout: 90s)
+
+### Phase 4: Browser Setup
+
+```bash
+# Open browser in headed mode
+agent-browser --headed --session "debug" open "http://localhost:<frontend-port>"
+
+# Point to local backend
+agent-browser --session "debug" eval "localStorage.setItem('api-url', 'http://localhost:<backend-port>')"
+
+# Reload to apply
+agent-browser --session "debug" reload
+```
+
+### Phase 5: Local Dev Verification (ALL MUST PASS)
+
+| Check | How to Verify | If Fails |
+|-------|---------------|----------|
+| Network requests to localhost | Inspect network tab for `localhost:<backend-port>` | STOP, wait for user |
+| Dev project selected | Bottom left shows project with `DEV` region | STOP, wait for user |
+| User logged in | UI shows logged-in state (not login page) | STOP, wait for user to login |
+| Backend receiving requests | Check `/tmp/backend-debug.log` for `ListProjects.Context` | Check backend errors |
+
+**CRITICAL:** If ANY verification fails, STOP immediately. DO NOT refresh or retry. Wait for user help.
+
 ## Backend Testing Setup
 
 When verifying backend changes (API endpoints, services, etc.):
@@ -502,6 +581,53 @@ Start at 100%, subtract:
 5. **REPORT** console errors prominently
 6. **TIMEOUT** gracefully after 60 seconds
 7. **NEVER** use Playwright MCP - use agent-browser CLI
+
+## Backend Debugging
+
+Add `[debug]` prefix to all debug logs so they can be filtered from noisy server output:
+
+```javascript
+console.log("[debug] myVar:", myVar);
+```
+
+Filter logs:
+
+```bash
+grep -A 20 '\[debug\]' /tmp/backend-debug.log
+```
+
+## Cleanup (ALWAYS Run on Stop or Failure)
+
+```bash
+# Close browser session
+agent-browser --session "debug" close
+
+# Kill backend port
+lsof -ti:<backend-port> | xargs kill -9 2>/dev/null || true
+
+# Kill frontend port
+lsof -ti:<frontend-port> | xargs kill -9 2>/dev/null || true
+```
+
+**When to cleanup:** Before retrying failed steps, when stopping, when switching config, on ANY failure.
+
+## Failure Protocol
+
+1. **Stop immediately** - Do not refresh browser or spin up new instances
+2. **Run cleanup** - Execute full cleanup procedure above
+3. **Document failure** - Note which step failed and error messages
+4. **Wait for user** - Do not attempt self-recovery
+
+## Troubleshooting
+
+| Error | Cause | Solution |
+|-------|-------|----------|
+| `No native build for abi=141` | Node v25 | Switch to Node v22 |
+| `CredentialsProviderError: Login required` | AWS SSO expired | Re-run `aws sso login --profile relevance-development.AdministratorAccess` |
+| `EADDRINUSE: address already in use` | Port occupied | `lsof -ti:<port> \| xargs kill -9` |
+| `command not found: _load_nvm` | Shell config issue | Use full path to pnpm (`/opt/homebrew/bin/pnpm`) |
+| `Unexpected end of JSON input` (codegen) | Missing generated file | `echo '{}' > apps/nodeapi/src/codegeneration/generated_openapi_schema.json` |
+| Turbo cache stale | Stale build cache | `rm -rf .turbo node_modules/.cache` |
 
 ## Examples
 
