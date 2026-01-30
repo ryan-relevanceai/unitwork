@@ -48,7 +48,7 @@ unitwork/
 │       ├── security.md
 │       ├── simplicity.md
 │       └── memory-validation.md
-├── commands/                    # Slash commands (9)
+├── commands/                    # Slash commands (11)
 │   ├── uw-plan.md
 │   ├── uw-work.md
 │   ├── uw-review.md
@@ -57,10 +57,10 @@ unitwork/
 │   ├── uw-pr.md
 │   ├── uw-action-comments.md
 │   ├── uw-fix-ci.md
-│   └── uw-fix-conflicts.md
+│   ├── uw-fix-conflicts.md
+│   ├── uw-investigate.md
+│   └── uw-browser-test.md
 ├── skills/
-│   ├── agent-browser/
-│   │   └── SKILL.md
 │   ├── review-standards/
 │   │   └── ...
 │   └── unitwork/
@@ -118,7 +118,7 @@ Subagents for automated verification during `/uw:work`:
 - `test-runner.md` - Execute tests
 - `api-prober.md` - Probe API endpoints
 
-**Note:** UI verification is now handled by the `agent-browser` skill instead of a subagent.
+**Note:** UI verification is now handled by the `/uw:browser-test` command instead of a subagent.
 
 ### review/
 Parallel specialists for `/uw:review`:
@@ -169,10 +169,10 @@ Memory operations:
 
 ### Verification Subagents
 
-Two specialized agents + one skill for verification:
+Two specialized agents + one command for verification:
 1. **test-runner**: Execute and parse tests
 2. **api-prober**: Make API calls (read-only safe)
-3. **agent-browser** (skill): UI verification with screenshots
+3. **/uw:browser-test** (command): UI verification with screenshots
 
 ### Review Agents
 

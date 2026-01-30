@@ -175,7 +175,7 @@ mcp__unitwork_context7__query-docs
 |----------------|---------|-------------|
 | test-runner | Execute tests | Changed test files or tested code |
 | api-prober | Probe API endpoints | Changed API endpoints |
-| agent-browser (skill) | UI verification | Changed UI components |
+| /uw:browser-test (command) | UI verification | Changed UI components |
 
 ## Review Agents (Parallel)
 

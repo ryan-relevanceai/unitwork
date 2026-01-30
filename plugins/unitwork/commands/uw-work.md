@@ -184,7 +184,7 @@ Launch appropriate verification subagents based on what changed.
 
 **Changed UI components?**
 - Launch `test-runner` agent
-- Invoke `agent-browser` skill (screenshots + element verification)
+- Invoke `/uw:browser-test` command (screenshots + element verification)
 
 **Changed database schema/migrations?**
 - Launch `test-runner` only
