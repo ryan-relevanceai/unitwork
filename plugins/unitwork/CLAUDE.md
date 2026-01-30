@@ -169,7 +169,7 @@ Memory operations:
 
 ### Verification Subagents
 
-Two specialized agents + one skill for verification:
+Two specialized agents + one command for verification:
 1. **test-runner**: Execute and parse tests
 2. **api-prober**: Make API calls (read-only safe)
 3. **/uw:browser-test** (command): UI verification with screenshots
