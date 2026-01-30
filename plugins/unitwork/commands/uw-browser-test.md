@@ -1,6 +1,7 @@
 ---
-name: agent-browser
+name: uw:browser-test
 description: "Browser automation using Vercel's agent-browser CLI. Use for web interaction, form filling, screenshots, scraping, and UI/backend verification. Supports ref-based selection, parallel sessions, and headed debugging. Includes verification workflows with confidence assessment. Triggers on: browse website, fill form, click button, take screenshot, scrape page, web automation, UI verification."
+argument-hint: "<url or task, e.g., 'verify login at https://app.example.com'>"
 ---
 
 # agent-browser: CLI Browser Automation
