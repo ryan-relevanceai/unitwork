@@ -206,7 +206,7 @@ Launch appropriate verification subagents based on what changed. See [verificati
 
 - **Changed test files?** → Launch `test-runner`
 - **Changed API endpoints?** → Launch `test-runner` + `api-prober`
-- **Changed UI components?** → Launch `test-runner` + invoke `agent-browser` skill
+- **Changed UI components?** → Launch `test-runner` + invoke `/uw:browser-test` command
 
 ### 5.3 Calculate Confidence
 
