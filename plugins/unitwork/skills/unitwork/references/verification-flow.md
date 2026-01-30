@@ -4,44 +4,15 @@ This document is the single source of truth for verification-related protocols i
 
 ## Which Verification Subagent to Use
 
-```
-Code changes to verify:
-                    |
-+-----------------------------------------------+
-| Changed test files?                            |
-|   YES -> Test Runner (run the changed tests)   |
-+-----------------------------------------------+
-                    |
-+-----------------------------------------------+
-| Changed API endpoints?                         |
-|   YES -> Test Runner + API Prober              |
-|         + Browser Automation (for e2e via UI)  |
-|         (API Prober: read-only without         |
-|          permission, mutating requires         |
-|          user confirmation)                    |
-+-----------------------------------------------+
-                    |
-+-----------------------------------------------+
-| Changed UI components?                         |
-|   YES -> Test Runner + Browser Automation      |
-|         (Browser: screenshots + element        |
-|          verification, flag layout for         |
-|          human review)                         |
-+-----------------------------------------------+
-                    |
-+-----------------------------------------------+
-| Changed database schema/migrations?            |
-|   YES -> Test Runner only                      |
-|         (NEVER run migrations automatically)   |
-|         (Flag for human verification)          |
-+-----------------------------------------------+
-                    |
-+-----------------------------------------------+
-| Changed configuration/environment?             |
-|   YES -> No automated verification             |
-|         (Document changes, flag for human)     |
-+-----------------------------------------------+
-```
+**When changes span multiple categories, launch ALL applicable subagents in parallel using multiple Task tool calls in the same response.**
+
+| Change Type | Subagents | Safety Flags |
+|-------------|-----------|--------------|
+| Test files | `test-runner` | None |
+| API endpoints | `test-runner` + `api-prober` + `agent-browser` (e2e via UI) | API Prober: read-only without permission, mutating requires user confirmation |
+| UI components | `test-runner` + `agent-browser` (screenshots + element verification) | Flag layout changes for human review |
+| Database schema/migrations | `test-runner` only | NEVER run migrations automatically; Flag for human verification |
+| Configuration/environment | No automated verification | Document changes; Flag for human review |
 
 ## Browser-Automation for All Change Types
 
