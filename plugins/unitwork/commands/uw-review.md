@@ -234,6 +234,8 @@ Document verification decisions internally:
 
 This verification step prevents wasting user time on false positives and ensures all presented findings are actionable.
 
+Findings targeting different files can be verified in parallel. When multiple findings exist, read files for independent findings simultaneously using parallel tool calls before classifying.
+
 ## Classify Findings by Scope
 
 Cross-reference each finding with the diff to classify scope:

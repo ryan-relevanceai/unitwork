@@ -171,7 +171,9 @@ This ensures implementations follow official patterns rather than guessed approa
 
 ### Step 2: Verify
 
-Launch appropriate verification subagents based on what changed:
+Launch appropriate verification subagents based on what changed.
+
+**When changes span multiple categories below, launch all applicable agents in parallel using multiple Task tool calls in the same response.**
 
 **Changed test files?**
 - Launch `test-runner` agent
