@@ -16,7 +16,7 @@ Human-in-the-loop verification framework for AI-assisted development. Breaks wor
 | Component | Count |
 |-----------|-------|
 | Agents | 16 |
-| Commands | 9 |
+| Commands | 12 |
 | Skills | 2 |
 | MCP Servers | 1 |
 
@@ -162,6 +162,9 @@ Extracts learnings from the implementation and stores them for future sessions. 
 | `/uw:action-comments` | Bulk resolve GitHub PR comments |
 | `/uw:fix-ci` | Autonomously fix failing CI with analyze→fix→commit→push→verify loop |
 | `/uw:fix-conflicts` | Intelligent rebase conflict resolution with multi-agent analysis |
+| `/uw:investigate` | Read-only codebase investigation with memory integration |
+| `/uw:browser-test` | Browser automation for UI verification and testing |
+| `/uw:harvest` | Scrape merged PR review comments, synthesize insights, store in Hindsight |
 
 #### /uw:bootstrap
 
@@ -223,6 +226,19 @@ Intelligently rebases onto the default branch using multi-agent analysis to reso
 5. **Verification** - Runs affected tests after each resolution
 
 **Compounds:** Retains successful resolution patterns to Hindsight for similar future conflicts.
+
+#### /uw:harvest
+
+Scrapes inline review comments and review bodies from merged PRs across GitHub repos, synthesizes them into actionable insights, and stores them in per-repo Hindsight banks. Designed to run each morning.
+
+**Key phases:**
+1. **Date Calculation** - Determines previous business day (Mon→Fri, Tue-Fri→previous day), or uses `--since` override
+2. **PR Discovery** - Uses GitHub Search API to find merged PRs in the date range per repo
+3. **Comment Collection** - Fetches inline review comments and review bodies, filtering out bots and trivial comments
+4. **Synthesis** - Groups comments into insight categories (recurring themes, pattern recommendations, gotchas, testing gaps, architecture feedback)
+5. **Storage** - Stores each insight to the source repo's Hindsight bank
+
+**Compounds:** Stores review insights into each source repo's bank, so future `/uw:plan` and `/uw:work` sessions recall team review patterns.
 
 ## Agents
 
