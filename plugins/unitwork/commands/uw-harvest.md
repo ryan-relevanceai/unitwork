@@ -30,6 +30,43 @@ If a repo is not found or inaccessible, warn and skip it: "Warning: Could not ac
 
 ---
 
+## STEP 0: Memory Recall (MANDATORY - DO NOT SKIP)
+
+**This is the first thing you do. Before fetching PRs. Before calculating dates. Before anything else.**
+
+Memory recall ensures you don't store duplicate insights from previous harvest runs and provides context for better synthesis.
+
+> **If you skip this:** You may retain insights that duplicate what previous harvests already captured, reducing signal-to-noise in Hindsight memory.
+
+### Execute Memory Recall NOW
+
+For each validated repo, recall existing harvest insights to check for overlap:
+
+```bash
+# Recall prior harvest insights for each repo being harvested
+hindsight memory recall "{repo_name}" "HARVEST insights, code review patterns, recurring review themes" --budget low --include-chunks
+```
+
+Where `{repo_name}` is the repo name portion of each `owner/repo` argument (e.g., `relevance-app` from `RelevanceAI/relevance-app`).
+
+### Display Learnings
+
+After recall, display any existing harvest insights:
+
+```
+**Prior Harvest Insights for {repo_name}:**
+- {existing insight or pattern}
+- {another existing insight}
+```
+
+If no prior insights found: "No prior harvest insights found for {repo_name}."
+
+Use these during Step 4 synthesis to **avoid duplicating** already-stored patterns. If a new comment matches an existing insight, skip it or note it as reinforcing an existing pattern rather than creating a new entry.
+
+**DO NOT PROCEED to date calculation until memory recall is complete for all repos.**
+
+---
+
 ## Step 1: Calculate Date Range
 
 Determine the target date for scraping merged PRs.
@@ -175,6 +212,8 @@ For each synthesized insight, store it in the corresponding repo's Hindsight ban
 
 **Bank name derivation:** Extract the repo name (portion after `/`) from the `owner/repo` argument.
 - `RelevanceAI/relevance-app` → bank name `relevance-app`
+
+**Note:** This differs from the standard bank name derivation (which uses `git remote origin URL`) because uw-harvest operates on remote repos, not the local checkout. The extracted name matches in most cases since GitHub repo names are the same slug used in remote URLs. If a repo uses a fork or SSH alias with a different name, the bank names may diverge.
 
 ```bash
 # Store each insight separately
