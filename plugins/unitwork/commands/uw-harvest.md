@@ -1,7 +1,7 @@
 ---
 name: uw:harvest
 description: Scrape merged PR review comments from GitHub repos, synthesize insights, and store in Hindsight memory
-argument-hint: "<owner/repo> [owner/repo ...] [--since YYYY-MM-DD]"
+argument-hint: "<owner/repo> [owner/repo ...] [--days N] [--since YYYY-MM-DD]"
 ---
 
 # Harvest PR Review Insights
@@ -10,7 +10,7 @@ argument-hint: "<owner/repo> [owner/repo ...] [--since YYYY-MM-DD]"
 
 **Note: The current year is 2026.**
 
-This command scrapes inline code review comments and review bodies from merged PRs across one or more GitHub repos, synthesizes them into actionable insights, and stores them in each repo's Hindsight memory bank. Designed to run each morning to capture the previous business day's review feedback.
+This command scrapes inline code review comments and review bodies from merged PRs across one or more GitHub repos, synthesizes them into actionable insights, and stores them in each repo's Hindsight memory bank.
 
 ## Argument Parsing
 
@@ -18,7 +18,8 @@ This command scrapes inline code review comments and review bodies from merged P
 
 Parse the arguments into:
 - **Repo list**: All arguments matching `owner/repo` pattern (e.g., `RelevanceAI/relevance-app`)
-- **`--since` override**: If `--since YYYY-MM-DD` is present, use that date instead of calculating the previous business day
+- **`--days N`**: Number of days to look back (default: 1). E.g., `--days 7` scrapes the last week
+- **`--since YYYY-MM-DD`**: Override with a specific start date (takes precedence over `--days`)
 
 **If no repos provided:** Ask the user: "Which repos should I harvest? Provide one or more in `owner/repo` format (e.g., `RelevanceAI/relevance-app`)."
 
@@ -69,37 +70,25 @@ Use these during Step 4 synthesis to **avoid duplicating** already-stored patter
 
 ## Step 1: Calculate Date Range
 
-Determine the target date for scraping merged PRs.
+Determine the date range for scraping merged PRs.
 
-**If `--since` was provided:** Use that date directly.
-
-**Otherwise, calculate the previous business day:**
+**Priority order:**
+1. If `--since YYYY-MM-DD` was provided: Use that as the start date
+2. If `--days N` was provided: Look back N days from today
+3. Default: Look back 1 day
 
 ```bash
-# Get day of week (1=Mon, 7=Sun)
-DOW=$(date +%u)
+# Calculate start date based on --days N (default: 1)
+DAYS=${DAYS:-1}
+SINCE_DATE=$(date -v-${DAYS}d +%Y-%m-%d 2>/dev/null || date -d "${DAYS} days ago" +%Y-%m-%d)
+TODAY=$(date +%Y-%m-%d)
 
-# Calculate previous business day
-if [ "$DOW" -eq 1 ]; then
-  # Monday: look back to Friday (3 days)
-  SINCE_DATE=$(date -v-3d +%Y-%m-%d 2>/dev/null || date -d '3 days ago' +%Y-%m-%d)
-elif [ "$DOW" -eq 7 ]; then
-  # Sunday: look back to Friday (2 days)
-  SINCE_DATE=$(date -v-2d +%Y-%m-%d 2>/dev/null || date -d '2 days ago' +%Y-%m-%d)
-elif [ "$DOW" -eq 6 ]; then
-  # Saturday: look back to Friday (1 day)
-  SINCE_DATE=$(date -v-1d +%Y-%m-%d 2>/dev/null || date -d '1 day ago' +%Y-%m-%d)
-else
-  # Tue-Fri: look back 1 day
-  SINCE_DATE=$(date -v-1d +%Y-%m-%d 2>/dev/null || date -d '1 day ago' +%Y-%m-%d)
-fi
-
-echo "Harvesting merged PRs from: $SINCE_DATE"
+echo "Harvesting merged PRs from: $SINCE_DATE to $TODAY"
 ```
 
-Report the target date to the user:
+Report the date range to the user:
 ```
-Harvesting merged PRs from: {SINCE_DATE}
+Harvesting merged PRs from {SINCE_DATE} to {TODAY}
 Repos: {repo1}, {repo2}, ...
 ```
 
@@ -107,15 +96,15 @@ Repos: {repo1}, {repo2}, ...
 
 ## Step 2: Fetch Merged PRs Per Repo
 
-For each repo in the repo list, fetch merged PRs from the target date using the GitHub Search API.
+For each repo in the repo list, fetch merged PRs from the date range using the GitHub Search API.
 
 ```bash
-# Find merged PRs on the target date
-gh api 'search/issues?q=repo:{owner}/{repo}+is:pr+is:merged+merged:{SINCE_DATE}&per_page=100' \
+# Find merged PRs in the date range
+gh api 'search/issues?q=repo:{owner}/{repo}+is:pr+is:merged+merged:{SINCE_DATE}..{TODAY}&per_page=100' \
   --jq '.items[] | {number: .number, title: .title, user: .user.login}'
 ```
 
-**If zero results for a repo:** Log `"No merged PRs found for {owner}/{repo} on {SINCE_DATE} — skipping."` and continue to the next repo.
+**If zero results for a repo:** Log `"No merged PRs found for {owner}/{repo} from {SINCE_DATE} to {TODAY} — skipping."` and continue to the next repo.
 
 **If the API call fails:** Log `"Warning: Failed to fetch PRs for {owner}/{repo} — skipping."` and continue to the next repo.
 
@@ -149,7 +138,7 @@ gh api 'repos/{owner}/{repo}/pulls/{pr_number}/reviews?per_page=100' \
 Collect all comments into a structured list per repo:
 
 ```
-## {owner}/{repo} — {SINCE_DATE}
+## {owner}/{repo} — {SINCE_DATE} to {TODAY}
 
 ### PR #{number}: {title} (by @{user})
 
@@ -238,7 +227,7 @@ Where `{n}` is a sequential number (1, 2, 3...) for each insight within a repo o
 After processing all repos, present the harvest summary:
 
 ```
-Harvest complete for {SINCE_DATE}
+Harvest complete for {SINCE_DATE} to {TODAY}
 
 {For each repo with insights:}
 **{owner}/{repo}** — {X} merged PRs, {Y} review comments collected
