@@ -229,10 +229,10 @@ Intelligently rebases onto the default branch using multi-agent analysis to reso
 
 #### /uw:harvest
 
-Scrapes inline review comments and review bodies from merged PRs across GitHub repos, synthesizes them into actionable insights, and stores them in per-repo Hindsight banks. Designed to run each morning.
+Scrapes inline review comments and review bodies from merged PRs across GitHub repos, synthesizes them into actionable insights, and stores them in per-repo Hindsight banks.
 
 **Key phases:**
-1. **Date Calculation** - Determines previous business day (Mon→Fri, Tue-Fri→previous day), or uses `--since` override
+1. **Date Calculation** - Looks back N days (default: 1), or uses `--since` / `--days` overrides
 2. **PR Discovery** - Uses GitHub Search API to find merged PRs in the date range per repo
 3. **Comment Collection** - Fetches inline review comments and review bodies, filtering out bots and trivial comments
 4. **Synthesis** - Groups comments into insight categories (recurring themes, pattern recommendations, gotchas, testing gaps, architecture feedback)
