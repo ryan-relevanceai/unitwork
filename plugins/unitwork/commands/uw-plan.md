@@ -194,6 +194,74 @@ mcp__unitwork_context7__query-docs
 - Project-specific patterns (Hindsight has those)
 - Simple/well-known APIs you're confident about
 
+### Hypothesis Formation (If Investigation Needed)
+
+After synthesizing exploration findings, assess whether hypotheses should be formed about existing system behavior.
+
+**Form hypotheses when ANY of these signals detected:**
+- Exploration agents returned conflicting approaches for the same functionality
+- Multiple valid implementation paths identified with no clear winner
+- Feature modifies existing logic with unclear behavior (not purely additive)
+- Exploration found code but couldn't determine why it works that way
+
+**Skip hypothesis formation when ALL true:**
+- Single clear pattern found to follow
+- Feature is purely additive (new files, no modifications to existing logic)
+- Exploration agents aligned on approach
+
+#### Hypothesis Format
+
+If investigation is needed, form 1-3 hypotheses:
+
+```
+**Pre-Planning Hypotheses:**
+
+1. **{Hypothesis about how existing system works}**
+   - Evidence: {what exploration found that supports this}
+   - To verify during /uw:work: {which tests to run, what behavior to check}
+
+2. **{Alternative hypothesis if first might be wrong}**
+   - Evidence: {supporting evidence}
+   - To verify during /uw:work: {verification approach}
+```
+
+#### Read-Only Verification
+
+Verify hypotheses through analysis, not execution:
+- Trace code paths by reading files
+- Analyze test files to understand expected behavior (without running)
+- Check git history for context on why code works this way
+- Spawn additional exploration agents for deeper analysis if needed
+
+#### Interview Integration
+
+Before standard interview questions, confirm hypotheses with user:
+
+```
+"Before we discuss requirements, I'd like to confirm my understanding of how the existing system works:
+
+**Hypotheses:**
+1. {hypothesis}
+2. {hypothesis}
+
+Are these correct, or should I adjust my understanding?"
+```
+
+- **If user confirms:** Proceed to standard interview
+- **If user rejects:** Ask clarifying questions, reform hypothesis, re-confirm
+
+#### Spec Integration
+
+Unverified hypotheses become assumptions in the spec. Add after "### Out of Scope":
+
+```markdown
+### Assumptions (To Verify During Implementation)
+- **{Assumption}**: Verify by {approach during /uw:work}
+- **{Assumption}**: Verify by {approach during /uw:work}
+
+*These assumptions were formed during planning. /uw:work should validate before proceeding with dependent work.*
+```
+
 ## Phase 2: Interview
 
 See [interview-workflow.md](../skills/unitwork/references/interview-workflow.md) for the complete interview protocol including confidence-based depth assessment, question categories, and stop conditions.
@@ -390,6 +458,11 @@ Create the spec file:
 ### Out of Scope
 - Explicitly excluded items
 - Noted refactors (tech debt for future)
+
+### Assumptions (To Verify During Implementation)
+- **{Assumption}**: Verify by {approach during /uw:work}
+
+*These assumptions were formed during planning. /uw:work should validate before proceeding with dependent work.*
 
 ## Technical Approach
 - Architectural decisions
