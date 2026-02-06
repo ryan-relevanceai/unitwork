@@ -72,6 +72,24 @@ Use /uw:plan or /uw:work to implement changes after investigation.
 
 ---
 
+## When to Use /uw:investigate vs /uw:plan
+
+| Scenario | Command | Why |
+|----------|---------|-----|
+| "Why is X slow?" | /uw:investigate | Pure understanding, can run tests to verify |
+| "Fix the slow X" | /uw:plan | Has implementation goal |
+| "Understand how X works before deciding what to do" | /uw:investigate | No commitment to implement yet |
+| "Add feature Y" | /uw:plan | Has implementation goal |
+| "Debug why tests are failing" | /uw:investigate | Debugging, may need to run tests |
+| "Refactor the auth module" | /uw:plan | Has implementation goal |
+
+**Key difference:**
+- `/uw:investigate` can run tests and scripts to verify hypotheses
+- `/uw:plan` uses read-only analysis and user confirmation for hypothesis verification
+- If you have an implementation goal, use `/uw:plan` - it now includes hypothesis formation
+
+---
+
 ## STEP 0: Memory Recall (MANDATORY - DO NOT SKIP)
 
 **This is the first thing you do. Before exploration. Before any analysis. Before anything else.**
