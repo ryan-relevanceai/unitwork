@@ -55,8 +55,8 @@ Check if this repo already has Unit Work setup:
 # Check .unitwork dir
 test -d .unitwork && UNITWORK_EXISTS="yes" || UNITWORK_EXISTS="no"
 
-# Derive bank name
-BANK=$(git config --get remote.origin.url 2>/dev/null | sed 's/.*\///' | sed 's/\.git$//' || basename "$(git worktree list 2>/dev/null | head -1 | awk '{print $1}')" || basename "$(pwd)")
+# Derive bank name (config override → git remote → worktree → pwd)
+BANK=$(jq -re '.bankName // empty' .unitwork/.bootstrap.json 2>/dev/null || git config --get remote.origin.url 2>/dev/null | sed 's/.*\///' | sed 's/\.git$//' || basename "$(git worktree list 2>/dev/null | head -1 | awk '{print $1}')" || basename "$(pwd)")
 
 # Validate bank name contains only safe characters
 if ! [[ "$BANK" =~ ^[a-zA-Z0-9._-]+$ ]]; then
@@ -72,7 +72,7 @@ BANK_EXISTS=$(hindsight bank list -o json 2>&1 | grep -q "\"bank_id\": \"$BANK\"
 
 Use AskUserQuestion to prompt:
 
-**Question:** "Existing setup detected. What would you like to do?"
+**Question:** "Existing setup detected (bank: `$BANK`). What would you like to do?"
 
 **Options:**
 - **Full setup** - Re-run exploration and import team learnings
@@ -86,19 +86,53 @@ Use AskUserQuestion to prompt:
 
 **If NEITHER exists:** Continue to Step 2 (fresh setup).
 
-## Step 2: Derive Bank Name
+## Step 2: Select or Create Bank
 
-The bank name is derived from the git remote URL (handles worktrees), falling back to main worktree name or directory:
+List existing Hindsight banks and let the user choose:
+
 ```bash
-# Inline derivation (handles worktrees - all worktrees share same bank)
-$(git config --get remote.origin.url 2>/dev/null | sed 's/.*\///' | sed 's/\.git$//' || basename "$(git worktree list 2>/dev/null | head -1 | awk '{print $1}')" || basename "$(pwd)")
+# Get existing banks
+BANKS_JSON=$(hindsight bank list -o json 2>&1)
+BANK_NAMES=$(echo "$BANKS_JSON" | jq -r '.[].bank_id' 2>/dev/null)
+
+# Derive default name from git remote (for "Create new" option)
+GIT_DERIVED=$(git config --get remote.origin.url 2>/dev/null | sed 's/.*\///' | sed 's/\.git$//' || basename "$(git worktree list 2>/dev/null | head -1 | awk '{print $1}')" || basename "$(pwd)")
 ```
 
-## Step 3: Configure Bank Background
+Use AskUserQuestion to prompt:
+
+**Question:** "Select a Hindsight bank for this repo:"
+
+**Options:** List each existing bank name from `$BANK_NAMES`, plus:
+- **Create new bank** (`<git-derived-name>`)
+
+**If user selects an existing bank:**
+- Set `BANK` to the selected bank name
+- Skip Step 3 (bank already has a disposition)
+- Continue to Step 4
+
+**If user selects "Create new bank":**
+- Set `BANK` to `$GIT_DERIVED`
+- Continue to Step 3 (configure bank background)
+
+**After selection**, store the bank name in `.unitwork/.bootstrap.json`:
+```bash
+mkdir -p .unitwork
+if [ -f ".unitwork/.bootstrap.json" ]; then
+    jq --arg bn "$BANK" '.bankName = $bn' .unitwork/.bootstrap.json > .unitwork/.bootstrap.json.tmp && \
+    mv .unitwork/.bootstrap.json.tmp .unitwork/.bootstrap.json
+else
+    echo "{\"bankName\": \"$BANK\"}" > .unitwork/.bootstrap.json
+fi
+```
+
+## Step 3: Configure Bank Background (New Banks Only)
+
+**Skip this step if the user selected an existing bank in Step 2.**
 
 ```bash
 # Set bank background (disposition is automatically inferred from background content)
-hindsight bank background "$(git config --get remote.origin.url 2>/dev/null | sed 's/.*\///' | sed 's/\.git$//' || basename "$(git worktree list 2>/dev/null | head -1 | awk '{print $1}')" || basename "$(pwd)")" "I am a development assistant working on this codebase.
+hindsight bank background "$BANK" "I am a development assistant working on this codebase.
 I track file locations, architectural patterns, gotchas, and decision rationale to help
 navigate and understand the codebase efficiently.
 I maintain high skepticism about past assumptions since code changes fast.
@@ -173,7 +207,7 @@ Report: test framework, utility locations, and reusable patterns discovered."
 ### Retain Discoveries
 
 ```bash
-hindsight memory retain "$(git config --get remote.origin.url 2>/dev/null | sed 's/.*\///' | sed 's/\.git$//' || basename "$(git worktree list 2>/dev/null | head -1 | awk '{print $1}')" || basename "$(pwd)")" "Codebase structure:
+hindsight memory retain "$BANK" "Codebase structure:
 - Entry point: <file>
 - Models in: <path>
 - Routes defined in: <path>
@@ -312,8 +346,8 @@ Show list of files to import.
 If user confirms (selects "Yes, import all"):
 
 ```bash
-# Derive bank name
-BANK=$(git config --get remote.origin.url 2>/dev/null | sed 's/.*\///' | sed 's/\.git$//' || basename "$(git worktree list 2>/dev/null | head -1 | awk '{print $1}')" || basename "$(pwd)")
+# Derive bank name (config override → git remote → worktree → pwd)
+BANK=$(jq -re '.bankName // empty' .unitwork/.bootstrap.json 2>/dev/null || git config --get remote.origin.url 2>/dev/null | sed 's/.*\///' | sed 's/\.git$//' || basename "$(git worktree list 2>/dev/null | head -1 | awk '{print $1}')" || basename "$(pwd)")
 
 # Create temp directory and copy filtered files
 TEMP_DIR=$(mktemp -d)
@@ -343,14 +377,14 @@ TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 # Create .unitwork if needed
 mkdir -p .unitwork
 
-# Create or update .bootstrap.json
+# Create or update .bootstrap.json (preserves bankName and other fields)
 if [ -f ".unitwork/.bootstrap.json" ]; then
-    # Update existing file preserving other fields
+    # Update existing file preserving other fields (including bankName)
     jq --arg ts "$TIMESTAMP" '.lastLearningsImport = $ts' .unitwork/.bootstrap.json > .unitwork/.bootstrap.json.tmp && \
     mv .unitwork/.bootstrap.json.tmp .unitwork/.bootstrap.json
 else
-    # Create new file
-    echo "{\"lastLearningsImport\": \"$TIMESTAMP\"}" > .unitwork/.bootstrap.json
+    # Create new file with bank name
+    jq -n --arg ts "$TIMESTAMP" --arg bn "$BANK" '{bankName: $bn, lastLearningsImport: $ts}' > .unitwork/.bootstrap.json
 fi
 ```
 
