@@ -36,7 +36,8 @@ Memory recall ensures you don't repeat failed fix attempts from previous session
 
 ```bash
 # MANDATORY: Recall CI fix learnings (handles worktrees)
-hindsight memory recall "$(git config --get remote.origin.url 2>/dev/null | sed 's/.*\///' | sed 's/\.git$//' || basename "$(git worktree list 2>/dev/null | head -1 | awk '{print $1}')" || basename "$(pwd)")" "CI failures, fix attempts, build errors, test failures, lint errors" --budget mid --include-chunks
+BANK=$(jq -re '.bankName // empty' .unitwork/.bootstrap.json 2>/dev/null || git config --get remote.origin.url 2>/dev/null | sed 's/.*\///' | sed 's/\.git$//' || basename "$(git worktree list 2>/dev/null | head -1 | awk '{print $1}')" || basename "$(pwd)")
+hindsight memory recall "$BANK" "CI failures, fix attempts, build errors, test failures, lint errors" --budget mid --include-chunks
 ```
 
 ### Display Learnings
@@ -410,7 +411,8 @@ When CI passes or the user chooses to stop:
 Retain learnings:
 
 ```bash
-hindsight memory retain "$(git config --get remote.origin.url 2>/dev/null | sed 's/.*\///' | sed 's/\.git$//' || basename "$(git worktree list 2>/dev/null | head -1 | awk '{print $1}')" || basename "$(pwd)")" "CI fix: {what was fixed}. Approach: {what worked}. {any gotchas}." \
+BANK=$(jq -re '.bankName // empty' .unitwork/.bootstrap.json 2>/dev/null || git config --get remote.origin.url 2>/dev/null | sed 's/.*\///' | sed 's/\.git$//' || basename "$(git worktree list 2>/dev/null | head -1 | awk '{print $1}')" || basename "$(pwd)")
+hindsight memory retain "$BANK" "CI fix: {what was fixed}. Approach: {what worked}. {any gotchas}." \
   --context "CI fix learning" \
   --doc-id "learn-ci-fix-<date>" \
   --async

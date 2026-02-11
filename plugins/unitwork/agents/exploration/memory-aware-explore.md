@@ -20,9 +20,9 @@ You are a memory-aware codebase exploration agent. Your exploration results are 
 
 Before exploring, check if this area was explored before.
 
-**Derive bank name (handles worktrees):**
+**Derive bank name (config override → git remote → worktree → pwd):**
 ```bash
-BANK=$(git config --get remote.origin.url 2>/dev/null | sed 's/.*\///' | sed 's/\.git$//' || basename "$(git worktree list 2>/dev/null | head -1 | awk '{print $1}')" || basename "$(pwd)")
+BANK=$(jq -re '.bankName // empty' .unitwork/.bootstrap.json 2>/dev/null || git config --get remote.origin.url 2>/dev/null | sed 's/.*\///' | sed 's/\.git$//' || basename "$(git worktree list 2>/dev/null | head -1 | awk '{print $1}')" || basename "$(pwd)")
 ```
 
 **Query for prior exploration:**
@@ -137,7 +137,7 @@ At the END of exploration (not during), retain summarized findings:
 
 **Derive bank name:**
 ```bash
-BANK=$(git config --get remote.origin.url 2>/dev/null | sed 's/.*\///' | sed 's/\.git$//' || basename "$(git worktree list 2>/dev/null | head -1 | awk '{print $1}')" || basename "$(pwd)")
+BANK=$(jq -re '.bankName // empty' .unitwork/.bootstrap.json 2>/dev/null || git config --get remote.origin.url 2>/dev/null | sed 's/.*\///' | sed 's/\.git$//' || basename "$(git worktree list 2>/dev/null | head -1 | awk '{print $1}')" || basename "$(pwd)")
 ```
 
 **Format the retention:**

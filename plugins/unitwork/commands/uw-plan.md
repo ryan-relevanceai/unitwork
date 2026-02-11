@@ -52,7 +52,8 @@ Memory recall is the foundation of compounding. Without it, you lose all accumul
 
 ```bash
 # MANDATORY: Recall relevant context BEFORE exploration (handles worktrees)
-hindsight memory recall "$(git config --get remote.origin.url 2>/dev/null | sed 's/.*\///' | sed 's/\.git$//' || basename "$(git worktree list 2>/dev/null | head -1 | awk '{print $1}')" || basename "$(pwd)")" "location of code related to: <feature_description>" --budget mid --include-chunks
+BANK=$(jq -re '.bankName // empty' .unitwork/.bootstrap.json 2>/dev/null || git config --get remote.origin.url 2>/dev/null | sed 's/.*\///' | sed 's/\.git$//' || basename "$(git worktree list 2>/dev/null | head -1 | awk '{print $1}')" || basename "$(pwd)")
+hindsight memory recall "$BANK" "location of code related to: <feature_description>" --budget mid --include-chunks
 ```
 
 ### Display Learnings
@@ -500,7 +501,8 @@ Create the spec file:
 Retain discoveries to Hindsight:
 
 ```bash
-hindsight memory retain "$(git config --get remote.origin.url 2>/dev/null | sed 's/.*\///' | sed 's/\.git$//' || basename "$(git worktree list 2>/dev/null | head -1 | awk '{print $1}')" || basename "$(pwd)")" "Planning <feature>: Discovered <files/patterns/decisions>. Key integration points: <details>." \
+BANK=$(jq -re '.bankName // empty' .unitwork/.bootstrap.json 2>/dev/null || git config --get remote.origin.url 2>/dev/null | sed 's/.*\///' | sed 's/\.git$//' || basename "$(git worktree list 2>/dev/null | head -1 | awk '{print $1}')" || basename "$(pwd)")
+hindsight memory retain "$BANK" "Planning <feature>: Discovered <files/patterns/decisions>. Key integration points: <details>." \
   --context "planning <feature>" \
   --doc-id "plan-<feature-name>" \
   --async
