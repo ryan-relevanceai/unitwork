@@ -101,7 +101,7 @@ Memory recall ensures you don't repeat failed investigation approaches or miss p
 ### Execute Memory Recall NOW
 
 ```bash
-# MANDATORY: Recall relevant investigation context (handles worktrees)
+# MANDATORY: Recall relevant investigation context (config override → git remote → worktree → pwd)
 BANK=$(jq -re '.bankName // empty' .unitwork/.bootstrap.json 2>/dev/null || git config --get remote.origin.url 2>/dev/null | sed 's/.*\///' | sed 's/\.git$//' || basename "$(git worktree list 2>/dev/null | head -1 | awk '{print $1}')" || basename "$(pwd)")
 hindsight memory recall "$BANK" "investigation of: <investigation_goal>, related bugs, root causes, debugging approaches" --budget mid --include-chunks
 ```

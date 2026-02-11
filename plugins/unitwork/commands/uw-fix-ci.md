@@ -35,7 +35,7 @@ Memory recall ensures you don't repeat failed fix attempts from previous session
 ### Execute Memory Recall NOW
 
 ```bash
-# MANDATORY: Recall CI fix learnings (handles worktrees)
+# MANDATORY: Recall CI fix learnings (config override → git remote → worktree → pwd)
 BANK=$(jq -re '.bankName // empty' .unitwork/.bootstrap.json 2>/dev/null || git config --get remote.origin.url 2>/dev/null | sed 's/.*\///' | sed 's/\.git$//' || basename "$(git worktree list 2>/dev/null | head -1 | awk '{print $1}')" || basename "$(pwd)")
 hindsight memory recall "$BANK" "CI failures, fix attempts, build errors, test failures, lint errors" --budget mid --include-chunks
 ```

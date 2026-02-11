@@ -44,7 +44,7 @@ Memory recall is the foundation of compounding. Without it, you lose all accumul
 ### Execute Memory Recall NOW
 
 ```bash
-# MANDATORY: Recall PR review patterns and gotchas BEFORE any other work (handles worktrees)
+# MANDATORY: Recall PR review patterns and gotchas BEFORE any other work (config override → git remote → worktree → pwd)
 BANK=$(jq -re '.bankName // empty' .unitwork/.bootstrap.json 2>/dev/null || git config --get remote.origin.url 2>/dev/null | sed 's/.*\///' | sed 's/\.git$//' || basename "$(git worktree list 2>/dev/null | head -1 | awk '{print $1}')" || basename "$(pwd)")
 hindsight memory recall "$BANK" "PR review patterns, comment resolution gotchas, code review learnings" --budget mid --include-chunks
 ```

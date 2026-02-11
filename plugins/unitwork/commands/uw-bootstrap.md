@@ -97,6 +97,13 @@ BANK_NAMES=$(echo "$BANKS_JSON" | jq -r '.[].bank_id' 2>/dev/null)
 
 # Derive default name from git remote (for "Create new" option)
 GIT_DERIVED=$(git config --get remote.origin.url 2>/dev/null | sed 's/.*\///' | sed 's/\.git$//' || basename "$(git worktree list 2>/dev/null | head -1 | awk '{print $1}')" || basename "$(pwd)")
+
+# Validate derived name contains only safe characters
+if ! [[ "$GIT_DERIVED" =~ ^[a-zA-Z0-9._-]+$ ]]; then
+    echo "Warning: Derived bank name '$GIT_DERIVED' contains invalid characters."
+    echo "Bank names must contain only alphanumeric characters, dashes, underscores, or dots."
+    # Will prompt user for manual name via AskUserQuestion
+fi
 ```
 
 Use AskUserQuestion to prompt:
