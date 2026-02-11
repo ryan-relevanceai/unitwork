@@ -7,17 +7,31 @@ This document is the single source of truth for Hindsight memory operations in U
 **CRITICAL:** The bank name must be consistent across all worktrees of the same repository.
 
 ```bash
-# Correct: Use remote origin URL (consistent across worktrees)
-BANK=$(git config --get remote.origin.url 2>/dev/null | sed 's/.*\///' | sed 's/\.git$//' || basename "$(git worktree list 2>/dev/null | head -1 | awk '{print $1}')" || basename "$(pwd)")
+# Correct: Check config override first, then fall back to remote origin URL
+BANK=$(jq -re '.bankName // empty' .unitwork/.bootstrap.json 2>/dev/null || git config --get remote.origin.url 2>/dev/null | sed 's/.*\///' | sed 's/\.git$//' || basename "$(git worktree list 2>/dev/null | head -1 | awk '{print $1}')" || basename "$(pwd)")
 
 # WRONG: Do NOT use git rev-parse --show-toplevel
 # This returns the worktree path, causing each worktree to create a separate bank
 ```
 
 **Fallback chain:**
-1. Git remote origin URL → extract repo name
-2. First worktree in list → extract directory name
-3. Current working directory → use as fallback
+1. `.unitwork/.bootstrap.json` `bankName` field → explicit override (set during bootstrap)
+2. Git remote origin URL → extract repo name
+3. First worktree in list → extract directory name
+4. Current working directory → use as fallback
+
+### Config Override
+
+The `bankName` field in `.unitwork/.bootstrap.json` allows multiple repos to share a single Hindsight bank. This is set during `/uw:bootstrap` when the user selects an existing bank instead of creating a new one.
+
+```json
+{
+  "bankName": "relevance",
+  "lastLearningsImport": "2026-02-10T00:00:00Z"
+}
+```
+
+If `bankName` is not present or the file doesn't exist, the derivation falls back to the git remote URL.
 
 ## Memory Operations
 
@@ -127,8 +141,8 @@ fi
 ## Complete Example
 
 ```bash
-# 1. Derive bank name (worktree-safe)
-BANK=$(git config --get remote.origin.url 2>/dev/null | sed 's/.*\///' | sed 's/\.git$//' || basename "$(git worktree list 2>/dev/null | head -1 | awk '{print $1}')" || basename "$(pwd)")
+# 1. Derive bank name (config override → git remote → worktree → pwd)
+BANK=$(jq -re '.bankName // empty' .unitwork/.bootstrap.json 2>/dev/null || git config --get remote.origin.url 2>/dev/null | sed 's/.*\///' | sed 's/\.git$//' || basename "$(git worktree list 2>/dev/null | head -1 | awk '{print $1}')" || basename "$(pwd)")
 
 # 2. Recall with ANSI stripping
 LEARNINGS=$(hindsight memory recall "$BANK" "gotchas for authentication" --budget mid --include-chunks 2>&1 | sed 's/\x1b\[[0-9;]*m//g')
@@ -162,7 +176,7 @@ hindsight memory retain "$BANK" "GOTCHA: OAuth tokens need 60-second buffer befo
 
 ## Important Rules
 
-1. **Always use remote origin URL for bank name** - NOT `git rev-parse --show-toplevel`
+1. **Always use the standard derivation** (config → git remote → worktree → pwd) - NOT `git rev-parse --show-toplevel`
 2. **Always strip ANSI codes** when processing output programmatically
 3. **Always use --async for retain** - never block on memory writes
 4. **Always use --include-chunks for recall** - provides source context
