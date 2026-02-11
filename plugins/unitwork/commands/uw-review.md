@@ -26,7 +26,8 @@ Memory recall is the foundation of compounding. Without it, you lose all accumul
 
 ```bash
 # MANDATORY: Recall review-related learnings BEFORE any other work (handles worktrees)
-hindsight memory recall "$(git config --get remote.origin.url 2>/dev/null | sed 's/.*\///' | sed 's/\.git$//' || basename "$(git worktree list 2>/dev/null | head -1 | awk '{print $1}')" || basename "$(pwd)")" "code review learnings, past mistakes, type safety issues, security issues, pattern violations" --budget mid --include-chunks
+BANK=$(jq -re '.bankName // empty' .unitwork/.bootstrap.json 2>/dev/null || git config --get remote.origin.url 2>/dev/null | sed 's/.*\///' | sed 's/\.git$//' || basename "$(git worktree list 2>/dev/null | head -1 | awk '{print $1}')" || basename "$(pwd)")
+hindsight memory recall "$BANK" "code review learnings, past mistakes, type safety issues, security issues, pattern violations" --budget mid --include-chunks
 ```
 
 ### Display Learnings

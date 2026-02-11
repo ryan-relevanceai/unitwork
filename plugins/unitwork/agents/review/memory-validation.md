@@ -22,7 +22,7 @@ See [hindsight-reference.md](../../skills/unitwork/references/hindsight-referenc
 ### STEP 1: Derive Bank Name
 
 ```bash
-BANK=$(git config --get remote.origin.url 2>/dev/null | sed 's/.*\///' | sed 's/\.git$//' || basename "$(git worktree list 2>/dev/null | head -1 | awk '{print $1}')" || basename "$(pwd)")
+BANK=$(jq -re '.bankName // empty' .unitwork/.bootstrap.json 2>/dev/null || git config --get remote.origin.url 2>/dev/null | sed 's/.*\///' | sed 's/\.git$//' || basename "$(git worktree list 2>/dev/null | head -1 | awk '{print $1}')" || basename "$(pwd)")
 ```
 
 ### STEP 2: Recall ALL Learnings
