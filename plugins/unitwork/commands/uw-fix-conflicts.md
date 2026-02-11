@@ -34,7 +34,7 @@ Memory recall ensures you don't repeat failed resolution approaches from previou
 ### Execute Memory Recall NOW
 
 ```bash
-# MANDATORY: Recall conflict resolution learnings (handles worktrees)
+# MANDATORY: Recall conflict resolution learnings (config override → git remote → worktree → pwd)
 BANK=$(jq -re '.bankName // empty' .unitwork/.bootstrap.json 2>/dev/null || git config --get remote.origin.url 2>/dev/null | sed 's/.*\///' | sed 's/\.git$//' || basename "$(git worktree list 2>/dev/null | head -1 | awk '{print $1}')" || basename "$(pwd)")
 hindsight memory recall "$BANK" "conflict resolution, rebase, merge conflicts, file history" --budget mid --include-chunks
 ```

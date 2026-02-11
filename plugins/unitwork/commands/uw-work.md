@@ -88,7 +88,7 @@ Memory recall is the foundation of compounding. Without it, you lose all accumul
 ### Execute Memory Recall NOW
 
 ```bash
-# MANDATORY: Recall gotchas and learnings BEFORE any other work (handles worktrees)
+# MANDATORY: Recall gotchas and learnings BEFORE any other work (config override → git remote → worktree → pwd)
 BANK=$(jq -re '.bankName // empty' .unitwork/.bootstrap.json 2>/dev/null || git config --get remote.origin.url 2>/dev/null | sed 's/.*\///' | sed 's/\.git$//' || basename "$(git worktree list 2>/dev/null | head -1 | awk '{print $1}')" || basename "$(pwd)")
 hindsight memory recall "$BANK" "gotchas and learnings for <feature-type>" --budget mid --include-chunks
 ```

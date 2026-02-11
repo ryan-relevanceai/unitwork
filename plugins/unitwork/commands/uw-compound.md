@@ -79,7 +79,7 @@ Spec: .unitwork/specs/{date}-{feature}.md
 Store learnings for future recall. Use feature *type* (e.g., "OAuth integration", "database migration") not just feature name, so insights transfer to related work.
 
 ```bash
-# Example: Retain a gotcha discovered during OAuth implementation (handles worktrees)
+# Example: Retain a gotcha discovered during OAuth implementation (config override → git remote → worktree → pwd)
 BANK=$(jq -re '.bankName // empty' .unitwork/.bootstrap.json 2>/dev/null || git config --get remote.origin.url 2>/dev/null | sed 's/.*\///' | sed 's/\.git$//' || basename "$(git worktree list 2>/dev/null | head -1 | awk '{print $1}')" || basename "$(pwd)")
 hindsight memory retain "$BANK" "GOTCHA when working on OAuth integrations: token refresh must happen before expiry, not after. This matters because expired tokens cause silent auth failures. Similar auth flows should add 60-second buffer to token lifetime checks." \
   --context "gotcha from oauth-feature" \
