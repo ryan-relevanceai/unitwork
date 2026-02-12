@@ -130,8 +130,8 @@ See [hindsight-reference.md](./references/hindsight-reference.md) for complete p
 ### Quick Reference
 
 ```bash
-# Bank name (worktree-safe)
-BANK=$(git config --get remote.origin.url 2>/dev/null | sed 's/.*\///' | sed 's/\.git$//' || basename "$(git worktree list 2>/dev/null | head -1 | awk '{print $1}')" || basename "$(pwd)")
+# Bank name (config override → git remote → worktree → pwd)
+BANK=$(jq -re '.bankName // empty' .unitwork/.bootstrap.json 2>/dev/null || git config --get remote.origin.url 2>/dev/null | sed 's/.*\///' | sed 's/\.git$//' || basename "$(git worktree list 2>/dev/null | head -1 | awk '{print $1}')" || basename "$(pwd)")
 
 # Recall with ANSI stripping
 hindsight memory recall "$BANK" "query" --budget mid --include-chunks 2>&1 | sed 's/\x1b\[[0-9;]*m//g'

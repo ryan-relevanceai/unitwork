@@ -88,8 +88,9 @@ Memory recall is the foundation of compounding. Without it, you lose all accumul
 ### Execute Memory Recall NOW
 
 ```bash
-# MANDATORY: Recall gotchas and learnings BEFORE any other work (handles worktrees)
-hindsight memory recall "$(git config --get remote.origin.url 2>/dev/null | sed 's/.*\///' | sed 's/\.git$//' || basename "$(git worktree list 2>/dev/null | head -1 | awk '{print $1}')" || basename "$(pwd)")" "gotchas and learnings for <feature-type>" --budget mid --include-chunks
+# MANDATORY: Recall gotchas and learnings BEFORE any other work (config override → git remote → worktree → pwd)
+BANK=$(jq -re '.bankName // empty' .unitwork/.bootstrap.json 2>/dev/null || git config --get remote.origin.url 2>/dev/null | sed 's/.*\///' | sed 's/\.git$//' || basename "$(git worktree list 2>/dev/null | head -1 | awk '{print $1}')" || basename "$(pwd)")
+hindsight memory recall "$BANK" "gotchas and learnings for <feature-type>" --budget mid --include-chunks
 ```
 
 ### Display Learnings
@@ -124,7 +125,8 @@ ls -la .unitwork/verify/ 2>/dev/null
 If checkpoints exist, query Hindsight for progress:
 
 ```bash
-hindsight memory recall "$(git config --get remote.origin.url 2>/dev/null | sed 's/.*\///' | sed 's/\.git$//' || basename "$(git worktree list 2>/dev/null | head -1 | awk '{print $1}')" || basename "$(pwd)")" "progress on <feature>" --budget low
+BANK=$(jq -re '.bankName // empty' .unitwork/.bootstrap.json 2>/dev/null || git config --get remote.origin.url 2>/dev/null | sed 's/.*\///' | sed 's/\.git$//' || basename "$(git worktree list 2>/dev/null | head -1 | awk '{print $1}')" || basename "$(pwd)")
+hindsight memory recall "$BANK" "progress on <feature>" --budget low
 ```
 
 Report resume status:
@@ -265,7 +267,8 @@ When user provides feedback on a checkpoint:
 5. **Retain learning**:
 
 ```bash
-hindsight memory retain "$(git config --get remote.origin.url 2>/dev/null | sed 's/.*\///' | sed 's/\.git$//' || basename "$(git worktree list 2>/dev/null | head -1 | awk '{print $1}')" || basename "$(pwd)")" "Verification blind spot: <what was missed>. Similar patterns need <specific check>." \
+BANK=$(jq -re '.bankName // empty' .unitwork/.bootstrap.json 2>/dev/null || git config --get remote.origin.url 2>/dev/null | sed 's/.*\///' | sed 's/\.git$//' || basename "$(git worktree list 2>/dev/null | head -1 | awk '{print $1}')" || basename "$(pwd)")
+hindsight memory retain "$BANK" "Verification blind spot: <what was missed>. Similar patterns need <specific check>." \
   --context "verification learning" \
   --doc-id "learn-<feature-name>" \
   --async

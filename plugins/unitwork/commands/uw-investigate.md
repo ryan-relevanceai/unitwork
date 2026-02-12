@@ -101,8 +101,9 @@ Memory recall ensures you don't repeat failed investigation approaches or miss p
 ### Execute Memory Recall NOW
 
 ```bash
-# MANDATORY: Recall relevant investigation context (handles worktrees)
-hindsight memory recall "$(git config --get remote.origin.url 2>/dev/null | sed 's/.*\///' | sed 's/\.git$//' || basename "$(git worktree list 2>/dev/null | head -1 | awk '{print $1}')" || basename "$(pwd)")" "investigation of: <investigation_goal>, related bugs, root causes, debugging approaches" --budget mid --include-chunks
+# MANDATORY: Recall relevant investigation context (config override → git remote → worktree → pwd)
+BANK=$(jq -re '.bankName // empty' .unitwork/.bootstrap.json 2>/dev/null || git config --get remote.origin.url 2>/dev/null | sed 's/.*\///' | sed 's/\.git$//' || basename "$(git worktree list 2>/dev/null | head -1 | awk '{print $1}')" || basename "$(pwd)")
+hindsight memory recall "$BANK" "investigation of: <investigation_goal>, related bugs, root causes, debugging approaches" --budget mid --include-chunks
 ```
 
 ### Display Learnings
@@ -341,7 +342,8 @@ If root cause was NOT identified:
 Retain investigation findings to Hindsight for future sessions:
 
 ```bash
-hindsight memory retain "$(git config --get remote.origin.url 2>/dev/null | sed 's/.*\///' | sed 's/\.git$//' || basename "$(git worktree list 2>/dev/null | head -1 | awk '{print $1}')" || basename "$(pwd)")" "Investigation: <goal>. Root cause: <finding or 'not identified'>. Key files: <files>. <any gotchas or patterns discovered>." \
+BANK=$(jq -re '.bankName // empty' .unitwork/.bootstrap.json 2>/dev/null || git config --get remote.origin.url 2>/dev/null | sed 's/.*\///' | sed 's/\.git$//' || basename "$(git worktree list 2>/dev/null | head -1 | awk '{print $1}')" || basename "$(pwd)")
+hindsight memory retain "$BANK" "Investigation: <goal>. Root cause: <finding or 'not identified'>. Key files: <files>. <any gotchas or patterns discovered>." \
   --context "investigation <topic>" \
   --doc-id "investigate-<topic-slug>" \
   --async
