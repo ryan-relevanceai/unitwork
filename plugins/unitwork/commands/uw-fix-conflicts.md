@@ -34,8 +34,9 @@ Memory recall ensures you don't repeat failed resolution approaches from previou
 ### Execute Memory Recall NOW
 
 ```bash
-# MANDATORY: Recall conflict resolution learnings (handles worktrees)
-hindsight memory recall "$(git config --get remote.origin.url 2>/dev/null | sed 's/.*\///' | sed 's/\.git$//' || basename "$(git worktree list 2>/dev/null | head -1 | awk '{print $1}')" || basename "$(pwd)")" "conflict resolution, rebase, merge conflicts, file history" --budget mid --include-chunks
+# MANDATORY: Recall conflict resolution learnings (config override → git remote → worktree → pwd)
+BANK=$(jq -re '.bankName // empty' .unitwork/.bootstrap.json 2>/dev/null || git config --get remote.origin.url 2>/dev/null | sed 's/.*\///' | sed 's/\.git$//' || basename "$(git worktree list 2>/dev/null | head -1 | awk '{print $1}')" || basename "$(pwd)")
+hindsight memory recall "$BANK" "conflict resolution, rebase, merge conflicts, file history" --budget mid --include-chunks
 ```
 
 ### Display Learnings
@@ -440,7 +441,8 @@ Branch: {current_branch} rebased onto origin/{default_branch}
 After successful completion, retain learnings:
 
 ```bash
-hindsight memory retain "$(git config --get remote.origin.url 2>/dev/null | sed 's/.*\///' | sed 's/\.git$//' || basename "$(git worktree list 2>/dev/null | head -1 | awk '{print $1}')" || basename "$(pwd)")" "Conflict resolution: {summary of what worked}. Files: {list}. Approach: {auto/interview mix}." \
+BANK=$(jq -re '.bankName // empty' .unitwork/.bootstrap.json 2>/dev/null || git config --get remote.origin.url 2>/dev/null | sed 's/.*\///' | sed 's/\.git$//' || basename "$(git worktree list 2>/dev/null | head -1 | awk '{print $1}')" || basename "$(pwd)")
+hindsight memory retain "$BANK" "Conflict resolution: {summary of what worked}. Files: {list}. Approach: {auto/interview mix}." \
   --context "conflict resolution learning" \
   --doc-id "learn-conflict-$(date +%d%m%Y)" \
   --async
