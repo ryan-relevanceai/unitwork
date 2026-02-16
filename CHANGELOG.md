@@ -5,6 +5,21 @@ All notable changes to the Unit Work plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.11.0] - 2026-02-16
+
+### Added
+
+- **uw:park**: Park current work session with full context to a GitHub PR comment for multi-device handoff
+  - Commits uncommitted changes with "park: WIP" prefix
+  - Creates draft PR if none exists, or uses existing PR
+  - Posts structured parking comment with progress, next steps, blockers
+  - Machine-readable `<!-- uw:park -->` marker for round-trip parsing
+- **uw:resume**: Resume a parked work session by reading PR parking comments and local artifacts
+  - Finds latest parking comment on current branch's PR
+  - Reads local `.unitwork/` artifacts (specs, verify, review)
+  - Presents synthesized context summary with discrepancy detection
+  - Suggests appropriate next action based on parked state
+
 ## [0.10.0] - 2026-02-02
 
 ### Added
