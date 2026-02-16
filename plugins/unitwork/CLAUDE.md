@@ -48,13 +48,15 @@ unitwork/
 │       ├── security.md
 │       ├── simplicity.md
 │       └── memory-validation.md
-├── commands/                    # Slash commands (12)
+├── commands/                    # Slash commands (14)
 │   ├── uw-plan.md
 │   ├── uw-work.md
 │   ├── uw-review.md
 │   ├── uw-compound.md
 │   ├── uw-bootstrap.md
 │   ├── uw-pr.md
+│   ├── uw-park.md
+│   ├── uw-resume.md
 │   ├── uw-action-comments.md
 │   ├── uw-fix-ci.md
 │   ├── uw-fix-conflicts.md
@@ -91,6 +93,8 @@ Commands use `uw:` prefix to namespace all Unit Work commands:
 - `/uw:compound` - Learning extraction
 - `/uw:bootstrap` - First-time setup
 - `/uw:pr` - Create/update GitHub PRs
+- `/uw:park` - Park work session to PR comment for multi-device handoff
+- `/uw:resume` - Resume parked work session from PR comment
 - `/uw:action-comments` - PR comment resolution
 - `/uw:fix-ci` - Autonomously fix failing CI
 - `/uw:fix-conflicts` - Intelligent rebase conflict resolution
