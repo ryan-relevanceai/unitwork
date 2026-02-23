@@ -131,6 +131,24 @@ agent-browser screenshot --full output.png    # Full page to file
 agent-browser pdf output.pdf                  # Save as PDF
 ```
 
+### Recording
+
+Record browser sessions as video for debugging and review.
+
+```bash
+agent-browser record start ./recording.webm   # Start recording to file
+agent-browser record stop                      # Stop recording
+agent-browser record restart ./take2.webm      # Stop current + start new recording
+```
+
+**Output format:** WebM (VP8/VP9 codec), playable in any modern browser or video player.
+
+**Best practices:**
+- Save recordings to `.unitwork/verify/` alongside screenshots
+- Use descriptive filenames: `.unitwork/verify/{feature}-{timestamp}.webm`
+- Add `agent-browser wait 500` between rapid actions for viewer clarity
+- Always stop recording before closing the browser (recording stops automatically on close, but explicit stop ensures the file is flushed)
+
 ### Wait
 
 ```bash
@@ -215,6 +233,9 @@ Returns:
 
 ```bash
 agent-browser open {url}
+
+# Start recording the verification session
+agent-browser record start .unitwork/verify/{feature}-verify.webm
 ```
 
 ### 2. Capture Initial Snapshot
@@ -268,6 +289,14 @@ agent-browser errors
 ```
 
 Report any console errors.
+
+### 8. Stop Recording
+
+```bash
+agent-browser record stop
+```
+
+Include the recording path in verification results for human review.
 
 ## Local Development Setup
 
@@ -527,6 +556,8 @@ agent-browser get url
 
 ### Page: {page_name}
 
+**Recording:** .unitwork/verify/{feature}-verify.webm
+
 **Screenshots:**
 - {screenshot_1.png}
 - {screenshot_2.png}
@@ -575,13 +606,14 @@ Start at 100%, subtract:
 
 ## Important Rules
 
-1. **ALWAYS** capture screenshots
+1. **ALWAYS** capture screenshots and record sessions
 2. **NEVER** claim confidence above 80% for UI
 3. **ALWAYS** list what needs human review
 4. **DOCUMENT** element refs used
 5. **REPORT** console errors prominently
 6. **TIMEOUT** gracefully after 60 seconds
 7. **NEVER** use Playwright MCP - use agent-browser CLI
+8. **ALWAYS** stop recording before closing the browser or on failure
 
 ## Backend Debugging
 
@@ -600,6 +632,9 @@ grep -A 20 '\[debug\]' /tmp/backend-debug.log
 ## Cleanup (ALWAYS Run on Stop or Failure)
 
 ```bash
+# Stop any active recording first
+agent-browser record stop 2>/dev/null || true
+
 # Close browser session
 agent-browser --session "debug" close
 
@@ -614,10 +649,11 @@ lsof -ti:<frontend-port> | xargs kill -9 2>/dev/null || true
 
 ## Failure Protocol
 
-1. **Stop immediately** - Do not refresh browser or spin up new instances
-2. **Run cleanup** - Execute full cleanup procedure above
-3. **Document failure** - Note which step failed and error messages
-4. **Wait for user** - Do not attempt self-recovery
+1. **Stop recording** - Run `agent-browser record stop` to save what was captured so far
+2. **Stop immediately** - Do not refresh browser or spin up new instances
+3. **Run cleanup** - Execute full cleanup procedure above
+4. **Document failure** - Note which step failed, error messages, and path to partial recording
+5. **Wait for user** - Do not attempt self-recovery
 
 ## Troubleshooting
 
@@ -636,6 +672,7 @@ lsof -ti:<frontend-port> | xargs kill -9 2>/dev/null || true
 
 ```bash
 agent-browser open https://app.example.com/login
+agent-browser record start .unitwork/verify/login-flow.webm
 agent-browser snapshot -i
 # Output: textbox "Email" [ref=e1], textbox "Password" [ref=e2], button "Sign in" [ref=e3]
 agent-browser fill @e1 "user@example.com"
@@ -644,6 +681,7 @@ agent-browser click @e3
 agent-browser wait 2000
 agent-browser screenshot .unitwork/verify/after-login.png
 agent-browser snapshot -i  # Verify logged in
+agent-browser record stop
 ```
 
 ### Backend Verification
@@ -653,6 +691,9 @@ agent-browser snapshot -i  # Verify logged in
 agent-browser open https://app-development.relevanceai.com
 agent-browser execute "localStorage.setItem('api-url', 'http://localhost:8000')"
 agent-browser reload
+
+# Start recording
+agent-browser record start .unitwork/verify/backend-verify.webm
 
 # Login and test
 agent-browser snapshot -i
@@ -665,12 +706,14 @@ agent-browser wait --url "**/dashboard"
 agent-browser snapshot -i
 agent-browser get text @user-name  # Should show user from local backend
 agent-browser screenshot .unitwork/verify/backend-test.png
+agent-browser record stop
 ```
 
 ### Form Filling with Verification
 
 ```bash
 agent-browser open https://forms.example.com
+agent-browser record start .unitwork/verify/form-test.webm
 agent-browser snapshot -i
 agent-browser fill @e1 "John Doe"
 agent-browser fill @e2 "john@example.com"
@@ -682,6 +725,7 @@ agent-browser wait 2000
 agent-browser snapshot -i  # Check for success message
 agent-browser screenshot .unitwork/verify/form-submitted.png
 agent-browser errors  # Check for console errors
+agent-browser record stop
 ```
 
 ## vs Playwright MCP
