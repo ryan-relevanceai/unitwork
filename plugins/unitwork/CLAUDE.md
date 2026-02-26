@@ -48,7 +48,7 @@ unitwork/
 │       ├── security.md
 │       ├── simplicity.md
 │       └── memory-validation.md
-├── commands/                    # Slash commands (14)
+├── commands/                    # Slash commands (15)
 │   ├── uw-plan.md
 │   ├── uw-work.md
 │   ├── uw-review.md
@@ -62,6 +62,7 @@ unitwork/
 │   ├── uw-fix-conflicts.md
 │   ├── uw-investigate.md
 │   ├── uw-browser-test.md
+│   ├── uw-momentic.md
 │   └── uw-harvest.md
 ├── skills/
 │   ├── review-standards/
@@ -100,6 +101,7 @@ Commands use `uw:` prefix to namespace all Unit Work commands:
 - `/uw:fix-conflicts` - Intelligent rebase conflict resolution
 - `/uw:investigate` - Read-only codebase investigation
 - `/uw:browser-test` - Browser automation for UI verification
+- `/uw:momentic` - Run, create, debug, or upload Momentic E2E tests
 - `/uw:harvest` - Scrape PR review insights from GitHub repos into Hindsight
 
 ## Agent Organization
