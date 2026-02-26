@@ -5,6 +5,18 @@ All notable changes to the Unit Work plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.12.0] - 2026-02-26
+
+### Added
+
+- **uw:momentic**: New command for Momentic E2E testing integration
+  - Run existing Momentic test suites with video recording
+  - Create new test YAMLs following Momentic schema conventions
+  - Debug failing tests by analyzing results, screenshots, and console logs
+  - Upload results to Momentic Cloud
+  - List available tests across project
+  - Manages Momentic app server lifecycle and Chromium process cleanup
+
 ## [0.11.0] - 2026-02-16
 
 ### Added
