@@ -16,7 +16,7 @@ Human-in-the-loop verification framework for AI-assisted development. Breaks wor
 | Component | Count |
 |-----------|-------|
 | Agents | 16 |
-| Commands | 15 |
+| Commands | 16 |
 | Skills | 2 |
 | MCP Servers | 1 |
 
@@ -168,6 +168,7 @@ Extracts learnings from the implementation and stores them for future sessions. 
 | `/uw:harvest` | Scrape merged PR review comments, synthesize insights, store in Hindsight |
 | `/uw:park` | Park work session with full context to GitHub PR comment for multi-device handoff |
 | `/uw:resume` | Resume parked work session by reading PR comments and local artifacts |
+| `/uw:test-plan` | Generate comprehensive manual testing steps from git diffs |
 
 #### /uw:bootstrap
 
@@ -242,6 +243,20 @@ Scrapes inline review comments and review bodies from merged PRs across GitHub r
 5. **Storage** - Stores each insight to the source repo's Hindsight bank
 
 **Compounds:** Stores review insights into each source repo's bank, so future `/uw:plan` and `/uw:work` sessions recall team review patterns.
+
+#### /uw:test-plan
+
+Generates comprehensive manual testing steps by analyzing git diffs across frontend and backend repos. Produces one continuous end-to-end test plan with edge cases woven in.
+
+**Key phases:**
+1. **Repo Detection** - Detects frontend/backend repos via generic heuristics (package.json analysis, sibling directory scanning)
+2. **Diff Analysis** - Gets diffs from all detected repos, excluding codegen/generated files
+3. **Feature Understanding** - Spawns exploration agents to understand API changes, UI changes, data flows, and edge cases
+4. **Test Plan Generation** - Writes one continuous test with sequential steps, each with action + expected outcome
+5. **Storage** - Saves to `.unitwork/test-plans/{DD-MM-YYYY}-{feature-name}.md`
+6. **Execution Suggestion** - Recommends `/uw:browser-test` or Momentic for running the test plan
+
+**Compounds:** Retains test plan generation experience to Hindsight for future test planning.
 
 ## Agents
 
@@ -377,7 +392,8 @@ Unit Work creates this structure in your project:
 ├── specs/           # Feature specifications
 ├── verify/          # Checkpoint verification docs
 ├── review/          # Code review findings
-└── learnings/       # Compound phase output
+├── learnings/       # Compound phase output
+└── test-plans/      # Manual test plans from /uw:test-plan
 ```
 
 ## Checkpoint System
