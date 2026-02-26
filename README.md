@@ -16,7 +16,7 @@ Human-in-the-loop verification framework for AI-assisted development. Breaks wor
 | Component | Count |
 |-----------|-------|
 | Agents | 16 |
-| Commands | 14 |
+| Commands | 15 |
 | Skills | 2 |
 | MCP Servers | 1 |
 
@@ -164,6 +164,7 @@ Extracts learnings from the implementation and stores them for future sessions. 
 | `/uw:fix-conflicts` | Intelligent rebase conflict resolution with multi-agent analysis |
 | `/uw:investigate` | Read-only codebase investigation with memory integration |
 | `/uw:browser-test` | Browser automation for UI verification and testing |
+| `/uw:momentic` | Run, create, debug, or upload Momentic E2E tests |
 | `/uw:harvest` | Scrape merged PR review comments, synthesize insights, store in Hindsight |
 | `/uw:park` | Park work session with full context to GitHub PR comment for multi-device handoff |
 | `/uw:resume` | Resume parked work session by reading PR comments and local artifacts |
