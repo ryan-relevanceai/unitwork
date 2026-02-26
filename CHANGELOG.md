@@ -5,6 +5,26 @@ All notable changes to the Unit Work plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.13.0] - 2026-02-26
+
+### Added
+
+- **uw:test-plan**: New command to generate comprehensive manual testing steps from git diffs
+  - Analyzes diffs across frontend and backend repos (generic repo detection, no hardcoded paths)
+  - Spawns exploration agents to deeply understand changes (API endpoints, UI components, data flows)
+  - Generates ONE continuous end-to-end test (not separate test cases) with edge cases woven in
+  - Each step has clear action + expected outcome format
+  - Stores test plan to `.unitwork/test-plans/{DD-MM-YYYY}-{feature-name}.md`
+  - Suggests execution via `/uw:browser-test` or Momentic after storing
+  - New template at `plugins/unitwork/skills/unitwork/templates/test-plan.md`
+
+### Changed
+
+- **plugin.json**: Updated version (0.12.0 -> 0.13.0), command count (16 -> 17)
+- **CLAUDE.md**: Added uw-test-plan to directory structure and command naming list
+- **README.md**: Added uw:test-plan to commands table with detailed description
+- **SKILL.md**: Added test-plan template reference and test-plans/ to directory structure
+
 ## [0.12.0] - 2026-02-26
 
 ### Added
