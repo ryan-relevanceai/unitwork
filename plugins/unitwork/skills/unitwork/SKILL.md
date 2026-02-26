@@ -56,6 +56,7 @@ See [decision-trees.md](./references/decision-trees.md) for detailed decision fl
 - [Spec Template](./templates/spec.md) - Feature specification format
 - [Verify Template](./templates/verify.md) - Checkpoint verification document
 - [Learnings Template](./templates/learnings.md) - Compound phase output
+- [Test Plan Template](./templates/test-plan.md) - Manual test plan from diff analysis
 
 ## Directory Structure
 
@@ -66,7 +67,8 @@ Unit Work creates this structure in your project:
 ├── specs/           # {DD-MM-YYYY}-{feature}.md
 ├── verify/          # {DD-MM-YYYY}-{n}-{name}.md
 ├── review/          # Code review findings
-└── learnings/       # Compound phase output
+├── learnings/       # Compound phase output
+└── test-plans/      # {DD-MM-YYYY}-{feature}.md
 ```
 
 ## Agent Behavior Rules
@@ -211,3 +213,4 @@ Start at 100%, subtract:
 - `/uw:action-comments` - Resolve PR comments
 - `/uw:fix-ci` - Autonomously fix failing CI
 - `/uw:fix-conflicts` - Intelligent rebase conflict resolution
+- `/uw:test-plan` - Generate manual testing steps from git diffs
