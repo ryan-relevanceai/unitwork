@@ -79,7 +79,8 @@ unitwork/
 │       └── templates/
 │           ├── spec.md
 │           ├── verify.md
-│           └── learnings.md
+│           ├── learnings.md
+│           └── test-plan.md
 ├── README.md
 ├── CLAUDE.md
 ├── CHANGELOG.md

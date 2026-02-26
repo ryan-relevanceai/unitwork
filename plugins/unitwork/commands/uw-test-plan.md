@@ -295,7 +295,21 @@ Write the generated test plan to `.unitwork/test-plans/{DATE}-{FEATURE_NAME}.md`
 
 ---
 
-## Phase 6: Suggest Execution
+## Phase 6: Retain Learnings
+
+Store the test plan generation experience to Hindsight for future improvement:
+
+```bash
+BANK=$(jq -re '.bankName // empty' .unitwork/.bootstrap.json 2>/dev/null || git config --get remote.origin.url 2>/dev/null | sed 's/.*\///' | sed 's/\.git$//' || basename "$(git worktree list 2>/dev/null | head -1 | awk '{print $1}')" || basename "$(pwd)")
+hindsight memory retain "$BANK" "Generated test plan for $FEATURE_NAME: {N} steps covering {M} edge cases. Key areas tested: {summary of what was covered}. Repos analyzed: {backend|frontend|both}." \
+  --context "test-plan generation for $FEATURE_NAME" \
+  --doc-id "test-plan-$FEATURE_NAME" \
+  --async
+```
+
+---
+
+## Completion
 
 Present the test plan summary and suggest execution methods:
 
@@ -315,18 +329,4 @@ Test plan written to: .unitwork/test-plans/{DATE}-{FEATURE_NAME}.md
    Usage: Use the /momentic skill to create a test from these steps.
 
 Review the test plan first — adjust any steps before executing.
-```
-
----
-
-## Phase 7: Retain Learnings
-
-Store the test plan generation experience to Hindsight for future improvement:
-
-```bash
-BANK=$(jq -re '.bankName // empty' .unitwork/.bootstrap.json 2>/dev/null || git config --get remote.origin.url 2>/dev/null | sed 's/.*\///' | sed 's/\.git$//' || basename "$(git worktree list 2>/dev/null | head -1 | awk '{print $1}')" || basename "$(pwd)")
-hindsight memory retain "$BANK" "Generated test plan for $FEATURE_NAME: {N} steps covering {M} edge cases. Key areas tested: {summary of what was covered}. Repos analyzed: {backend|frontend|both}." \
-  --context "test-plan generation for $FEATURE_NAME" \
-  --doc-id "test-plan-$FEATURE_NAME" \
-  --async
 ```
