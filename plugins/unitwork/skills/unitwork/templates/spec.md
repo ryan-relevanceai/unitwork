@@ -37,6 +37,27 @@
 - **Human QA:** Checklist for human review
 - **Confidence Ceiling:** X%
 
+## Verification Approach
+
+**Success Metrics:**
+- What measurable outcomes indicate success?
+- Example: "All tests pass", "Bundle size < 500KB", "API response < 200ms"
+
+**Measurement Method:**
+- How will we measure? What tools/tests?
+- Example: "Run `pnpm test`", "Use webpack-bundle-analyzer"
+
+**Baseline Values:**
+- Current state before changes (captured during planning)
+- Example: "Current bundle: 650KB", "Current response: 350ms"
+
+**Expected Outcome:**
+- What we assert after implementation
+- Example: "Bundle < 500KB", "Response < 200ms"
+
+**E2E Testing:** (Y/N)
+- If Y: What to check and how (browser automation, manual steps, etc.)
+
 ## Verification Plan
 
 ### Agent Self-Verification
