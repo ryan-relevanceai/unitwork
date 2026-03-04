@@ -90,23 +90,44 @@ Use AskUserQuestion:
 
 **Generate PR description** (if diff <= 2000 lines):
 
-Write a concise PR description following this format:
-```
-# Context
-{Brief context - what bug/issue existed or what need this addresses}
+Write a detailed PR description following this format:
 
-# What's in this PR?
-{High-level bullet points - NO file/class names unless essential}
+```markdown
+## Context
+{Why this change exists — the problem, bug, or need. Link to Linear ticket if exists.}
 
-# Notes
-{Optional section for additional notes}
+## Changes Summary
+{File-level breakdown with PURPOSE per file, not just names}
+- `src/auth/session.ts` — Added refresh logic with 5-min buffer before expiry
+- `src/api/middleware.ts` — Extended timeout handling for external calls
+
+## The Approach
+{WHY this approach over alternatives. What was considered and why this was best.}
+
+## Key Decisions
+{Trade-offs, assumptions, non-obvious choices made during implementation.}
+
+## Verification
+- Automated: {test results — N tests passing, N new tests for specific scenarios}
+- Manual: {specific scenarios tested end-to-end, if any}
+- Edge cases: {edge cases verified}
+
+## Risks & Dependencies
+{Known risks with mitigations, or "None identified."}
+
+## Future Work
+{Deferred items or known limitations, or omit if none.}
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
 ```
 
 **Important guidelines for description:**
-- Be CONCISE - avoid verbose explanations
-- Keep bullet points HIGH-LEVEL focused on WHAT changed, not listing every file modified
-- Focus on user-facing changes, functionality, or behavior modifications
-- Don't mention specific file names or class names unless critical to understanding
+- AI-generated PRs should be MORE detailed than human PRs — explain the "why" not just "what"
+- The Approach section is REQUIRED — always explain why this approach over alternatives
+- Call out assumptions explicitly (e.g., "Assumed existing auth middleware pattern is correct")
+- Note codebase conventions followed (e.g., "Followed pattern from src/hooks/useQuery.ts")
+- Note what was NOT changed and why ("Did not refactor adjacent code to keep scope focused")
+- Keep Changes Summary focused on purpose per file, not just listing filenames
 
 **If user provided extra context:** Incorporate it into the Context section.
 
@@ -148,8 +169,9 @@ Gather git context (same as Step 3).
 
 **Generate updated description:**
 - Preserve any custom headers or sections that exist (like "# PR TRAIN" headers or other custom content)
-- Update the "# Context" and "# What's in this PR?" sections to reflect current changes
-- Keep the overall structure and any additional sections
+- Update the "## Context", "## Changes Summary", "## The Approach", and "## Verification" sections to reflect current changes
+- Keep "## Key Decisions" and "## Risks & Dependencies" and any additional sections
+- Keep the overall structure
 
 Update via API:
 ```bash
