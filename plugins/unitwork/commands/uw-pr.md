@@ -42,7 +42,7 @@ gh pr list --head "$CURRENT_BRANCH" --json number,title,url
 ```
 
 **If PR exists:** Go to Step 5 (Update flow)
-**If no PR:** Continue to Step 3 (Create flow)
+**If no PR:** Check if this is a Plan PR (see Plan PR Flow below), otherwise continue to Step 3 (Create flow)
 
 ---
 
@@ -139,6 +139,96 @@ gh pr create --base "$BASE_BRANCH" --draft --assignee "$GH_USER" --fill-first --
 ```
 
 Get the new PR URL and go to Step 7.
+
+---
+
+## Plan PR Flow (Auto-Detected)
+
+**When to trigger:** Before Step 3, check if this is a plan-only change:
+
+```bash
+BASE_BRANCH=$(gh repo view --json defaultBranchRef -q .defaultBranchRef.name)
+CHANGED_FILES=$(git diff --name-only "origin/${BASE_BRANCH}...HEAD")
+
+# Check if ALL changed files are in .unitwork/specs/
+PLAN_ONLY=true
+while IFS= read -r file; do
+  case "$file" in
+    .unitwork/specs/*) ;; # spec file, still plan-only
+    *) PLAN_ONLY=false; break ;;
+  esac
+done <<< "$CHANGED_FILES"
+```
+
+**If `PLAN_ONLY=true`:** Use the Plan PR flow below instead of the standard Create Flow.
+
+### Plan PR Title
+
+```
+[PLAN] {Feature Name from spec}
+```
+
+Extract the feature name from the first `# ` heading in the spec file.
+
+### Plan PR Description
+
+Generate from the spec content:
+
+```markdown
+## Overview
+{Purpose & Impact section from spec — why this feature exists}
+
+## Scope
+**Implementation Units:**
+{Numbered list of units from spec with confidence ceilings}
+
+**Out of Scope:**
+{Out of Scope section from spec}
+
+## Key Decisions
+{Technical Approach section — architectural choices, integration points}
+
+## Risks
+{Any assumptions, unknowns, or high-risk units (confidence < 80%)}
+
+## Review Focus
+Help the reviewer by calling out:
+- Requirements that need domain expertise to validate
+- Architectural decisions that affect long-term maintenance
+- Scope boundaries that might be too narrow or too wide
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+```
+
+### Create Plan PR
+
+```bash
+GH_USER=$(gh api user -q .login)
+SPEC_FILE=$(echo "$CHANGED_FILES" | grep '.unitwork/specs/' | head -1)
+FEATURE_NAME=$(head -5 "$SPEC_FILE" | grep '^# ' | sed 's/^# //')
+gh pr create --base "$BASE_BRANCH" --draft --assignee "$GH_USER" \
+  --title "[PLAN] $FEATURE_NAME" \
+  --body "$PLAN_PR_DESCRIPTION"
+```
+
+After creation, go to Step 7.
+
+### Implementation PRs Reference Plan PRs
+
+When creating a standard (non-plan) PR and a `[PLAN]` PR exists for the same feature:
+
+```bash
+# Check for related plan PRs
+gh pr list --state all --search "[PLAN]" --json number,title,url
+```
+
+If a matching plan PR is found, add to the Context section of the implementation PR:
+
+```markdown
+## Context
+**Plan PR:** #{plan_pr_number} — {plan_pr_title}
+{rest of context...}
+```
 
 ---
 
