@@ -483,6 +483,57 @@ If convergence criteria NOT met:
 
 **Dismissed findings are documented but don't block convergence.**
 
+## Phase 3.6: Gemini Adversarial Review (Optional)
+
+After plan-review agents converge, submit the plan to Gemini for an external adversarial review. This catches approach-level issues the codebase-focused agents miss.
+
+### Quick Review (Default)
+
+Use `mcp__gemini__gemini_chat` with this system prompt:
+
+```
+You are an adversarial code reviewer. Analyze this implementation plan and identify concerns.
+
+Categorize each concern as:
+- BLOCKER: Must fix before implementing (security risk, data loss, breaking changes, fundamentally wrong approach)
+- SHOULD: Should address before implementing (edge cases, error handling, missing rollback strategy)
+- CONSIDER: Nice to have (minor improvements, alternative approaches worth noting)
+
+For each concern:
+1. State the concern clearly
+2. Explain WHY it matters (not just what's wrong)
+3. Suggest a specific fix or mitigation
+
+Be pragmatic. Don't flag theoretical issues — focus on things that will actually cause problems.
+```
+
+Send the converged plan as the message content.
+
+### Acting on Feedback
+
+| Category | Action |
+|----------|--------|
+| BLOCKER | Must address — update the plan before writing spec |
+| SHOULD | Should address — update plan or explicitly acknowledge the risk in the spec |
+| CONSIDER | Optional — use judgment, note in spec if relevant |
+
+If Gemini returns BLOCKERs, revise the plan and optionally re-submit for a second round. Limit to 2 Gemini review rounds maximum.
+
+### Fallback: Self-Review Checklist
+
+If Gemini MCP is unavailable (tool call fails or not configured), run this self-review checklist instead:
+
+- [ ] Does the approach handle the failure case? (What happens when things go wrong?)
+- [ ] Are there breaking changes? (API contracts, database schema, config format)
+- [ ] Is there a rollback strategy? (Can we undo this if it goes wrong?)
+- [ ] Does this affect other teams/services? (Cross-team dependencies)
+- [ ] Are there security implications? (Auth, data exposure, injection vectors)
+- [ ] Is the scope appropriate? (Not too large for one PR, not split awkwardly)
+- [ ] Are edge cases covered? (Empty state, concurrent access, rate limits)
+- [ ] Is the test strategy adequate? (Not just happy path)
+
+If 2+ items are uncertain, flag for human review before proceeding.
+
 ## Phase 4: Write Spec
 
 Create the spec file:
