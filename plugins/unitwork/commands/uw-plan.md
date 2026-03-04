@@ -40,6 +40,64 @@ Do not proceed until you have a clear feature description.
 
 ---
 
+## STEP -1: Triviality Gate
+
+Before investing in the full planning pipeline, assess whether this task actually needs planning. Analyze the feature description and any existing git diff to classify risk.
+
+### Gather Signals
+
+```bash
+# Check if there's an existing diff to analyze
+git diff --stat HEAD 2>/dev/null
+git diff --name-only HEAD 2>/dev/null
+```
+
+Also analyze the feature description text itself for risk keywords.
+
+### Signal Classification
+
+**HIGH RISK — Any one of these means MUST PLAN (proceed to Step 0):**
+- Dependency file changes: `package.json`, `yarn.lock`, `pnpm-lock.yaml`, `requirements.txt`, `go.mod`, `Cargo.toml`, `Gemfile`
+- CI/CD file changes: `.github/workflows/`, `Dockerfile`, `docker-compose.yml`, `k8s/`
+- Security-related keywords in description or diff: `password`, `secret`, `token`, `auth`, `crypto`, `jwt`, `oauth`, `payment`, `stripe`
+- Data schema changes: `.sql`, `.prisma`, `.proto`, `.graphql`, files containing `migration`, `schema`, `ddl`
+- Environment/config with secrets: `.env`, `.env.production`
+- Feature description mentions: "migration", "breaking change", "security", "authentication", "payment", "infrastructure"
+
+**MEDIUM RISK — 2+ of these means MUST PLAN, 1 means ASK USER:**
+- 3+ files expected to change
+- Changes span 2+ directories
+- Database query keywords: `SELECT`, `INSERT`, `ALTER TABLE`, `$queryRaw`
+- API/network keywords: `fetch`, `axios`, `router.`, `@app.`, `express.`, `fastify.`
+- 100+ lines expected to change
+- Feature description mentions: "refactor", "redesign", "new endpoint", "new component"
+
+**LOW RISK — likely trivial, suggest skipping planning:**
+- Single file change
+- Only test files (`test/`, `spec/`, `__tests__`, `.test.`, `.spec.`)
+- Only documentation files (`.md`, `docs/`)
+- Only styling files (`.css`, `.scss`, `.less`)
+- Obvious typo or copy fix
+- Log statement additions
+- Formatting/linting only
+
+### Decision Flow
+
+1. **Any HIGH signal?** → Proceed to full planning (Step 0). Say: "High-risk signals detected ({signals}). Running full planning pipeline."
+2. **2+ MEDIUM signals?** → Proceed to full planning (Step 0). Say: "Multiple medium-risk signals detected ({signals}). Running full planning pipeline."
+3. **1 MEDIUM signal?** → Ask user via AskUserQuestion:
+   - **Plan it** — "Run full planning pipeline (recommended if uncertain)"
+   - **Skip planning** — "Execute directly with /uw:work inline task mode"
+4. **Only LOW signals or no signals?** → Suggest skipping. Ask via AskUserQuestion:
+   - **Skip planning (Recommended)** — "This looks trivial. Skip to /uw:work directly."
+   - **Plan anyway** — "Run full planning pipeline despite low risk"
+
+**If user chooses to skip:** Exit with message: "Skipping planning. Use `/uw:work {feature description}` to implement directly (it has its own inline gap-detector)."
+
+**If user chooses to plan:** Continue to Step 0.
+
+---
+
 ## STEP 0: Memory Recall (MANDATORY - DO NOT SKIP)
 
 **This is the first thing you do. Before exploration. Before interviewing. Before anything else.**
