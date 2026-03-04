@@ -47,6 +47,7 @@ unitwork/
 │       ├── architecture.md
 │       ├── security.md
 │       ├── simplicity.md
+│       ├── ai-smell-detector.md
 │       └── memory-validation.md
 ├── commands/                    # Slash commands (16)
 │   ├── uw-plan.md
@@ -141,6 +142,7 @@ Parallel specialists for `/uw:review`:
 - `architecture.md`
 - `security.md`
 - `simplicity.md`
+- `ai-smell-detector.md`
 - `memory-validation.md`
 
 ## Skill Compliance
@@ -189,7 +191,7 @@ Two specialized agents + one command for verification:
 
 ### Review Agents
 
-Seven parallel specialists for code review:
+Eight parallel specialists for code review:
 1. Type Safety
 2. Patterns & Utilities
 3. Performance & Database
