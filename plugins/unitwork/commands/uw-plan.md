@@ -481,6 +481,23 @@ Create the spec file:
 ### Unit 2: {name}
 ...
 
+## Verification Approach
+
+**Success Metrics:**
+- What measurable outcomes indicate success?
+
+**Measurement Method:**
+- How will we measure? What tools/tests?
+
+**Baseline Values:**
+- Current state before changes (captured during planning)
+
+**Expected Outcome:**
+- What we assert after implementation
+
+**E2E Testing:** (Y/N)
+- If Y: What to check and how
+
 ## Verification Plan
 
 ### Agent Self-Verification
