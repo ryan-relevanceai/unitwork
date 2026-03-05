@@ -198,7 +198,8 @@ Eight parallel specialists for code review:
 4. Architecture
 5. Security
 6. Simplicity
-7. Memory Validation
+7. AI Smell Detector
+8. Memory Validation
 
 ## Testing Changes
 
