@@ -1,5 +1,9 @@
 # {Feature Name}
 
+## Linear Ticket
+- **Ticket ID:** {PROJ-123 or "None"}
+- **URL:** {linear_url or "N/A"}
+
 ## Purpose & Impact
 - Why this feature exists
 - Who it helps
@@ -17,6 +21,11 @@
 ### Out of Scope
 - Explicitly excluded items
 - Noted refactors (tech debt for future)
+
+### Assumptions (To Verify During Implementation)
+- **{Assumption}**: Verify by {approach during /uw:work}
+
+*These assumptions were formed during planning. /uw:work should validate before proceeding with dependent work.*
 
 ## Technical Approach
 - Architectural decisions

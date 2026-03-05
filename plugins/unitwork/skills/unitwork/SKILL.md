@@ -208,6 +208,7 @@ Start at 100%, subtract:
 - `/uw:plan` - Interview and create spec
 - `/uw:work` - Execute with checkpoints
 - `/uw:review` - Parallel code review
+- `/uw:pr-review` - Review someone else's PR with inline GitHub comments
 - `/uw:compound` - Extract learnings
 - `/uw:bootstrap` - First-time setup
 - `/uw:pr` - Create/update GitHub PRs
