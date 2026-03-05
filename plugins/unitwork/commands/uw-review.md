@@ -156,6 +156,79 @@ Issues affecting maintainability but not correctness:
 | P2 IMPORTANT | Type casting, incomplete guards, boundary violations | Significant duplication, wrong file location |
 | P3 NICE-TO-HAVE | Minor edge cases, defensive improvements | Naming nits, comment additions, style consistency |
 
+## Approach Sanity Check (Before Agents)
+
+**Before spawning specialist agents, zoom out on the entire diff and ask: "Should this code exist at all?"**
+
+Specialist agents review code quality (is this well-written?). This step reviews code sanity (is this the right approach?). Without it, you'll produce a polished review of code that shouldn't have been written.
+
+### Step 1: Frame the Problem
+
+```
+What problem is this PR solving? (one sentence)
+```
+
+Extract from: commit messages, PR body, spec file, or branch name. If unclear, ask the user.
+
+### Step 2: Measure the Solution
+
+```bash
+# Count new files and lines added
+git diff $BASE_BRANCH...HEAD --stat
+git diff $BASE_BRANCH...HEAD --diff-filter=A --stat  # new files only
+```
+
+### Step 3: Check for Existing Solutions
+
+For each new file or significant new function, ask:
+
+1. **Does a browser/platform/stdlib API already do this?** (e.g., Notification API, structuredClone, URL, AbortController, Intl, crypto.randomUUID)
+2. **Does an installed dependency already do this?** Check `package.json` / `requirements.txt` / `Gemfile` for libraries that cover this functionality
+3. **Does a well-known library solve this in fewer lines?** (e.g., `worker-timers` vs hand-rolled Web Worker from Blob URL)
+
+```bash
+# Check installed dependencies for overlap
+cat package.json 2>/dev/null | jq -r '.dependencies // {} | keys[]'
+cat package.json 2>/dev/null | jq -r '.devDependencies // {} | keys[]'
+```
+
+### Step 4: Assess Proportionality
+
+Ask: **Is the complexity proportional to the problem?**
+
+Red flags:
+- 100+ lines of new code for something a 5-line API call handles
+- New files for functionality that exists as a one-liner
+- Hand-rolling infrastructure (workers, audio synthesis, parsers) instead of using libraries
+- Building abstractions for a single use case
+
+### Step 5: Verdict
+
+**If the approach is sound:** Continue to specialist agents. Note any minor simplification opportunities for the simplicity agent.
+
+**If the approach is questionable:** Stop and present the finding as a P0/P1 before running specialist agents:
+
+```markdown
+### APPROACH_SANITY - Severity: P0 - Tier: 1
+
+**Problem being solved:** {one sentence}
+
+**Current approach:** {summary} ({N} new files, {M} lines)
+
+**Simpler alternative:**
+{What already exists and how it solves the same problem}
+
+| Custom implementation | Lines | What already exists |
+|---|---|---|
+| {what was built} | {lines} | {existing solution} |
+
+**Recommendation:** {Replace entire approach / Replace specific files / Proceed with caveats}
+```
+
+**Do NOT run specialist agents on code that shouldn't exist.** Fix the approach first, then review the rewritten code.
+
+---
+
 ## Spawn Parallel Review Agents
 
 Launch all 8 review agents in parallel with the diff context. Each agent should reference the issue patterns taxonomy.
