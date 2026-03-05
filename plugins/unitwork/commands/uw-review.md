@@ -435,6 +435,7 @@ After fixes, re-run only the affected review agents:
 - If architecture issue fixed -> re-run architecture
 - If security issue fixed -> re-run security
 - If simplicity issue fixed -> re-run simplicity
+- If AI smell issue fixed -> re-run ai-smell-detector
 - If memory learning violation fixed -> re-run memory-validation
 
 Continue until review is clean or user accepts state.
