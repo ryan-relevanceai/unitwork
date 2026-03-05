@@ -1,6 +1,6 @@
 ---
 name: uw:action-comments
-description: Bulk resolve GitHub PR comments using checkpoint-based verification flow
+description: Resolve PR review comments with feedback classification, checkpoint-based fixes, and PR description updates
 argument-hint: "<PR number>"
 ---
 
@@ -10,7 +10,7 @@ argument-hint: "<PR number>"
 
 **Note: The current year is 2026.**
 
-This command fetches PR comments, independently verifies each one, and implements confirmed fixes with full checkpoint workflow. Each VALID_FIX gets its own checkpoint commit with verification.
+This command fetches PR comments, independently verifies each one, and implements confirmed fixes with full checkpoint workflow. Each SIMPLE_FIX gets its own checkpoint commit with verification.
 
 ## PR Detection
 
@@ -134,49 +134,130 @@ Verification:
 
 For each comment, categorize:
 
-- **VALID_FIX**: Concern is valid, needs fix → Gets checkpoint
+- **SIMPLE_FIX**: Concern is valid, contained to 1-2 files, no API changes → Gets checkpoint
+- **REARCHITECTURE**: Valid but requires design-level changes or multi-file refactor → Escalate to user
 - **ALREADY_HANDLED**: Code already addresses this → Reply only
 - **QUESTION**: Needs explanation, no fix → Reply only
+- **SCOPE_CREEP**: Valid request but outside this PR's scope → Offer to create issue
 - **DEFER**: Valid but out of scope for this PR → Document only
 - **DISAGREE**: Reviewer concern is incorrect → Reply with explanation
+
+### SIMPLE_FIX vs REARCHITECTURE
+
+**SIMPLE_FIX criteria** (ALL must be true):
+- Change is contained to 1-2 files
+- No public API/interface changes
+- No new dependencies
+- Doesn't contradict the original spec/plan
+- You understand exactly what to change
+
+**REARCHITECTURE signals** (ANY triggers escalation):
+- Requires different design pattern
+- Touches 3+ files
+- Changes public interfaces
+- Contradicts the spec
+- Reviewer says "different approach" or "reconsider"
+
+**If unsure → treat as REARCHITECTURE and escalate.**
+
+### Scope Creep Detection
+
+Watch for comments that expand scope beyond the PR's original intent:
+
+**Triggers:**
+- "While you're here, could you also..."
+- Requests touching files unrelated to the PR's purpose
+- Suggestions for "improvements" not in the original plan
+- New features disguised as "polish"
+
+Categorize these as **SCOPE_CREEP** and handle in Step 4.
+
+### Conflicting Feedback
+
+When two reviewers give contradictory feedback on the same code:
+
+```
+Conflicting feedback detected:
+
+**Reviewer A ({username}):** "{quote}"
+**Reviewer B ({username}):** "{opposite quote}"
+
+These need human resolution before I can proceed.
+```
+
+Present via AskUserQuestion:
+- **Follow Reviewer A** - Implement A's suggestion
+- **Follow Reviewer B** - Implement B's suggestion
+- **Ask reviewers to align** - Post a comment asking them to discuss
 
 ## Step 4: Present Findings
 
 ```
 PR #{PR_NUMBER} - {X} comments analyzed
 
-**Will Fix ({count}):**
+**SIMPLE_FIX ({count}):**
 1. {file}:{line} - {summary of fix}
 2. {file}:{line} - {summary of fix}
 
+**REARCHITECTURE ({count}) — Needs your decision:**
+1. {file}:{line} - "{reviewer feedback}"
+   Impact: {files affected, scope of change}
+
+**SCOPE_CREEP ({count}) — Out of PR scope:**
+1. {file}:{line} - "{request}"
+   Recommendation: Create issue to track separately
+
 **Already Handled ({count}):**
 1. {file}:{line} - Will reply with clarification
-   Current code: {brief explanation}
 
 **Need to Reply ({count}):**
 1. {file}:{line} - Question about {topic}
 
 **Defer ({count}):**
 1. {file}:{line} - Out of scope: {reason}
-
-Proceed with fixes?
 ```
 
+### Handle REARCHITECTURE Items
+
+For each REARCHITECTURE item, present via AskUserQuestion:
+- **Raise as separate issue** - Create Linear/GitHub issue, continue with PR as-is
+- **Update plan and implement** - Expand PR scope (may delay)
+- **Discuss with reviewer** - Post reply asking for clarification
+
+### Handle SCOPE_CREEP Items
+
+For each SCOPE_CREEP item:
+
+```bash
+# Offer to create a tracking issue
+gh issue create --title "{scope creep summary}" --body "Raised during review of PR #{PR_NUMBER}.
+
+**Original request:** {reviewer comment}
+**Reason for deferral:** Out of scope for this PR's purpose: {PR purpose}"
+```
+
+Present via AskUserQuestion:
+- **Create issues for all** - Create tracking issues for each scope creep item
+- **Include in this PR** - Expand scope (not recommended)
+- **Just reply** - Explain deferral to reviewer without creating issues
+
+### Proceed with SIMPLE_FIX Items
+
 Use AskUserQuestion:
-- **Fix all** - Implement all fixes with checkpoints
+- **Fix all** - Implement all SIMPLE_FIX items with checkpoints
 - **Review each** - Go through fixes one by one
 - **Skip fixes, just reply** - Only post clarifications
 
 ## Step 4.5: Plan-Verify Before Fixes
 
-Before implementing any VALID_FIX items, run gap-detector once for all fixes collectively:
+Before implementing any SIMPLE_FIX items, run gap-detector once for all fixes collectively:
 
 ```
 Task tool with subagent_type="unitwork:plan-review:gap-detector"
 prompt: "Review these PR comment fixes for information gaps:
 
-VALID_FIX items:
-<list of VALID_FIX items from Step 4>
+SIMPLE_FIX items:
+<list of SIMPLE_FIX items from Step 4>
 
 For each fix, check for:
 - Missing context (what exactly needs to change?)
@@ -194,7 +275,7 @@ Report any P1 or P2 gaps that would block implementation."
 
 ## Step 5: Implement Fixes (Checkpoint Per Fix)
 
-For each VALID_FIX item:
+For each SIMPLE_FIX item:
 
 ### 5.1 Implement the Fix
 
@@ -250,7 +331,7 @@ Apply the self-correcting review protocol from [verification-flow.md](../skills/
 
 ## Step 6: Commit Clarifications
 
-After all VALID_FIX items are checkpointed, create a single commit for non-fix clarifications:
+After all SIMPLE_FIX items are checkpointed, create a single commit for non-fix clarifications:
 
 ```
 docs: clarifications for PR #{PR_NUMBER} review comments
@@ -262,22 +343,108 @@ docs: clarifications for PR #{PR_NUMBER} review comments
 
 This commit contains no code changes, only documentation of responses.
 
-## Step 7: Post Replies
+## Step 7: Post In-Thread Replies
 
-For comments that need clarification (not fixes):
+Reply directly in the review thread, not as top-level comments. **Always prefix with 🤖** to show it's Claude responding.
+
+### Find Comment IDs
 
 ```bash
-# Reply to already-handled concerns
-gh pr comment $PR_NUMBER --body "Thanks for the review! This is already handled because..."
-
-# Reply to questions
-gh pr comment $PR_NUMBER --body "Good question! The reason for this pattern is..."
-
-# Reply to disagreements
-gh pr comment $PR_NUMBER --body "I considered this, but decided against it because..."
+# Get all review comments with IDs, file paths, and content
+gh api repos/{owner}/{repo}/pulls/$PR_NUMBER/comments \
+  --jq '.[] | {id, path, line, body: .body[0:100], user: .user.login}'
 ```
 
-## Step 8: Compound Phase Prompt
+Match feedback to the correct `id` by file path and content.
+
+### Reply In-Thread
+
+```bash
+# Reply to specific comment by ID
+gh api --method POST \
+  repos/{owner}/{repo}/pulls/$PR_NUMBER/comments/{comment_id}/replies \
+  -f body="🤖 Fixed in latest push."
+```
+
+**Reply templates:**
+- SIMPLE_FIX (done): "🤖 Fixed in latest push."
+- ALREADY_HANDLED: "🤖 This is already handled — {brief explanation of where/how}."
+- QUESTION: "🤖 {concise answer}."
+- DISAGREE: "🤖 Intentional — {brief reason}."
+- SCOPE_CREEP: "🤖 Good idea — raised as {issue link} to keep this PR focused."
+- DEFER: "🤖 Noted — will address in a follow-up."
+
+**Keep replies brief.** Put details in code comments if needed.
+
+### Resolve Addressed Threads
+
+After replying, resolve threads for items that are done:
+
+```bash
+# Get thread IDs
+gh api graphql -f query='
+  query {
+    repository(owner: "{owner}", name: "{repo}") {
+      pullRequest(number: '$PR_NUMBER') {
+        reviewThreads(first: 50) {
+          nodes {
+            id
+            isResolved
+            comments(first: 1) {
+              nodes { body }
+            }
+          }
+        }
+      }
+    }
+  }
+'
+
+# Resolve a thread
+gh api graphql -f query='
+  mutation {
+    resolveReviewThread(input: {threadId: "THREAD_NODE_ID"}) {
+      thread { isResolved }
+    }
+  }
+'
+```
+
+**When to resolve:**
+- Fix pushed for the issue
+- Explained why no change needed (and reviewer hasn't objected)
+
+**When NOT to resolve:**
+- Still working on it
+- Ongoing discussion
+- REARCHITECTURE items awaiting alignment
+
+## Step 8: Update PR Description
+
+After implementing fixes, check if the PR description is stale:
+
+```bash
+gh pr view $PR_NUMBER --json body -q .body
+```
+
+**Description is stale if any of these are true:**
+- Description says "adds X" but X was removed during fixes
+- Verification section references old test approach
+- Approach section describes superseded design
+- Changes Summary doesn't reflect post-review state
+
+**If stale:** Regenerate using the format from `/uw:pr` Step 4, preserving any custom sections. Update via:
+
+```bash
+REPO_INFO=$(gh repo view --json nameWithOwner -q .nameWithOwner)
+gh api "repos/$REPO_INFO/pulls/$PR_NUMBER" --method PATCH --input - <<< '{"body": "..."}'
+```
+
+**If still accurate:** Skip this step.
+
+---
+
+## Step 9: Compound Phase Prompt
 
 After all fixes are complete:
 
@@ -297,7 +464,7 @@ Use AskUserQuestion:
 - **No** - Skip compound phase
 - **Later** - Remind me after push
 
-## Step 9: Report and Push
+## Step 10: Report and Push
 
 ```
 Addressed {X}/{Y} comments on PR #{PR_NUMBER}
@@ -306,16 +473,46 @@ Addressed {X}/{Y} comments on PR #{PR_NUMBER}
 - checkpoint(pr-{PR}-1): {summary}
 - checkpoint(pr-{PR}-2): {summary}
 
+**Escalated ({count}):**
+- {count} REARCHITECTURE items — {resolved/pending}
+
+**Scope Creep ({count}):**
+- {count} issues created to track separately
+
 **Clarified ({count}):**
-- {count} replies posted explaining existing code
+- {count} in-thread replies posted
 
 **Deferred ({count}):**
 - {count} noted for future work
 
+**PR Description:** {Updated / No changes needed}
+
 Push changes and request re-review?
 ```
 
+### Pre-Push Checklist
+
+Before pushing, verify:
+- [ ] All SIMPLE_FIX items checkpointed
+- [ ] All threads replied to (in-thread, not top-level)
+- [ ] Addressed threads resolved
+- [ ] PR description updated if stale
+- [ ] No unresolved REARCHITECTURE items blocking
+
 Use AskUserQuestion:
-- **Push and request review** - `git push && gh pr ready`
+- **Push and re-request review** - Push, then re-request from original reviewers
 - **Push only** - Just push changes
 - **Review changes first** - Show diff before pushing
+
+### Re-Request Review
+
+```bash
+# Push changes
+git push
+
+# Re-request review from original reviewers
+gh api repos/{owner}/{repo}/pulls/$PR_NUMBER/reviews \
+  --jq '.[].user.login' | sort -u | while read reviewer; do
+  gh pr edit $PR_NUMBER --add-reviewer "$reviewer"
+done
+```
