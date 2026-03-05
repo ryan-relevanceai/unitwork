@@ -49,10 +49,11 @@ unitwork/
 │       ├── simplicity.md
 │       ├── ai-smell-detector.md
 │       └── memory-validation.md
-├── commands/                    # Slash commands (16)
+├── commands/                    # Slash commands (17)
 │   ├── uw-plan.md
 │   ├── uw-work.md
 │   ├── uw-review.md
+│   ├── uw-pr-review.md
 │   ├── uw-compound.md
 │   ├── uw-bootstrap.md
 │   ├── uw-pr.md
@@ -94,6 +95,7 @@ Commands use `uw:` prefix to namespace all Unit Work commands:
 - `/uw:plan` - Planning phase
 - `/uw:work` - Implementation phase (with self-correcting review cycles)
 - `/uw:review` - Review phase
+- `/uw:pr-review` - Review someone else's PR with GitHub inline comments
 - `/uw:compound` - Learning extraction
 - `/uw:bootstrap` - First-time setup
 - `/uw:pr` - Create/update GitHub PRs
