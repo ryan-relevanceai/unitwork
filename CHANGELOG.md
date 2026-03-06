@@ -5,6 +5,17 @@ All notable changes to the Unit Work plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.15.0] - 2026-03-06
+
+### Added
+
+- **uw-review.md**: Blast radius awareness in review verification
+  - Architectural Zoom-Out pre-verification step using new `ARCHITECTURAL_DIRECTION` pattern
+  - `SCOPE_INCREASE` tagging for findings whose fixes would expand beyond the diff
+  - Fix Implementation Principles baked into the review document output (not the command)
+  - "Fix P2s (skip scope-increasing)" option in the fix loop
+- **issue-patterns.md**: New `ARCHITECTURAL_DIRECTION` holistic pattern for detecting wrong PR direction
+
 ## [0.14.0] - 2026-03-06
 
 ### Changed

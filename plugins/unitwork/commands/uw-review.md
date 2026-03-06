@@ -201,6 +201,29 @@ problematic code
 fixed code
 ```
 
+## Architectural Zoom-Out
+
+Before verifying individual findings, read the full diff holistically to assess whether the PR's fundamental approach is sound. Use the `ARCHITECTURAL_DIRECTION` pattern from issue-patterns.md as a rubric.
+
+**Evaluate against signal patterns:**
+- Is this building something new when an existing service/module should be extended?
+- Is logic in the wrong layer?
+- Is this creating a new abstraction when the work belongs in an existing one?
+- Is this solving a symptom instead of the root cause?
+- Is this reimplementing a flow that already exists?
+
+**If the approach is sound:** Note "Architectural direction: sound" and proceed to Finding Verification.
+
+**If concerns exist:** Create a non-actionable `Architectural Direction` observation in the review document. This is informational only — flagging for the developer to consider. It does not have a severity, does not enter the fix loop, and is not a P1/P2/P3 finding.
+
+Differentiate from related patterns:
+- Individual files in wrong location → WRONG_LOCATION (reviewable finding)
+- Tight coupling between modules → ARCHITECTURAL_CONCERN (reviewable finding)
+- Code that could be structured better → FILE_ORGANIZATION (reviewable finding)
+- This pattern is about the entire PR direction being wrong, not individual code issues
+
+**High bar:** Most PRs have a sound approach with imperfect execution. Only flag when fixing individual issues would be wasted effort because the foundation needs rethinking.
+
 ## Finding Verification (Critical)
 
 **Agents are not oracles.** Their findings are hypotheses that must be verified before presenting to the user.
@@ -217,8 +240,14 @@ For each finding from the review agents:
    - A stylistic preference vs actual problem → Dismiss
    - Pre-existing issue not introduced by this change → Move to "Existing Code Issues"
 
-3. **Classify the finding**:
-   - **VERIFIED**: Factually correct and in-scope → Include in review
+3. **Check blast radius**: For each verified finding, assess whether the fix would touch files outside the current diff.
+   - If the fix stays within the diff's file footprint → No tag needed
+   - If the fix would require changes to files not in the diff → Tag as `SCOPE_INCREASE` with a list of files the fix would expand to
+   - The tag is metadata, not priority — the finding keeps its original severity
+
+4. **Classify the finding**:
+   - **VERIFIED**: Factually correct and in-scope, fix stays within diff → Include in review
+   - **VERIFIED + SCOPE_INCREASE**: Factually correct and in-scope, but fix expands to files outside the diff → Include in review with scope tag
    - **DISMISSED**: False positive or out of scope → Document rationale, don't include in main review
 
 **Only VERIFIED findings are presented to the user for action.**
@@ -228,7 +257,8 @@ Document verification decisions internally:
 ### Finding: {original finding summary}
 **Agent:** {type-safety|patterns-utilities|etc.}
 **Original Severity:** P1/P2/P3
-**Verification Status:** VERIFIED | DISMISSED
+**Verification Status:** VERIFIED | VERIFIED + SCOPE_INCREASE | DISMISSED
+**Blast Radius:** {files the fix would expand to, or "within diff"}
 **Rationale:** {why this was verified or dismissed}
 **Action:** {what will be done, or "none - dismissed"}
 ```
@@ -257,11 +287,18 @@ Create `.unitwork/review/{DD-MM-YYYY}-{feature-name}.md`:
 - P1 Issues: {count} ({tier1_count} correctness, {tier2_count} cleanliness)
 - P2 Issues: {count}
 - P3 Issues: {count}
+- Scope-increasing fixes: {count}
+
+## Architectural Direction
+{Only include this section if the zoom-out step flagged concerns. Informational only — not actionable by the review system.}
+
+{Description of the directional concern and what the developer should consider.}
 
 ## P1 - Critical Issues (Tier 1 first, then Tier 2)
 
 ### Correctness Issues
 {List all P1 Tier 1 findings}
+{Findings with SCOPE_INCREASE get an inline `SCOPE_INCREASE` marker and a "Fix expands to:" line}
 
 ### Cleanliness Issues
 {List all P1 Tier 2 findings}
@@ -285,6 +322,11 @@ Issues found in code that predates this change. Not blocking, but worth noting:
 ## What's Good
 {Positive observations - following patterns, good structure, etc.}
 
+## Fix Implementation Principles
+- **Minimize blast radius**: Fixes must stay within the PR's existing file footprint wherever possible. Do not refactor surrounding code, add new abstractions, or touch unrelated files.
+- **Reuse existing utilities**: Before writing new code for a fix, search for existing utilities, helpers, and patterns in the codebase. Prefer calling what already exists over creating something new.
+- **No scope creep during fixes**: A fix addresses the finding and nothing else. Do not improve adjacent code, add extra error handling, or "clean up while we're here."
+
 ## Review Status
 - [ ] All P1s resolved
 - [ ] P2s addressed or explicitly deferred
@@ -297,7 +339,7 @@ Issues found in code that predates this change. Not blocking, but worth noting:
 
 Fix Tier 1 (correctness) P1 issues first, then Tier 2 (cleanliness) P1 issues:
 
-1. Present each P1 issue to user, starting with Tier 1
+1. Present each P1 issue to user, starting with Tier 1. For P1s with `SCOPE_INCREASE`, add a note: "Fixing this will touch files beyond the current diff: {list of files}". P1s still get fixed regardless of scope increase.
 2. **Research the correct fix** - If unsure about best practice, query Context7:
    ```
    mcp__unitwork_context7__resolve-library-id
@@ -326,7 +368,7 @@ Fix Tier 1 (correctness) P1 issues first, then Tier 2 (cleanliness) P1 issues:
 
 ### For P2/P3 Issues
 
-After P1s are resolved, present remaining issues:
+After P1s are resolved, present remaining issues. Group scope-increasing findings separately within each priority:
 
 ```
 P1 issues resolved.
@@ -339,6 +381,9 @@ Remaining issues:
 **P2 - IMPORTANT (Cleanliness):**
 1. {issue description}
 
+**P2 - Scope-Increasing** `SCOPE_INCREASE`:
+1. {issue description} → Fix expands to: {file list}
+
 **P3 - NICE-TO-HAVE:**
 1. {issue description}
 
@@ -347,6 +392,7 @@ What would you like to do?
 
 Use AskUserQuestion:
 - **Fix P2s now** - Implement P2 fixes
+- **Fix P2s (skip scope-increasing)** - Fix P2s but defer all scope-expanding fixes
 - **Defer P2s** - Document and continue
 - **Fix specific issues** - Select which to fix
 - **Continue to PR** - Accept current state

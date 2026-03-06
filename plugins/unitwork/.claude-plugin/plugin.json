@@ -1,6 +1,6 @@
 {
   "name": "unitwork",
-  "version": "0.14.0",
+  "version": "0.15.0",
   "description": "Tools for structured AI development. 15 agents, 16 commands, 2 skills, 1 MCP server.",
   "author": {
     "name": "Ryan"

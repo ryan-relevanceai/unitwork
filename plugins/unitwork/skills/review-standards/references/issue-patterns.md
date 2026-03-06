@@ -630,6 +630,32 @@ Unescaped user input in HTML, innerHTML with user data.
 
 ---
 
+## Holistic Patterns
+
+### ARCHITECTURAL_DIRECTION
+**Tier:** Informational (not actionable by review system)
+
+**Detection:** The PR's fundamental approach is wrong — not individual code issues, but the direction itself. Every line may be well-written but the whole thing is solving the problem incorrectly.
+
+**Signal patterns:**
+- Building a new service/module when an existing one should be extended
+- Logic in the wrong layer (e.g., business rules in frontend, validation client-side when it belongs server-side)
+- Creating a new abstraction when the work belongs in an existing one
+- Solving the symptom instead of the root cause
+- Reimplementing a flow that already exists elsewhere in the codebase
+
+**NOT this pattern:**
+- Individual files in the wrong location → WRONG_LOCATION
+- Tight coupling between modules → ARCHITECTURAL_CONCERN
+- Code that works but could be structured better → FILE_ORGANIZATION
+- Scope creep (unrelated changes in the PR) → SCOPE_CREEP
+
+**High bar:** Most PRs have a sound approach with imperfect execution. Only flag when the direction itself is wrong — when fixing individual issues would be wasted effort because the foundation needs rethinking.
+
+**Output:** Informational observation in the review document. Not a P1/P2/P3 finding. Does not enter the fix loop. The developer decides what to do with it.
+
+---
+
 ## Quick Reference
 
 **Top 5 by frequency:**
