@@ -300,37 +300,25 @@ Include the recording path in verification results for human review.
 
 ## Local Development Setup
 
-Full workflow to start backend, frontend, and browser for local E2E testing. The agent should determine paths and ports by inspecting the environment, but defaults are provided.
+Full workflow to start backend, frontend, and browser for local E2E testing. The agent should determine paths and ports by inspecting the environment.
 
 ### Prerequisites
 
 Before starting local dev, verify these are available:
 
 ```bash
-# Node v22 (NOT v25 - native module incompatibility with @datadog/pprof)
+# Node.js (check version compatibility with your project)
 node --version
-
-# AWS SSO access
-aws sts get-caller-identity --profile your-cloud-profile
 
 # agent-browser CLI
 command -v agent-browser
 
-# pnpm
-/opt/homebrew/bin/pnpm --version
+# Your package manager (npm, yarn, pnpm, etc.)
 ```
-
-Defaults: backend repo at `~/code/backend-repo`, frontend repo at `~/code/frontend-repo`, Node v22 at `$HOME/.nvm/versions/node/v22.18.0/bin`, backend port `8001`, frontend port `8081`, session name `debug`.
 
 ### Phase 1: Authentication & Secrets
 
-```bash
-# AWS SSO Login (opens browser for OAuth)
-aws sso login --profile your-cloud-profile
-
-# Bootstrap secrets (must complete before backend starts)
-cd <nodeapi-repo> && /opt/homebrew/bin/pnpm run bootstrapsecrets
-```
+If your project requires authentication or secret bootstrapping, complete that before starting servers.
 
 ### Phase 2: Start Backend
 
@@ -383,15 +371,7 @@ When verifying backend changes (API endpoints, services, etc.):
 
 ### 1. Determine Target App URL
 
-The app URL depends on the repository being tested:
-
-| Repository | App URL |
-|------------|---------|
-| `relevance-app` (Vue frontend) | `https://your-app.example.com` |
-| `relevance-chat-app` (React Native) | `https://your-chat-app.example.com` |
-| Other/Unknown | Ask user for URL |
-
-Check the current repo name from git remote or package.json to determine which URL to use.
+Ask the user for the frontend URL to test against, or check project configuration for staging/development URLs.
 
 ### 2. Determine Backend Port
 
@@ -660,7 +640,7 @@ lsof -ti:<frontend-port> | xargs kill -9 2>/dev/null || true
 | Error | Cause | Solution |
 |-------|-------|----------|
 | `No native build for abi=141` | Node v25 | Switch to Node v22 |
-| `CredentialsProviderError: Login required` | AWS SSO expired | Re-run `aws sso login --profile your-cloud-profile` |
+| `CredentialsProviderError: Login required` | Auth expired | Re-authenticate with your cloud provider |
 | `EADDRINUSE: address already in use` | Port occupied | `lsof -ti:<port> \| xargs kill -9` |
 | `command not found: _load_nvm` | Shell config issue | Use full path to pnpm (`/opt/homebrew/bin/pnpm`) |
 | `Unexpected end of JSON input` (codegen) | Missing generated file | `echo '{}' > apps/nodeapi/src/codegeneration/generated_openapi_schema.json` |

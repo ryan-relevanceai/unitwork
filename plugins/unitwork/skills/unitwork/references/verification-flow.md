@@ -29,14 +29,7 @@ Browser-automation is NOT limited to UI changes. Use it when:
 4. Agent sets `localStorage.setItem('api-url', 'http://localhost:{PORT}')`
 5. Browser uses local backend for all API calls
 
-**Repository to URL mapping:**
-| Repository | App URL |
-|------------|---------|
-| `relevance-app` | `https://your-app.example.com` |
-| `relevance-chat-app` | `https://your-chat-app.example.com` |
-| Other | Ask user |
-
-**Note:** Both apps use the same localStorage key (`api-url`).
+**App URL:** Ask the user for the frontend URL to test against, or check project configuration for staging/development URLs.
 
 ## Confidence Calculation
 

@@ -5,14 +5,14 @@
     "url": "https://github.com/ryan-relevanceai"
   },
   "metadata": {
-    "description": "Unit Work plugin marketplace - human-in-the-loop verification framework for AI development",
+    "description": "Unit Work plugin marketplace - tools for structured AI development",
     "version": "1.0.0"
   },
   "plugins": [
     {
       "name": "unitwork",
-      "description": "Human-in-the-loop verification framework for AI development. Break work into minimum reviewable units with checkpoints, confidence assessment, and Hindsight memory integration. Includes 9 agents, 6 commands, 1 skill, and 1 MCP server.",
-      "version": "0.1.0",
+      "description": "Tools for structured AI development. 16 commands for planning, implementation, multi-agent code review, CI fixing, conflict resolution, and session management. 15 specialized agents, 2 skills, 1 MCP server. Use individually or as a workflow.",
+      "version": "0.14.0",
       "author": {
         "name": "Ryan"
       },
@@ -20,8 +20,6 @@
         "ai-powered",
         "verification",
         "checkpoints",
-        "human-in-the-loop",
-        "hindsight",
         "code-review",
         "workflow-automation"
       ],
