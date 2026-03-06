@@ -134,7 +134,7 @@ setup_hindsight_docker() {
         HINDSIGHT_API_LLM_API_KEY="$api_key"
         HINDSIGHT_API_LLM_PROVIDER="openai"
         HINDSIGHT_API_LLM_BASE_URL="https://openrouter.ai/api/v1"
-        HINDSIGHT_API_LLM_MODEL="google/gemini-3-flash-preview"
+        HINDSIGHT_API_LLM_MODEL="google/gemini-3-flash"
 
         echo ""
         echo "To avoid entering this again, add to ~/.bashrc or ~/.zshrc:"
@@ -142,7 +142,7 @@ setup_hindsight_docker() {
         echo "  export HINDSIGHT_API_LLM_API_KEY=$api_key"
         echo "  export HINDSIGHT_API_LLM_PROVIDER=openai"
         echo "  export HINDSIGHT_API_LLM_BASE_URL=https://openrouter.ai/api/v1"
-        echo "  export HINDSIGHT_API_LLM_MODEL=google/gemini-3-flash-preview"
+        echo "  export HINDSIGHT_API_LLM_MODEL=google/gemini-3-flash"
         echo ""
     fi
 
@@ -152,7 +152,7 @@ setup_hindsight_docker() {
         -e HINDSIGHT_API_LLM_API_KEY=$HINDSIGHT_API_LLM_API_KEY \
         -e HINDSIGHT_API_LLM_PROVIDER=${HINDSIGHT_API_LLM_PROVIDER:-openai} \
         -e HINDSIGHT_API_LLM_BASE_URL=${HINDSIGHT_API_LLM_BASE_URL:-https://openrouter.ai/api/v1} \
-        -e HINDSIGHT_API_LLM_MODEL=${HINDSIGHT_API_LLM_MODEL:-google/gemini-3-flash-preview} \
+        -e HINDSIGHT_API_LLM_MODEL=${HINDSIGHT_API_LLM_MODEL:-google/gemini-3-flash} \
         -v $HOME/.hindsight-docker:/home/hindsight/.pg0 \
         ghcr.io/vectorize-io/hindsight:latest
 
