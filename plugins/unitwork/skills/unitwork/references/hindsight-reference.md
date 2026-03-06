@@ -26,7 +26,7 @@ The `bankName` field in `.unitwork/.bootstrap.json` allows multiple repos to sha
 
 ```json
 {
-  "bankName": "relevance",
+  "bankName": "my-project",
   "lastLearningsImport": "2026-02-10T00:00:00Z"
 }
 ```

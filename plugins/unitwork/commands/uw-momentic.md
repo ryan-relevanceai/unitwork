@@ -231,15 +231,13 @@ Glob for `*.test.yaml` files relative to the Momentic config location and list t
 ## macOS EMFILE Workaround
 
 The builder-app monorepo triggers `EMFILE: too many open files` when running the Nuxt dev server locally on macOS. Instead of fighting this:
-- Use `--env dev` which uses the hosted frontend at `your-app.example.com`
+- Use `--env dev` which uses the hosted frontend at your development URL
 - The test can set `localStorage api-url` to `localhost:8001` so API calls still go to the local backend
 - This effectively tests local backend code without needing a local frontend
 
-## Existing Test Locations
+## Finding Test Locations
 
-- **builder-app**: `apps/builder-app/momentic-tests/`
-  - Login module: `modules/login-builder-app.module.yaml`
-  - Config: `apps/builder-app/momentic.config.yaml`
-- **chat-app**: Check `momentic-tests/` in the chat-app repo
-  - Login module: `momentic-tests/modules/login-chat-app.module.yaml`
-  - Config: `momentic.config.yaml` at repo root
+Look for Momentic tests in your project:
+- Glob for `*.test.yaml` and `*.module.yaml` files
+- Check `momentic-tests/` directories
+- Read `momentic.config.yaml` for `include` patterns that define test locations

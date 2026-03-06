@@ -5,6 +5,21 @@ All notable changes to the Unit Work plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.14.0] - 2026-03-06
+
+### Changed
+
+- **README.md**: Complete rewrite
+  - Reframed philosophy: tools work independently, not just as a mandatory workflow
+  - Made Hindsight optional (nice enhancement, not required)
+  - Fixed installation commands to match current Claude Code plugin syntax
+  - Condensed from 468 lines to ~120 lines with concise command descriptions
+  - Removed verbose per-command phase breakdowns
+  - Fixed agent count (15, not 16)
+- **marketplace.json**: Updated description, version (0.1.0 → 0.14.0), and component counts
+- **plugin.json**: Updated version (0.13.0 → 0.14.0), simplified description
+- **install_deps.sh**: Aligned Hindsight model name with README
+
 ## [0.13.0] - 2026-02-26
 
 ### Added

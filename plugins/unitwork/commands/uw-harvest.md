@@ -48,7 +48,7 @@ For each validated repo, recall existing harvest insights to check for overlap:
 hindsight memory recall "{repo_name}" "HARVEST insights, code review patterns, recurring review themes" --budget low --include-chunks
 ```
 
-Where `{repo_name}` is the repo name portion of each `owner/repo` argument (e.g., `relevance-app` from `your-org/your-repo`).
+Where `{repo_name}` is the repo name portion of each `owner/repo` argument (e.g., `your-repo` from `your-org/your-repo`).
 
 ### Display Learnings
 
@@ -200,7 +200,7 @@ bodies against the schema before processing."
 For each synthesized insight, store it in the corresponding repo's Hindsight bank.
 
 **Bank name derivation:** Extract the repo name (portion after `/`) from the `owner/repo` argument.
-- `your-org/your-repo` → bank name `relevance-app`
+- `your-org/your-repo` → bank name `your-repo`
 
 **Note:** This differs from the standard bank name derivation (which uses `git remote origin URL`) because uw-harvest operates on remote repos, not the local checkout. The extracted name matches in most cases since GitHub repo names are the same slug used in remote URLs. If a repo uses a fork or SSH alias with a different name, the bank names may diverge.
 

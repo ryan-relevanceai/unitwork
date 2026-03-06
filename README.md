@@ -1,379 +1,101 @@
-# Unit Work Plugin
+# Unit Work
 
-Human-in-the-loop verification framework for AI-assisted development. Breaks work into "minimum reviewable units" with checkpoints at verifiable boundaries.
+A Claude Code plugin with tools for structured AI development. Use them together as a workflow, or pick individual tools as needed.
 
-> "The largest task an AI can self-validate to 100% accuracy, that is also able to get validated by the minimum amount of human review"
+## Install
 
-## Installation
-
-```bash
-/plugin marketplace add https://github.com/ryan-relevanceai/unitwork
-/plugin install unitwork
 ```
-
-## Components
-
-| Component | Count |
-|-----------|-------|
-| Agents | 16 |
-| Commands | 16 |
-| Skills | 2 |
-| MCP Servers | 1 |
+/plugin marketplace add ryan-relevanceai/unitwork
+/plugin install unitwork@ryan-relevanceai-unitwork
+```
 
 ## Philosophy
 
-Unit Work addresses the "70-80% completion problem" - AI tends to complete features 70-80% correctly, making manual review of massive diffs cumbersome. The solution:
+AI completes features 70-80% correctly. Reviewing massive diffs to find the remaining 20% is painful. Unit Work addresses this by:
 
-1. **Front-load work** in interview and planning stages
-2. **Create checkpoints** at verifiable boundaries, not arbitrary phases
-3. **Know your gaps** - AI is strong at backend verification, weak at visual/spatial
-4. **Compound learnings** via Hindsight memory across sessions
+1. **Breaking work into reviewable units** with checkpoints at verifiable boundaries
+2. **Running exhaustive multi-agent review** that catches what single-pass review misses
+3. **Compounding learnings** so AI gets better at YOUR codebase over time
 
-## How Unit Work Compounds
-
-Each workflow phase contributes to a learning loop that compounds knowledge across sessions:
-
-```
-Session 1: Bootstrap → Plan → Work → Review → Compound
-                ↓         ↓       ↓        ↓         ↓
-           Codebase   Planning  Gotchas  Review   Feature
-           patterns   learnings         patterns  learnings
-                ↓         ↓       ↓        ↓         ↓
-                └─────────┴───────┴────────┴─────────┘
-                                  ↓
-                            Hindsight Memory
-                                  ↓
-Session 2: Plan ← recalls learnings from Session 1
-```
-
-**What gets compounded:**
-- **File purposes** - Where things live and what they do
-- **Architectural patterns** - How the codebase is structured
-- **Gotchas & quirks** - Things that cause friction or unexpected behavior
-- **Verification blind spots** - What automated checks miss
-
-**How it works:**
-1. Each phase starts with **Memory Recall** - loading relevant learnings before starting work
-2. During work, discoveries are noted in verification documents
-3. After completion, `/uw:compound` extracts reusable learnings and stores them to Hindsight
-4. Future sessions recall these learnings, avoiding repeated mistakes
-
-The result: AI assistance that gets better at YOUR codebase over time, not just better at coding in general.
-
-## Workflow
-
-```
-┌─────────────┐
-│ uw:bootstrap│  (First-time setup)
-└──────┬──────┘
-       ▼
-┌─────────────┐
-│  uw:plan    │  (Create spec)
-└──────┬──────┘
-       ▼
-┌─────────────┐
-│  uw:work    │  (Implement with checkpoints)
-└──────┬──────┘
-       ▼
-┌─────────────┐
-│  uw:review  │───► uw:compound (auto-triggered)
-└──────┬──────┘
-       ▼
-┌─────────────┐
-│   uw:pr     │  (Create PR)
-└──────┬──────┘
-       │
-  ┌────┴────┬────────────────┐
-  ▼         ▼                ▼
-uw:fix-ci  uw:action-       uw:fix-conflicts
-(CI fails) comments         (rebase conflicts)
-           (PR comments)
-  │         │                │
-  └────┬────┴────────────────┘
-       ▼
-    (Merge)
-```
+These tools work independently. Know what to build? Skip the plan, use vanilla Claude Code, then run `/uw:review` and `/uw:pr`. Want the full structured workflow? Go `/uw:plan` → `/uw:work` → `/uw:review` → `/uw:pr`.
 
 ## Commands
 
-### Core Workflow
+### Build
 
 | Command | Description |
 |---------|-------------|
-| `/uw:plan` | Interview user, explore codebase, create spec with implementation units |
-| `/uw:work` | Execute plan with checkpoints at verifiable boundaries |
-| `/uw:review` | Spawn 6 parallel review agents for exhaustive code review |
-| `/uw:compound` | Extract and store learnings to Hindsight + local files |
+| `/uw:plan` | Interview-driven planning. Explores codebase, clarifies requirements, creates spec with implementation units. Takes ~15min — skip if you know what to build. |
+| `/uw:work` | Implements a spec with checkpoints at verifiable boundaries. Each checkpoint is a commit with a verification document and confidence score. |
 
-#### /uw:plan
-
-Creates a detailed spec by interviewing you and exploring the codebase. Ensures all requirements are captured before implementation begins.
-
-**Key phases:**
-1. **Memory Recall** - Loads relevant learnings from Hindsight to avoid repeating past mistakes
-2. **Context Gathering** - Spawns 3 parallel exploration agents to find related code, test patterns, and existing utilities
-3. **Interview** - Clarifies requirements, edge cases, testing strategy, and integration points
-4. **Plan Review** - Validates the draft plan with 3 review agents before presenting (convergence required)
-
-**Compounds:** Retains discovered file locations, patterns, and architectural decisions to Hindsight for future sessions.
-
-#### /uw:work
-
-Implements the spec with checkpoints at verifiable boundaries. Each checkpoint is a commit with verification documentation.
-
-**Key phases:**
-1. **Memory Recall** - Loads gotchas and learnings relevant to the task
-2. **Implement** - Works through each unit as specified, querying Context7 for unfamiliar APIs
-3. **Verify** - Launches subagents (test-runner, api-prober, browser-automation) based on what changed
-4. **Checkpoint** - Creates commit with confidence score; ≥95% continues, <95% pauses for review
-
-**Compounds:** Retains verification blind spots and unexpected issues as gotchas for future reference.
-
-#### /uw:review
-
-Runs exhaustive code review using 6 parallel agents. Finds issues that single-pass review misses.
-
-**Key phases:**
-1. **Memory Recall** - Loads past review learnings to inform current review
-2. **Parallel Review** - Spawns 6 agents (type-safety, patterns, performance, architecture, security, simplicity)
-3. **Finding Verification** - Each finding is independently verified (agents are not oracles)
-4. **Fix Loop** - P1 issues are fixed immediately; P2/P3 presented for decision
-
-**Compounds:** Auto-triggers `/uw:compound` to extract learnings from the implementation journey.
-
-#### /uw:compound
-
-Extracts learnings from the implementation and stores them for future sessions. Documents what deviated from the plan.
-
-**Key phases:**
-1. **Gather Context** - Collects spec, verification docs, review findings, and git history
-2. **Extract Learnings** - Focuses on delta between plan and reality (gotchas, surprises, patterns)
-3. **Local Documentation** - Creates `.unitwork/learnings/{date}-{feature}.md`
-4. **Hindsight Retention** - Stores learnings by feature *type* for transferability across projects
-
-**Compounds:** This IS the compounding phase - it transforms implementation experience into reusable knowledge.
-
-### Utilities
+### Review & Ship
 
 | Command | Description |
 |---------|-------------|
-| `/uw:bootstrap` | First-time setup: check deps, configure Hindsight, explore codebase |
-| `/uw:pr` | Create or update GitHub PRs with AI-generated descriptions |
-| `/uw:action-comments` | Bulk resolve GitHub PR comments |
-| `/uw:fix-ci` | Autonomously fix failing CI with analyze→fix→commit→push→verify loop |
-| `/uw:fix-conflicts` | Intelligent rebase conflict resolution with multi-agent analysis |
-| `/uw:investigate` | Read-only codebase investigation with memory integration |
-| `/uw:browser-test` | Browser automation for UI verification and testing |
-| `/uw:momentic` | Run, create, debug, or upload Momentic E2E tests |
-| `/uw:harvest` | Scrape merged PR review comments, synthesize insights, store in Hindsight |
-| `/uw:park` | Park work session with full context to GitHub PR comment for multi-device handoff |
-| `/uw:resume` | Resume parked work session by reading PR comments and local artifacts |
-| `/uw:test-plan` | Generate comprehensive manual testing steps from git diffs |
+| `/uw:review` | Spawns 7 parallel review agents (type-safety, patterns, performance, architecture, security, simplicity, memory-validation). Verifies findings before presenting. Fixes P1 issues automatically. |
+| `/uw:pr` | Creates or updates GitHub PRs with AI-generated descriptions. |
+| `/uw:compound` | Extracts learnings from the implementation journey and stores them for future sessions. Auto-triggered after `/uw:review`. |
 
-#### /uw:bootstrap
+### Fix & Maintain
 
-One-time setup when adopting Unit Work on a new codebase. Configures Hindsight and builds initial codebase understanding.
+| Command | Description |
+|---------|-------------|
+| `/uw:fix-ci` | Autonomously fixes failing CI. Cycles through analyze → fix → commit → push → verify until CI passes (max 5 cycles). |
+| `/uw:fix-conflicts` | Intelligent rebase conflict resolution. Spawns intent + impact analysis agents, auto-resolves high-confidence conflicts, interviews you for ambiguous ones. |
+| `/uw:action-comments` | Bulk resolves GitHub PR review comments with checkpoint-based verification. |
 
-**Key phases:**
-1. **Check Dependencies** - Verifies Hindsight CLI (required), agent-browser (optional)
-2. **Configure Hindsight** - Sets up memory bank with high skepticism for the project
-3. **Deep Exploration** - Spawns 2 parallel agents to map architecture, entry points, tests, and utilities
-4. **Create Directory Structure** - Sets up `.unitwork/` folders for specs, verify, review, learnings
+### Investigate & Test
 
-**Compounds:** Retains initial codebase exploration findings (file purposes, patterns, key entry points) to Hindsight.
+| Command | Description |
+|---------|-------------|
+| `/uw:investigate` | Read-only codebase investigation. Runs tests and temp scripts to verify hypotheses without modifying production code. |
+| `/uw:test-plan` | Generates manual testing steps from git diffs. Analyzes frontend + backend changes and produces one continuous end-to-end test plan. |
+| `/uw:browser-test` | Browser automation via agent-browser for UI verification, form filling, screenshots, and scraping. |
+| `/uw:momentic` | Run, create, debug, or upload Momentic E2E tests with video recording. |
 
-#### /uw:pr
+### Session Management
 
-Creates or updates GitHub PRs with AI-generated descriptions. Handles both new PR creation and updates to existing PRs.
-
-**Key phases:**
-1. **Verify Environment** - Checks git repo and gh CLI authentication
-2. **Gather Context** - Collects diff, commits, and file changes since branch divergence
-3. **Generate Description** - Creates PR description with context, changes summary, and notes
-4. **Create/Update PR** - Creates draft PR or updates existing PR description
-
-**Compounds:** Does not compound - PR metadata is transient and project-specific.
-
-#### /uw:action-comments
-
-Bulk resolves GitHub PR comments by categorizing each comment and implementing appropriate responses.
-
-**Key phases:**
-1. **Fetch Comments** - Retrieves pending PR comments with file/line references
-2. **Categorize** - Classifies each as VALID_FIX, ALREADY_HANDLED, QUESTION, DEFER, or DISAGREE
-3. **Implement Fixes** - Applies valid fixes with lightweight verification
-4. **Post Replies** - Responds to questions and documents deferrals
-
-**Compounds:** Does not compound - comment resolution is PR-specific.
-
-#### /uw:fix-ci
-
-Autonomously fixes failing CI by cycling through analyze→fix→commit→push→verify until CI passes or limits are reached.
-
-**Key phases:**
-1. **Memory Recall** - Loads past CI fix learnings
-2. **Analyze Failure** - Parses CI output to identify failing step and error
-3. **Fix and Verify** - Implements fix, runs local verification, commits with `fix(ci):` prefix
-4. **Poll and Loop** - Pushes, waits for CI, loops back if still failing (max 5 cycles)
-
-**Compounds:** Retains CI fix patterns and gotchas to Hindsight for future CI issues.
-
-#### /uw:fix-conflicts
-
-Intelligently rebases onto the default branch using multi-agent analysis to resolve conflicts. Auto-resolves high-confidence conflicts and interviews for complex decisions.
-
-**Key phases:**
-1. **Memory Recall** - Loads past conflict resolution learnings and file context
-2. **Pre-flight Checks** - Handles dirty tree, existing rebase, default branch detection
-3. **Parallel Analysis** - Spawns Intent Analyst + Impact Explorer for each conflict
-4. **Resolution** - Auto-resolves if confidence >80%, interviews user otherwise
-5. **Verification** - Runs affected tests after each resolution
-
-**Compounds:** Retains successful resolution patterns to Hindsight for similar future conflicts.
-
-#### /uw:harvest
-
-Scrapes inline review comments and review bodies from merged PRs across GitHub repos, synthesizes them into actionable insights, and stores them in per-repo Hindsight banks.
-
-**Key phases:**
-1. **Date Calculation** - Looks back N days (default: 1), or uses `--since` / `--days` overrides
-2. **PR Discovery** - Uses GitHub Search API to find merged PRs in the date range per repo
-3. **Comment Collection** - Fetches inline review comments and review bodies, filtering out bots and trivial comments
-4. **Synthesis** - Groups comments into insight categories (recurring themes, pattern recommendations, gotchas, testing gaps, architecture feedback)
-5. **Storage** - Stores each insight to the source repo's Hindsight bank
-
-**Compounds:** Stores review insights into each source repo's bank, so future `/uw:plan` and `/uw:work` sessions recall team review patterns.
-
-#### /uw:test-plan
-
-Generates comprehensive manual testing steps by analyzing git diffs across frontend and backend repos. Produces one continuous end-to-end test plan with edge cases woven in.
-
-**Key phases:**
-1. **Repo Detection** - Detects frontend/backend repos via generic heuristics (package.json analysis, sibling directory scanning)
-2. **Diff Analysis** - Gets diffs from all detected repos, excluding codegen/generated files
-3. **Feature Understanding** - Spawns exploration agents to understand API changes, UI changes, data flows, and edge cases
-4. **Test Plan Generation** - Writes one continuous test with sequential steps, each with action + expected outcome
-5. **Storage** - Saves to `.unitwork/test-plans/{DD-MM-YYYY}-{feature-name}.md`
-6. **Execution Suggestion** - Recommends `/uw:browser-test` or Momentic for running the test plan
-
-**Compounds:** Retains test plan generation experience to Hindsight for future test planning.
+| Command | Description |
+|---------|-------------|
+| `/uw:park` | Parks current work session to a GitHub PR comment for multi-device handoff. |
+| `/uw:resume` | Resumes a parked work session by reading PR parking comments and local artifacts. |
+| `/uw:harvest` | Scrapes merged PR review comments from GitHub repos, synthesizes insights, and stores them for future sessions. |
+| `/uw:bootstrap` | First-time setup: configure Hindsight memory bank and explore codebase. Only needed if using Hindsight. |
 
 ## Agents
 
-### Verification Agents (3)
+15 specialized agents spawned by commands — you don't invoke these directly.
 
-| Agent | Purpose |
-|-------|---------|
-| `test-runner` | Execute test suites and report structured results |
-| `api-prober` | Make API calls to verify endpoints (read-only unless permitted) |
-| `browser-automation` | UI verification via agent-browser (flags layout for human review) |
-
-### Conflict Resolution Agents (2)
-
-| Agent | Purpose |
-|-------|---------|
-| `conflict-intent-analyst` | Analyzes git history to understand what each branch was trying to achieve |
-| `conflict-impact-explorer` | Maps test coverage, dependencies, and behavioral impact of resolutions |
-
-### Review Agents (7)
-
-| Agent | Focus |
-|-------|-------|
-| `type-safety` | Casting, type guards, nullability, `any` usage |
-| `patterns-utilities` | Existing solutions, duplication, pattern violations |
-| `performance-database` | N+1 queries, missing indexes, parallelization |
-| `architecture` | File locations, coupling, boundary violations |
-| `security` | Injection, auth bypasses, data exposure, OWASP top 10 |
-| `simplicity` | Over-engineering, YAGNI, premature abstraction |
-| `memory-validation` | Validates code against team learnings from Hindsight |
-
-### Plan Review Agents (3)
-
-| Agent | Focus |
-|-------|-------|
-| `gap-detector` | Investigation language, unclear APIs, ambiguous requirements |
-| `utility-pattern-auditor` | Existing utilities, pattern violations, reinvented wheels |
-| `feasibility-validator` | Technical blockers, verification clarity, hidden dependencies |
-
-These agents validate draft plans during `/uw:plan` before presenting to the user. Findings are independently verified (agents are not oracles) before acting.
-
-### Exploration Agents (1)
-
-| Agent | Purpose |
-|-------|---------|
-| `memory-aware-explore` | Codebase exploration with Hindsight integration (recalls prior findings, retains discoveries) |
-
-## Skills
-
-### unitwork
-
-Core skill containing:
-- Philosophy and methodology
-- Decision trees for checkpoints and verification
-- Agent behavior rules
-- Templates for specs, verification docs, and learnings
-
-### review-standards
-
-Code review standards and issue taxonomy:
-- 47 issue patterns across 6 review categories
-- Severity tiers (Tier 1: correctness, Tier 2: cleanliness)
-- Implementation checklists for common patterns
-- See: [plugins/unitwork/skills/review-standards/references/issue-patterns.md](plugins/unitwork/skills/review-standards/references/issue-patterns.md)
+| Category | Agents | Used By |
+|----------|--------|---------|
+| **Review** (7) | type-safety, patterns-utilities, performance-database, architecture, security, simplicity, memory-validation | `/uw:review` |
+| **Plan Review** (3) | gap-detector, feasibility-validator, utility-pattern-auditor | `/uw:plan` |
+| **Verification** (2) | test-runner, api-prober | `/uw:work`, `/uw:fix-ci` |
+| **Conflict Resolution** (2) | conflict-intent-analyst, conflict-impact-explorer | `/uw:fix-conflicts` |
+| **Exploration** (1) | memory-aware-explore | `/uw:plan`, `/uw:bootstrap` |
 
 ## MCP Servers
 
-### Context7
+**Context7** — Retrieves up-to-date library documentation and code examples. Used during planning and implementation to research framework patterns.
 
-Retrieves up-to-date documentation and code examples for any library. Used during `/uw:plan` and `/uw:work` to research framework patterns and best practices.
+## Hindsight (Optional)
 
-## Requirements
+[Hindsight](https://github.com/vectorize-io/hindsight) gives the plugin persistent memory across sessions. Commands recall past learnings before starting and retain new discoveries when done. Without it, the plugin works fine — you just won't get cross-session memory.
 
-### Prerequisites
+### Setup
 
-- **Docker** - [Install Docker](https://docs.docker.com/get-docker/)
-- **Node.js 18+** - [Install Node.js](https://nodejs.org/)
-
-### Quick Install
-
-Run the install script to set up all dependencies:
+Add to your shell profile (`~/.zshrc` or `~/.bashrc`):
 
 ```bash
-./install_deps.sh
-```
-
-The script will:
-1. Install agent-browser for UI verification
-2. Prompt for your OpenRouter API key (get one at [openrouter.ai/keys](https://openrouter.ai/keys))
-3. Start the Hindsight Docker container
-
-**Container management:**
-
-```bash
-docker stop hindsight    # Stop the container
-docker start hindsight   # Start it again
-docker logs hindsight    # View logs
-```
-
----
-
-### Manual Install
-
-If you prefer to set up manually:
-
-**agent-browser:**
-```bash
-npm install -g agent-browser
-agent-browser install  # On Linux, use: agent-browser install --with-deps
-```
-
-**Hindsight:** Set env vars and run the Docker container:
-```bash
-export HINDSIGHT_API_LLM_API_KEY=<your-openrouter-key>
 export HINDSIGHT_API_LLM_PROVIDER=openai
 export HINDSIGHT_API_LLM_BASE_URL=https://openrouter.ai/api/v1
+export HINDSIGHT_API_LLM_API_KEY=<your-openrouter-key>
 export HINDSIGHT_API_LLM_MODEL=google/gemini-3-flash-preview
+```
 
+Start the container (runs in the background):
+
+```bash
 docker run -d --name hindsight --pull always -p 8888:8888 -p 9999:9999 \
   -e HINDSIGHT_API_LLM_API_KEY=$HINDSIGHT_API_LLM_API_KEY \
   -e HINDSIGHT_API_LLM_PROVIDER=$HINDSIGHT_API_LLM_PROVIDER \
@@ -383,84 +105,13 @@ docker run -d --name hindsight --pull always -p 8888:8888 -p 9999:9999 \
   ghcr.io/vectorize-io/hindsight:latest
 ```
 
-## Directory Structure
+Then run `/uw:bootstrap` to configure the memory bank for your project.
 
-Unit Work creates this structure in your project:
-
+```bash
+docker stop hindsight    # Stop
+docker start hindsight   # Start again
+docker logs hindsight    # View logs
 ```
-.unitwork/
-├── specs/           # Feature specifications
-├── verify/          # Checkpoint verification docs
-├── review/          # Code review findings
-├── learnings/       # Compound phase output
-└── test-plans/      # Manual test plans from /uw:test-plan
-```
-
-## Checkpoint System
-
-### Confidence Assessment
-
-Checkpoints are created at verifiable boundaries with confidence scores:
-
-- **>= 95% confidence**: Checkpoint and continue
-- **< 95% confidence**: Checkpoint and pause for human review
-
-Confidence calculation:
-- Start at 100%
-- -5% for each untested edge case
-- -20% if UI layout changes
-- -10% if complex state management
-- -15% if external API integration
-
-### Commit Format
-
-```
-checkpoint({unit-number}): {brief description}
-
-Unit: {unit-name from plan}
-Confidence: {percentage}%
-Verification: {test-runner|api-prober|browser|manual}
-
-See: .unitwork/verify/{DD-MM-YYYY}-{checkpoint-number}-{short-name}.md
-```
-
-## Hindsight Integration
-
-Unit Work uses Hindsight for persistent memory across sessions:
-
-- **One bank per project** (isolated memories)
-- **High skepticism (5)** - question past assumptions
-- **Narrative format** - memories written as natural language
-- **Async writes** - never block on memory operations
-
-### Memory Types
-
-1. **File Purposes** - Where things live and what they do
-2. **Architectural Patterns** - How the codebase is structured
-3. **Gotchas & Quirks** - Things that cause friction
-4. **Decision Rationale** - Why choices were made
-
-## Getting Started
-
-1. Bootstrap the plugin:
-   ```bash
-   /uw:bootstrap
-   ```
-
-2. Plan a feature:
-   ```bash
-   /uw:plan "Add password reset functionality"
-   ```
-
-3. Execute with checkpoints:
-   ```bash
-   /uw:work
-   ```
-
-4. Review before PR:
-   ```bash
-   /uw:review
-   ```
 
 ## License
 
