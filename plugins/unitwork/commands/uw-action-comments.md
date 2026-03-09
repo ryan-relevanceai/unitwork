@@ -226,20 +226,12 @@ For each REARCHITECTURE item, present via AskUserQuestion:
 
 ### Handle SCOPE_CREEP Items
 
-For each SCOPE_CREEP item:
-
-```bash
-# Offer to create a tracking issue
-gh issue create --title "{scope creep summary}" --body "Raised during review of PR #{PR_NUMBER}.
-
-**Original request:** {reviewer comment}
-**Reason for deferral:** Out of scope for this PR's purpose: {PR purpose}"
-```
-
-Present via AskUserQuestion:
-- **Create issues for all** - Create tracking issues for each scope creep item
+For each SCOPE_CREEP item, present via AskUserQuestion:
+- **Raise issue** - "I'll create a tracking issue for this. How would you like me to create it?" (Then ask which tool/method to use — the user may prefer GitHub, Linear, or another issue tracker)
 - **Include in this PR** - Expand scope (not recommended)
 - **Just reply** - Explain deferral to reviewer without creating issues
+
+Do NOT automatically run `gh issue create` or assume any specific issue tracker. Always ask the user first.
 
 ### Proceed with SIMPLE_FIX Items
 
@@ -371,7 +363,7 @@ gh api --method POST \
 - ALREADY_HANDLED: "🤖 This is already handled — {brief explanation of where/how}."
 - QUESTION: "🤖 {concise answer}."
 - DISAGREE: "🤖 Intentional — {brief reason}."
-- SCOPE_CREEP: "🤖 Good idea — raised as {issue link} to keep this PR focused."
+- SCOPE_CREEP: "🤖 Good idea — tracking separately to keep this PR focused." (include issue link if one was created)
 - DEFER: "🤖 Noted — will address in a follow-up."
 
 **Keep replies brief.** Put details in code comments if needed.
@@ -477,7 +469,7 @@ Addressed {X}/{Y} comments on PR #{PR_NUMBER}
 - {count} REARCHITECTURE items — {resolved/pending}
 
 **Scope Creep ({count}):**
-- {count} issues created to track separately
+- {count} items deferred — {issues created / replied without issues}
 
 **Clarified ({count}):**
 - {count} in-thread replies posted
