@@ -47,11 +47,13 @@ unitwork/
 │       ├── architecture.md
 │       ├── security.md
 │       ├── simplicity.md
+│       ├── ai-smell-detector.md
 │       └── memory-validation.md
-├── commands/                    # Slash commands (16)
+├── commands/                    # Slash commands (17)
 │   ├── uw-plan.md
 │   ├── uw-work.md
 │   ├── uw-review.md
+│   ├── uw-review-pr.md
 │   ├── uw-compound.md
 │   ├── uw-bootstrap.md
 │   ├── uw-pr.md
@@ -93,6 +95,7 @@ Commands use `uw:` prefix to namespace all Unit Work commands:
 - `/uw:plan` - Planning phase
 - `/uw:work` - Implementation phase (with self-correcting review cycles)
 - `/uw:review` - Review phase
+- `/uw:review-pr` - Review someone else's PR with GitHub inline comments
 - `/uw:compound` - Learning extraction
 - `/uw:bootstrap` - First-time setup
 - `/uw:pr` - Create/update GitHub PRs
@@ -141,6 +144,7 @@ Parallel specialists for `/uw:review`:
 - `architecture.md`
 - `security.md`
 - `simplicity.md`
+- `ai-smell-detector.md`
 - `memory-validation.md`
 
 ## Skill Compliance
@@ -189,14 +193,15 @@ Two specialized agents + one command for verification:
 
 ### Review Agents
 
-Seven parallel specialists for code review:
+Eight parallel specialists for code review:
 1. Type Safety
 2. Patterns & Utilities
 3. Performance & Database
 4. Architecture
 5. Security
 6. Simplicity
-7. Memory Validation
+7. AI Smell Detector
+8. Memory Validation
 
 ## Testing Changes
 

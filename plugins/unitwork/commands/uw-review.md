@@ -10,7 +10,7 @@ argument-hint: "[origin: branch|pr <number>|area <path>] [base: main]"
 
 **Note: The current year is 2026.**
 
-Unit Work review spawns 7 parallel specialist agents to perform exhaustive code review. Reviews are taxonomy-based, mapping findings to 47 known issue patterns with tier-based severity ranking.
+Unit Work review spawns 8 parallel specialist agents to perform exhaustive code review. Reviews are taxonomy-based, mapping findings to 47 known issue patterns with tier-based severity ranking.
 
 ---
 
@@ -156,9 +156,82 @@ Issues affecting maintainability but not correctness:
 | P2 IMPORTANT | Type casting, incomplete guards, boundary violations | Significant duplication, wrong file location |
 | P3 NICE-TO-HAVE | Minor edge cases, defensive improvements | Naming nits, comment additions, style consistency |
 
+## Approach Sanity Check (Before Agents)
+
+**Before spawning specialist agents, zoom out on the entire diff and ask: "Should this code exist at all?"**
+
+Specialist agents review code quality (is this well-written?). This step reviews code sanity (is this the right approach?). Without it, you'll produce a polished review of code that shouldn't have been written.
+
+### Step 1: Frame the Problem
+
+```
+What problem is this PR solving? (one sentence)
+```
+
+Extract from: commit messages, PR body, spec file, or branch name. If unclear, ask the user.
+
+### Step 2: Measure the Solution
+
+```bash
+# Count new files and lines added
+git diff $BASE_BRANCH...HEAD --stat
+git diff $BASE_BRANCH...HEAD --diff-filter=A --stat  # new files only
+```
+
+### Step 3: Check for Existing Solutions
+
+For each new file or significant new function, ask:
+
+1. **Does a browser/platform/stdlib API already do this?** (e.g., Notification API, structuredClone, URL, AbortController, Intl, crypto.randomUUID)
+2. **Does an installed dependency already do this?** Check `package.json` / `requirements.txt` / `Gemfile` for libraries that cover this functionality
+3. **Does a well-known library solve this in fewer lines?** (e.g., `worker-timers` vs hand-rolled Web Worker from Blob URL)
+
+```bash
+# Check installed dependencies for overlap
+cat package.json 2>/dev/null | jq -r '.dependencies // {} | keys[]'
+cat package.json 2>/dev/null | jq -r '.devDependencies // {} | keys[]'
+```
+
+### Step 4: Assess Proportionality
+
+Ask: **Is the complexity proportional to the problem?**
+
+Red flags:
+- 100+ lines of new code for something a 5-line API call handles
+- New files for functionality that exists as a one-liner
+- Hand-rolling infrastructure (workers, audio synthesis, parsers) instead of using libraries
+- Building abstractions for a single use case
+
+### Step 5: Verdict
+
+**If the approach is sound:** Continue to specialist agents. Note any minor simplification opportunities for the simplicity agent.
+
+**If the approach is questionable:** Stop and present the finding as a P0/P1 before running specialist agents:
+
+```markdown
+### APPROACH_SANITY - Severity: P0 - Tier: 1
+
+**Problem being solved:** {one sentence}
+
+**Current approach:** {summary} ({N} new files, {M} lines)
+
+**Simpler alternative:**
+{What already exists and how it solves the same problem}
+
+| Custom implementation | Lines | What already exists |
+|---|---|---|
+| {what was built} | {lines} | {existing solution} |
+
+**Recommendation:** {Replace entire approach / Replace specific files / Proceed with caveats}
+```
+
+**Do NOT run specialist agents on code that shouldn't exist.** Fix the approach first, then review the rewritten code.
+
+---
+
 ## Spawn Parallel Review Agents
 
-Launch all 7 review agents in parallel with the diff context. Each agent should reference the issue patterns taxonomy.
+Launch all 8 review agents in parallel with the diff context. Each agent should reference the issue patterns taxonomy.
 
 1. **type-safety** - TYPE_SAFETY_IMPROVEMENT, UNNECESSARY_CAST, NULL_HANDLING
 2. **patterns-utilities** - EXISTING_UTILITY_AVAILABLE, CODE_DUPLICATION, BETTER_IMPLEMENTATION_APPROACH
@@ -166,7 +239,8 @@ Launch all 7 review agents in parallel with the diff context. Each agent should 
 4. **architecture** - ARCHITECTURAL_CONCERN, FILE_ORGANIZATION, WRONG_LOCATION
 5. **security** - INJECTION_VULNERABILITY, AUTHENTICATION_BYPASS, AUTHORIZATION_BYPASS, SENSITIVE_DATA_EXPOSURE
 6. **simplicity** - REDUNDANT_LOGIC, REMOVE_UNUSED_CODE, CONSOLIDATE_LOGIC
-7. **memory-validation** - MEMORY_LEARNING_VIOLATION (receives ALL learnings, not domain-filtered)
+7. **ai-smell-detector** - AI_UNNECESSARY_ABSTRACTION, AI_REIMPLEMENTED_LIBRARY, AI_DEFENSIVE_OVERCODING, AI_CONFIG_EXPLOSION, AI_PREMATURE_OPTIMIZATION, AI_ONETIME_HELPER
+8. **memory-validation** - MEMORY_LEARNING_VIOLATION (receives ALL learnings, not domain-filtered)
 
 **Include recalled context in agent prompts:**
 
@@ -407,6 +481,7 @@ After fixes, re-run only the affected review agents:
 - If architecture issue fixed -> re-run architecture
 - If security issue fixed -> re-run security
 - If simplicity issue fixed -> re-run simplicity
+- If AI smell issue fixed -> re-run ai-smell-detector
 - If memory learning violation fixed -> re-run memory-validation
 
 Continue until review is clean or user accepts state.

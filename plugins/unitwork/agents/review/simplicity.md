@@ -12,6 +12,8 @@ Use the `review-standards` skill for pattern definitions. Key patterns for this 
 - **REDUNDANT_LOGIC** (~5% frequency) - Tier 2 (Cleanliness)
 - **REMOVE_UNUSED_CODE** (~4% frequency) - Tier 2 (Cleanliness)
 - **CONSOLIDATE_LOGIC** (~4% frequency) - Tier 2 (Cleanliness)
+- **GUARD_CASCADE** - Tier 2 (Cleanliness), Tier 1 if hiding side effects
+- **MIXED_CONCERNS** - Tier 2 (Cleanliness)
 - **REMOVE_COMMENT** (~1.5% frequency) - Tier 2 (Cleanliness)
 
 Most simplicity issues are **Tier 2 (Cleanliness)** unless complexity is actively causing bugs (then Tier 1).
@@ -164,7 +166,99 @@ function processUser(user: User) {
 }
 ```
 
-### 7. Comments Explaining Obvious Code
+### 7. Guard Cascade / Bouncer Pattern
+
+**Problem patterns:**
+```typescript
+// Sequential early returns that obscure the actual logic
+useEffect(() => {
+  if (Platform.OS !== "web") {
+    return;
+  }
+  if (!flagA || !flagB) {
+    return;
+  }
+  if (!selectedId) {
+    previousRef.current = undefined; // hidden side effect!
+    return;
+  }
+  if (mode !== Mode.ACTIVE) {
+    return;
+  }
+  // Actual logic is 2 lines after 4 guards
+  doThing(previousRef.current, state);
+  previousRef.current = state;
+}, [selectedId, flagA, flagB, mode, state]);
+```
+
+**Red flags:**
+- 3+ sequential if/return blocks before the actual body
+- Hidden side effects inside bail-out branches (ref mutations, state resets)
+- Same guard cascade duplicated across multiple functions/effects
+- Guard conditions that could be a single compound condition
+
+**Should be:**
+```typescript
+// Option 1: Single compound guard
+useEffect(() => {
+  if (
+    Platform.OS !== "web" ||
+    !flagA || !flagB ||
+    mode !== Mode.ACTIVE
+  ) {
+    return;
+  }
+  // Separate effect for ref lifecycle
+  doThing(previousRef.current, state);
+  previousRef.current = state;
+}, [flagA, flagB, mode, state]);
+
+// Separate effect for cleanup concern
+useEffect(() => {
+  previousRef.current = undefined;
+}, [selectedId]);
+```
+
+**Key insight:** When a bail-out branch mutates state (refs, stores, etc.), that's a **hidden side effect in a guard** — it looks like a no-op return but it's doing work. This should be split into a separate concern.
+
+**Severity:** P2 when guards hide side effects or are duplicated. P3 for pure readability (many guards, no hidden effects).
+
+### 8. Mixed Concerns in Single Function/Effect
+
+**Problem patterns:**
+```typescript
+// One useEffect doing two jobs
+useEffect(() => {
+  // Job 1: Reset ref when task changes
+  if (!taskId) {
+    ref.current = undefined;
+    return;
+  }
+  // Job 2: Fire notification on state change
+  notify(ref.current, state);
+  ref.current = state;
+}, [taskId, state]);
+```
+
+**Should be:**
+```typescript
+// Separate effects for separate concerns
+useEffect(() => {
+  ref.current = undefined;
+}, [taskId]);
+
+useEffect(() => {
+  if (!taskId) return;
+  notify(ref.current, state);
+  ref.current = state;
+}, [taskId, state]);
+```
+
+**Why it matters:** Mixed concerns make effects fragile — changing one behavior risks breaking the other. The dependency arrays become misleading because some deps only matter for one concern.
+
+**Severity:** P2 when the mixed concerns interact in surprising ways. P3 for minor clarity improvements.
+
+### 9. Comments Explaining Obvious Code
 
 **Problem patterns:**
 ```typescript
@@ -229,7 +323,7 @@ Controller -> Repository -> Database
 For each finding, use taxonomy pattern names:
 
 ```markdown
-### [REDUNDANT_LOGIC|REMOVE_UNUSED_CODE|CONSOLIDATE_LOGIC|...] - Severity: P1/P2/P3 - Tier: 1/2
+### [REDUNDANT_LOGIC|REMOVE_UNUSED_CODE|CONSOLIDATE_LOGIC|GUARD_CASCADE|MIXED_CONCERNS|...] - Severity: P1/P2/P3 - Tier: 1/2
 
 **Location:** `file:line`
 

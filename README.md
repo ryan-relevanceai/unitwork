@@ -32,7 +32,8 @@ These tools work independently. Know what to build? Skip the plan, use vanilla C
 
 | Command | Description |
 |---------|-------------|
-| `/uw:review` | Spawns 7 parallel review agents (type-safety, patterns, performance, architecture, security, simplicity, memory-validation). Verifies findings before presenting. Fixes P1 issues automatically. |
+| `/uw:review` | Spawns 8 parallel review agents (type-safety, patterns, performance, architecture, security, simplicity, ai-smell-detector, memory-validation). Verifies findings before presenting. Fixes P1 issues automatically. |
+| `/uw:review-pr` | Review someone else's PR with GitHub inline comments. |
 | `/uw:pr` | Creates or updates GitHub PRs with AI-generated descriptions. |
 | `/uw:compound` | Extracts learnings from the implementation journey and stores them for future sessions. Auto-triggered after `/uw:review`. |
 
@@ -64,11 +65,11 @@ These tools work independently. Know what to build? Skip the plan, use vanilla C
 
 ## Agents
 
-15 specialized agents spawned by commands — you don't invoke these directly.
+16 specialized agents spawned by commands — you don't invoke these directly.
 
 | Category | Agents | Used By |
 |----------|--------|---------|
-| **Review** (7) | type-safety, patterns-utilities, performance-database, architecture, security, simplicity, memory-validation | `/uw:review` |
+| **Review** (8) | type-safety, patterns-utilities, performance-database, architecture, security, simplicity, ai-smell-detector, memory-validation | `/uw:review` |
 | **Plan Review** (3) | gap-detector, feasibility-validator, utility-pattern-auditor | `/uw:plan` |
 | **Verification** (2) | test-runner, api-prober | `/uw:work`, `/uw:fix-ci` |
 | **Conflict Resolution** (2) | conflict-intent-analyst, conflict-impact-explorer | `/uw:fix-conflicts` |

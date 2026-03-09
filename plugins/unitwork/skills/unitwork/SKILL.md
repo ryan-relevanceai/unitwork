@@ -184,11 +184,12 @@ mcp__unitwork_context7__query-docs
 | Agent | Focus |
 |-------|-------|
 | type-safety | Casting, guards, nullability |
-| patterns-utilities | Existing solutions, duplication |
+| patterns-utilities | Existing solutions, duplication, project rules |
 | performance-database | N+1, indexes, parallelization |
 | architecture | Structure, coupling, boundaries |
 | security | Injection, auth, data exposure |
 | simplicity | Over-engineering, YAGNI |
+| ai-smell-detector | AI anti-patterns, reimplemented libraries |
 | memory-validation | Learnings from Hindsight memory |
 
 ## Confidence Assessment
@@ -207,6 +208,7 @@ Start at 100%, subtract:
 - `/uw:plan` - Interview and create spec
 - `/uw:work` - Execute with checkpoints
 - `/uw:review` - Parallel code review
+- `/uw:review-pr` - Review someone else's PR with inline GitHub comments
 - `/uw:compound` - Extract learnings
 - `/uw:bootstrap` - First-time setup
 - `/uw:pr` - Create/update GitHub PRs

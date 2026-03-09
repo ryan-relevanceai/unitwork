@@ -1,5 +1,9 @@
 # {Feature Name}
 
+## Linear Ticket
+- **Ticket ID:** {PROJ-123 or "None"}
+- **URL:** {linear_url or "N/A"}
+
 ## Purpose & Impact
 - Why this feature exists
 - Who it helps
@@ -17,6 +21,11 @@
 ### Out of Scope
 - Explicitly excluded items
 - Noted refactors (tech debt for future)
+
+### Assumptions (To Verify During Implementation)
+- **{Assumption}**: Verify by {approach during /uw:work}
+
+*These assumptions were formed during planning. /uw:work should validate before proceeding with dependent work.*
 
 ## Technical Approach
 - Architectural decisions
@@ -36,6 +45,27 @@
 - **Self-Verification:** How agent verifies
 - **Human QA:** Checklist for human review
 - **Confidence Ceiling:** X%
+
+## Verification Approach
+
+**Success Metrics:**
+- What measurable outcomes indicate success?
+- Example: "All tests pass", "Bundle size < 500KB", "API response < 200ms"
+
+**Measurement Method:**
+- How will we measure? What tools/tests?
+- Example: "Run `pnpm test`", "Use webpack-bundle-analyzer"
+
+**Baseline Values:**
+- Current state before changes (captured during planning)
+- Example: "Current bundle: 650KB", "Current response: 350ms"
+
+**Expected Outcome:**
+- What we assert after implementation
+- Example: "Bundle < 500KB", "Response < 200ms"
+
+**E2E Testing:** (Y/N)
+- If Y: What to check and how (browser automation, manual steps, etc.)
 
 ## Verification Plan
 
