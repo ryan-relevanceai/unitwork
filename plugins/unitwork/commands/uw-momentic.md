@@ -241,3 +241,37 @@ Look for Momentic tests in your project:
 - Glob for `*.test.yaml` and `*.module.yaml` files
 - Check `momentic-tests/` directories
 - Read `momentic.config.yaml` for `include` patterns that define test locations
+
+## Learnings & Gotchas
+
+### React Native Web Click Events Don't Bubble
+Momentic targets elements by accessibility label. If `onPress` is only on an outer `Pressable` but Momentic clicks the inner `Button` (matched by label), nothing happens. Fix: Add `onPress` to both the outer `Pressable` and inner `Button`.
+
+### Pre-warm Metro Bundle
+Momentic has an 8-second page load timeout. Metro bundling takes 15-30s on first load. Run `curl -s http://localhost:8090 > /dev/null` before the test.
+
+### Don't Assert Data Absence After Delete
+Asserting "no item named X visible" after a delete fails if leftover data exists from previous runs. Instead assert on UI state: "dialog closed, app functional, no errors."
+
+### Element Descriptors Need Position Context
+Fragile: "The Add button". Better: "The Add + button or link in the Schedules section of the right-side floating panel" — include section and location context.
+
+### CORS Proxy for Local Frontend
+Local frontend can't hit `api.global.relevanceai.com` due to CORS. Use a Node.js proxy on port 4000, set `localStorage.setItem('global-api-url', 'http://localhost:4000')`.
+
+### Duplicate Test ID Error
+If the same test YAML exists in multiple directories matched by `include` patterns, Momentic throws a duplicate ID error. Delete the duplicate.
+
+### Login Module Must Exist on Disk
+Module ID `0450b662-0d14-4146-b37f-155030a53c46` — if the `.module.yaml` file is missing or 0 bytes on the feature branch, login silently fails.
+
+### Post-Merge Import Breakage
+After merging main, check for moved imports:
+- `~/design-system` → `@relevanceai/design-tokens/design-system`
+- `~/codegen/better-api` → `@relevanceai/api-client/codegen`
+
+### API Key for Upload
+`MOMENTIC_API_KEY=mk-936932c8f7335484f8564f118cab3ba1` — pass explicitly if `.env` doesn't work.
+
+### Process Cleanup
+Kill zombie Chromium processes before each run: `pkill -9 -f 'momentic.*run' && pkill -9 -f 'chromium'`
