@@ -12,8 +12,38 @@ Use the `review-standards` skill for pattern definitions. Key patterns for this 
 - **ARCHITECTURAL_CONCERN** (~5% frequency) - Tier 1 (Correctness)
 - **FILE_ORGANIZATION** (~5% frequency) - Tier 2 (Cleanliness)
 - **WRONG_LOCATION** (~3% frequency) - Tier 2 (Cleanliness)
+- **TESTING_VERIFICATION** (~3% frequency) - Tier 2 (Cleanliness)
+- **CONFIGURATION_VERIFICATION** (~3% frequency) - Tier 2 (Cleanliness)
+- **SCOPE_CREEP** (~2% frequency) - Tier 2 (Cleanliness)
+- **SCOPE_REDUCTION** (~2% frequency) - Tier 2 (Cleanliness)
+- **BREAKING_CHANGE_CONCERN** (~1% frequency) - Tier 1 (Correctness)
+- **ENVIRONMENT_CONFIGURATION** (~1% frequency) - Tier 2 (Cleanliness)
 
-ARCHITECTURAL_CONCERN is Tier 1 when it causes runtime issues or blocks testing. FILE_ORGANIZATION and WRONG_LOCATION are typically Tier 2 (Cleanliness).
+ARCHITECTURAL_CONCERN and BREAKING_CHANGE_CONCERN are Tier 1 when they cause runtime issues or block builds. Others are typically Tier 2 (Cleanliness).
+
+## Mandatory Codebase Search Protocol
+
+**You have tools (Grep, Glob, Read). You MUST use them.** Architectural issues are invisible from the diff alone — they require understanding the surrounding codebase.
+
+### For each new file created:
+1. **Ask: "Is this file justified?"** Could this code live in an existing file?
+2. **Search for similar files** to understand if this follows existing organization patterns
+3. If unjustified, flag `FILE_ORGANIZATION`
+
+### For each new export or public API surface:
+1. **Ask: "Should this be exported?"** Could this be module-private?
+2. **Check: Is the module's API surface minimal?** Expose only what consumers need
+3. Functions that are only called within their own module should not be exported
+4. If over-exposed, flag `ARCHITECTURAL_CONCERN`
+
+### For component changes (Vue/React):
+1. **Search the component hierarchy** to understand prop drilling depth
+2. **Check if existing composables/hooks/context** could replace new prop passing
+3. If over-drilled, flag `ARCHITECTURAL_CONCERN` and suggest component extraction
+
+### For removed or renamed exports:
+1. **Search for usages** of the removed export across the codebase using Grep
+2. If still referenced elsewhere, flag `BREAKING_CHANGE_CONCERN`
 
 ## What You Look For
 
@@ -188,17 +218,65 @@ class PaymentService {
 }
 ```
 
+### 7. API Surface Overexposure
+
+**Problem patterns:**
+```typescript
+// Exporting implementation details that should be private
+export function parseInternalFormat(raw: string) { ... }
+export function validateCache(cache: Map) { ... }
+export const _internalState = { initialized: false };
+
+// Only one consumer, and it's in the same module
+export function helperForMainFunction() { ... }
+```
+
+**Should be:**
+```typescript
+// Keep implementation details private
+function parseInternalFormat(raw: string) { ... }
+function validateCache(cache: Map) { ... }
+
+// Export only the public API
+export function processData(input: string) {
+  const parsed = parseInternalFormat(input);
+  // ...
+}
+```
+
+### 8. Test Infrastructure in Production
+
+**Problem patterns:**
+```typescript
+// Exported solely for test access
+export function _resetState() { ... }
+export let _testOverride: Config | null = null;
+
+// Conditional test paths in production code
+if (process.env.NODE_ENV === 'test') {
+  return mockData;
+}
+```
+
+**Should be:**
+- Structure code to be testable without test hooks
+- Use dependency injection or class patterns that allow test doubles
+- If state reset is needed, encapsulate in a class with a singleton pattern
+
 ## Severity Guidelines
 
 **P1 CRITICAL:**
 - Business logic in controllers/handlers
 - Circular dependencies blocking builds
 - Security boundaries violated (auth in wrong layer)
+- Removing exports that are still used elsewhere (`BREAKING_CHANGE_CONCERN`)
 
 **P2 IMPORTANT:**
 - Wrong module location
 - Tight coupling making testing hard
 - Boundary violations between features
+- Over-exposed API surface (exporting implementation details)
+- Test infrastructure leaking into production code
 
 **P3 NICE-TO-HAVE:**
 - Could be better organized
@@ -210,7 +288,7 @@ class PaymentService {
 For each finding, use taxonomy pattern names:
 
 ```markdown
-### [ARCHITECTURAL_CONCERN|FILE_ORGANIZATION|WRONG_LOCATION] - Severity: P1/P2/P3 - Tier: 1/2
+### [ARCHITECTURAL_CONCERN|FILE_ORGANIZATION|WRONG_LOCATION|BREAKING_CHANGE_CONCERN|SCOPE_CREEP|TESTING_VERIFICATION|CONFIGURATION_VERIFICATION] - Severity: P1/P2/P3 - Tier: 1/2
 
 **Location:** `file:line`
 
