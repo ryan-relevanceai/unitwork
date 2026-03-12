@@ -10,10 +10,13 @@ You are a type safety review specialist. You analyze code for type-related issue
 
 Use the `review-standards` skill for pattern definitions. Key patterns for this agent:
 - **TYPE_SAFETY_IMPROVEMENT** (~12% frequency) - Tier 1 (Correctness)
-- **UNNECESSARY_CAST** (~5% frequency) - Tier 1 (Correctness)
 - **NULL_HANDLING** (~6% frequency) - Tier 1 (Correctness)
+- **UNNECESSARY_CAST** (~5% frequency) - Tier 1 (Correctness)
+- **RUNTIME_VALIDATION** (~2% frequency) - Tier 1 (Correctness)
+- **SCHEMA_VALIDATION_MISSING** (~1% frequency) - Tier 1 (Correctness)
+- **TYPE_CHOICE_QUESTION** (~1% frequency) - Tier 2 (Cleanliness)
 
-All type safety issues are **Tier 1 (Correctness)** - they affect whether code works correctly.
+All type safety issues are **Tier 1 (Correctness)** - they affect whether code works correctly. TYPE_CHOICE_QUESTION is Tier 2 when it's about preference rather than correctness.
 
 ## What You Look For
 
@@ -146,7 +149,7 @@ function getData(): User | null {
 For each finding, use taxonomy pattern names:
 
 ```markdown
-### [TYPE_SAFETY_IMPROVEMENT|UNNECESSARY_CAST|NULL_HANDLING] - Severity: P1/P2/P3 - Tier: 1
+### [TYPE_SAFETY_IMPROVEMENT|UNNECESSARY_CAST|NULL_HANDLING|RUNTIME_VALIDATION|SCHEMA_VALIDATION_MISSING|TYPE_CHOICE_QUESTION] - Severity: P1/P2/P3 - Tier: 1/2
 
 **Location:** `file:line`
 

@@ -126,6 +126,44 @@ gh pr diff $PR_NUMBER
 find "$AREA_PATH" -type f \( -name "*.ts" -o -name "*.py" -o -name "*.rb" \)
 ```
 
+## Pre-Agent Analysis
+
+Before spawning specialist agents, perform these checks directly. These catch issues that require holistic diff awareness — no single agent can reliably detect them.
+
+### 1. Unrelated Changes Check
+
+Review the list of files in the diff against the PR title/purpose:
+
+- For each file, ask: "Is this change related to the PR's stated purpose?"
+- Config files (tsconfig.json, package.json, etc.) changed without clear relation to the feature → flag as `REVERT_UNRELATED_CHANGES`
+- Files that appear to be drive-by fixes or unrelated refactors → flag as `REVERT_UNRELATED_CHANGES`
+
+These are immediate findings — they don't need agent processing.
+
+### 2. Removed Export Impact Check
+
+Parse the diff for removed or renamed exports (functions, types, classes, constants):
+
+```bash
+# Look for removed exports in the diff
+# Lines starting with - that contain 'export'
+```
+
+For each removed/renamed export:
+1. **Search the codebase** for usages of the removed name using Grep
+2. If still referenced elsewhere, flag as `BREAKING_CHANGE_CONCERN` (P1 Tier 1)
+3. Include the list of files still referencing the removed export
+
+### 3. New Concept Inventory
+
+List any new domain concepts introduced in the diff (new type names, new ID patterns, new module names, new terminology). Pass this inventory to agents with the note:
+
+> "These new concepts were introduced in this PR. Scrutinize whether each is well-defined, clearly named, and necessary."
+
+This gives agents explicit targets to question rather than hoping they notice new concepts on their own.
+
+---
+
 ## Severity Tiers
 
 Issues are categorized into two tiers that affect priority ranking:
@@ -160,17 +198,17 @@ Issues affecting maintainability but not correctness:
 
 Launch all 7 review agents in parallel with the diff context. Each agent should reference the issue patterns taxonomy.
 
-1. **type-safety** - TYPE_SAFETY_IMPROVEMENT, UNNECESSARY_CAST, NULL_HANDLING
-2. **patterns-utilities** - EXISTING_UTILITY_AVAILABLE, CODE_DUPLICATION, BETTER_IMPLEMENTATION_APPROACH
-3. **performance-database** - DATABASE_INDEX_MISSING, PARALLELIZATION_OPPORTUNITY, PERFORMANCE_OPTIMIZATION
-4. **architecture** - ARCHITECTURAL_CONCERN, FILE_ORGANIZATION, WRONG_LOCATION
-5. **security** - INJECTION_VULNERABILITY, AUTHENTICATION_BYPASS, AUTHORIZATION_BYPASS, SENSITIVE_DATA_EXPOSURE
-6. **simplicity** - REDUNDANT_LOGIC, REMOVE_UNUSED_CODE, CONSOLIDATE_LOGIC
+1. **type-safety** - TYPE_SAFETY_IMPROVEMENT, UNNECESSARY_CAST, NULL_HANDLING, RUNTIME_VALIDATION, SCHEMA_VALIDATION_MISSING, TYPE_CHOICE_QUESTION
+2. **patterns-utilities** - BETTER_IMPLEMENTATION_APPROACH, EXISTING_UTILITY_AVAILABLE, CODE_DUPLICATION, ADD_COMMENT_EXPLANATION, NAMING_CLARITY, ERROR_HANDLING_NEEDED, NAMING_CONVENTION, USE_CONSTANT, FRAGILE_IMPLEMENTATION, IMPORT_STYLE_CONSISTENCY, MAGIC_NUMBER, ERROR_MESSAGE_CLARITY, LIMIT_BOUNDARY_CONCERN, VERIFY_DOCUMENTATION_ACCURACY
+3. **performance-database** - DATABASE_INDEX_MISSING, PARALLELIZATION_OPPORTUNITY, PERFORMANCE_OPTIMIZATION, DATABASE_QUERY_OPTIMIZATION
+4. **architecture** - ARCHITECTURAL_CONCERN, FILE_ORGANIZATION, WRONG_LOCATION, BREAKING_CHANGE_CONCERN, TESTING_VERIFICATION, CONFIGURATION_VERIFICATION, SCOPE_CREEP, SCOPE_REDUCTION, ENVIRONMENT_CONFIGURATION
+5. **security** - INJECTION_VULNERABILITY, AUTHENTICATION_BYPASS, AUTHORIZATION_BYPASS, SENSITIVE_DATA_EXPOSURE, XSS_VULNERABILITY, SECURITY_PERMISSIONS, RATE_LIMITING_NEEDED
+6. **simplicity** - REDUNDANT_LOGIC, REMOVE_UNUSED_CODE, CONSOLIDATE_LOGIC, NIT_MINOR_ISSUE, EXTRACT_TO_HELPER, FUNCTION_SIGNATURE_REFACTOR, REMOVE_DEBUG_CODE, REMOVE_COMMENT, AI_GENERATED_CODE_CONCERN
 7. **memory-validation** - MEMORY_LEARNING_VIOLATION (receives ALL learnings, not domain-filtered)
 
-**Include recalled context in agent prompts:**
+**Include recalled context and pre-agent findings in agent prompts:**
 
-When spawning agents, include any relevant memories from Context Recall:
+When spawning agents, include any relevant memories from Context Recall AND findings from Pre-Agent Analysis:
 
 ```markdown
 **Past Learnings (from team memory):**
@@ -178,9 +216,17 @@ When spawning agents, include any relevant memories from Context Recall:
 - {learning 2}
 
 Watch for these patterns based on past issues.
+
+**New Concepts Introduced (from pre-agent analysis):**
+- {concept 1} - Scrutinize naming, necessity, and clarity
+- {concept 2}
+
+**Pre-Agent Findings (already flagged):**
+- {REVERT_UNRELATED_CHANGES findings, if any}
+- {BREAKING_CHANGE_CONCERN findings, if any}
 ```
 
-This ensures agents are informed by past mistakes. For example, if there's a memory about "type guard examples must not use casting", the type-safety agent receives it and can catch similar issues.
+This ensures agents are informed by past mistakes AND have explicit targets to scrutinize. For example, if pre-agent analysis found a new `target_agent_id` concept, the patterns-utilities agent should verify the naming is clear and consistent.
 
 Each agent returns findings in this format:
 
