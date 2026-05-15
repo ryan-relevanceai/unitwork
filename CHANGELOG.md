@@ -5,6 +5,21 @@ All notable changes to the Unit Work plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.17.0] - 2026-05-15
+
+### Added
+
+- **uw:guided-review**: New command — active-learning PR review coach
+  - Inverts the AI-as-reviewer dynamic: AI surfaces inventory + asks Socratic questions, holds its own opinion until a single reveal turn after the user answers
+  - Single-dump 2-turn protocol (no `AskUserQuestion`, no per-step interaction) to maximize user cognition and minimize AI throughput
+  - Every question carries a *Why we ask* annotation — the pedagogical layer transfers staff-engineer heuristics across sessions
+  - Pre-walkthrough inventory: magic numbers (with `file:line`), asymmetries, new concepts, cross-cutting changes, reversibility + blast-radius assessment
+  - Risk-summary handled as user-filled template in TURN 1, AI draft only in TURN 2 reveal — prevents users from copying AI bullets
+  - Reveal turn produces side-by-side comparison + Meta heuristics + Heuristics-to-carry-forward takeaways
+  - PR-only (rejects branch-diff and area modes — use `/uw:review` for those)
+  - Ephemeral: no artifact written, no Hindsight retain at session end
+  - Coexists with `/uw:review` — pick audit mode for fast findings, guided mode for skill-building
+
 ## [0.15.0] - 2026-03-06
 
 ### Added

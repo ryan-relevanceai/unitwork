@@ -33,6 +33,7 @@ These tools work independently. Know what to build? Skip the plan, use vanilla C
 | Command | Description |
 |---------|-------------|
 | `/uw:review` | Spawns 7 parallel review agents (type-safety, patterns, performance, architecture, security, simplicity, memory-validation). Verifies findings before presenting. Fixes P1 issues automatically. |
+| `/uw:guided-review` | Active-learning PR review coach. AI emits one dump of Socratic questions (each annotated with *Why we ask*) and holds its opinion until a single reveal turn. Builds transferable review intuition over sessions. PR-only, ephemeral. |
 | `/uw:pr` | Creates or updates GitHub PRs with AI-generated descriptions. |
 | `/uw:compound` | Extracts learnings from the implementation journey and stores them for future sessions. Auto-triggered after `/uw:review`. |
 

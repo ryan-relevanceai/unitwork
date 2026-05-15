@@ -48,7 +48,7 @@ unitwork/
 │       ├── security.md
 │       ├── simplicity.md
 │       └── memory-validation.md
-├── commands/                    # Slash commands (16)
+├── commands/                    # Slash commands (17)
 │   ├── uw-plan.md
 │   ├── uw-work.md
 │   ├── uw-review.md
@@ -64,7 +64,8 @@ unitwork/
 │   ├── uw-browser-test.md
 │   ├── uw-momentic.md
 │   ├── uw-harvest.md
-│   └── uw-test-plan.md
+│   ├── uw-test-plan.md
+│   └── uw-guided-review.md
 ├── skills/
 │   ├── review-standards/
 │   │   └── ...
@@ -106,6 +107,7 @@ Commands use `uw:` prefix to namespace all Unit Work commands:
 - `/uw:momentic` - Run, create, debug, or upload Momentic E2E tests
 - `/uw:harvest` - Scrape PR review insights from GitHub repos into Hindsight
 - `/uw:test-plan` - Generate manual testing steps from git diffs
+- `/uw:guided-review` - Active-learning PR review coach (Socratic, single-dump)
 
 ## Agent Organization
 
