@@ -5,6 +5,22 @@ All notable changes to the Unit Work plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.17.0] - 2026-05-15
+
+### Added
+
+- **uw:guided-review**: New command — active-learning PR review coach
+  - Inverts the AI-as-reviewer dynamic: AI surfaces inventory + asks Socratic questions, holds its own opinion until a single reveal turn after the user answers
+  - **2-agent parallel + inline depth model**: spawns at most 2 high-leverage subagents (`architecture` + `patterns-utilities`) in parallel for the categories that benefit most from a dedicated prompt; scans the remaining ~45 patterns from `review-standards` inline. Wall-clock capped at slowest single agent (~2-4 min), not the full ~15-minute `/uw:review` fan-out. Findings stay buried in TURN 1, translated into Socratic questions; surface in TURN 2 with pattern names + `file:line` citations. Run `/uw:review` for the exhaustive 7-agent audit.
+  - Single-dump 2-turn protocol (no `AskUserQuestion`, no per-step interaction) to maximize user cognition while preserving audit-grade depth
+  - Every question carries a *Why we ask* annotation — the pedagogical layer transfers staff-engineer heuristics across sessions
+  - Pre-walkthrough inventory: magic numbers (with `file:line`), asymmetries, new concepts, cross-cutting changes, reversibility + blast-radius assessment (structural observation only — no pattern names leak)
+  - Risk-summary handled as user-filled template in TURN 1, AI draft only in TURN 2 reveal — prevents users from copying AI bullets
+  - Reveal turn produces side-by-side comparison (with finding citations) + held-back findings section + architectural-direction observation + Meta heuristics + Heuristics-to-carry-forward takeaways
+  - PR-only (rejects branch-diff and area modes — use `/uw:review` for those)
+  - Ephemeral: no artifact written, no Hindsight retain at session end
+  - Coexists with `/uw:review` — pick audit mode for fast findings, guided mode for skill-building
+
 ## [0.15.0] - 2026-03-06
 
 ### Added
