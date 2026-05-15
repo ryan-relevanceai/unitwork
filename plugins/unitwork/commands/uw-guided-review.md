@@ -16,7 +16,7 @@ argument-hint: "[pr <number>]"
 
 **Delivery model: single-dump.** AI produces ONE long message containing the full inventory + every question across all steps + a risk-summary template. User responds in ONE long answer. AI then produces ONE reveal/compare turn. **Target: 2 AI turns total.** No `AskUserQuestion`. No per-step prompts. No splitting the dump across multiple turns.
 
-**Depth model: silent subagents.** This is a guided version of `/uw:review`, not a lite one. Before the dump is emitted, the command spawns the same 7 parallel review agents (`type-safety`, `patterns-utilities`, `performance-database`, `architecture`, `security`, `simplicity`, `memory-validation`) plus the architectural zoom-out. **Findings stay internal during TURN 1** — they are translated into Socratic questions, never shown raw. Findings surface in TURN 2 as AI's own answers (with pattern names + `file:line` citations) and as AI's risk-summary draft. Without subagent depth the coaching is shallow; with it, the user trains against staff-engineer eyes.
+**Depth model: inline audit, no subagents.** This is a guided coaching command, not the full audit. `/uw:review` spawns 7 parallel agents and takes ~15 minutes — that latency kills the coaching loop. Instead, the AI does an **inline pass** against the `review-standards` skill (47 patterns) before emitting the dump: read the diff once, mentally map against patterns, run a lightweight verification pass, translate findings into Socratic questions. **Findings stay internal during TURN 1** — surface only in TURN 2 with pattern names + `file:line` citations. Same depth signal as `/uw:review`, none of the fan-out cost. If the user wants the exhaustive multi-agent audit, they run `/uw:review` separately.
 
 **PR-only.** This command requires a PR description + commit log to frame against. Branch-diff and area-audit modes are rejected — use `/uw:review` for those.
 
@@ -90,16 +90,16 @@ Do not proceed without a PR.
 
 ---
 
-## Silent Audit Phase (internal, before TURN 1)
+## Silent Audit Phase (inline, before TURN 1)
 
-**This phase runs entirely before any user-visible output.** It exists to give the dump real depth — without it, the questions are vibes and the reveal is shallow. With it, the coach has staff-engineer eyes.
+**This phase runs entirely before any user-visible output.** It exists to give the dump real depth — without it, the questions are vibes and the reveal is shallow. Crucially: **inline only, no subagent fan-out.** `/uw:review` spawns 7 parallel agents and takes ~15 minutes. That latency kills the coaching loop here. Do the same conceptual work, inline, against the loaded `review-standards` skill.
 
-### Step S1 — Pre-Agent Analysis (inline)
+### Step S1 — Pre-walkthrough checks (inline)
 
-Run the same pre-agent checks `/uw:review` runs. These catch issues that require holistic diff awareness and feed directly into Step 0 / Step 1 questions:
+Three lightweight diff scans:
 
-1. **Unrelated Changes Check** — flag files in the diff whose presence doesn't match the PR title/purpose. Each becomes a candidate Step 0 scope-creep question.
-2. **Removed Export Impact Check** — parse the diff for removed/renamed exports; grep the codebase for surviving usages. Each surviving usage becomes a candidate per-file question ("Why was X removed when Y still imports it?").
+1. **Unrelated Changes Check** — flag files whose presence doesn't match the PR title/purpose. Each becomes a candidate Step 0 scope-creep question.
+2. **Removed Export Impact Check** — parse the diff for removed/renamed exports; grep the codebase for surviving usages. Each surviving usage becomes a candidate per-file question.
 3. **New Concept Inventory** — list new types, IDs, terminology, module names. Each becomes a candidate "is this concept well-defined?" question.
 
 ### Step S2 — Architectural Zoom-Out (inline)
@@ -111,48 +111,42 @@ Read the full diff holistically against the `ARCHITECTURAL_DIRECTION` pattern fr
 - Is this solving a symptom instead of the root cause?
 - Is this reimplementing a flow that already exists?
 
-If the approach is sound, note "Architectural direction: sound" in your internal scratchpad. If concerns exist, draft an `Architectural Direction` observation — **save it for TURN 2**, do not surface in TURN 1.
+If sound, note "Architectural direction: sound" in scratchpad. If concerns exist, draft an `Architectural Direction` observation — **save it for TURN 2**, do not surface in TURN 1.
 
-### Step S3 — Spawn 7 parallel review agents (silent)
+### Step S3 — Inline pattern scan (NO subagents)
 
-Launch the same 7 review agents `/uw:review` uses, in parallel via multiple Task tool calls in a single response. Each agent receives:
+Walk the diff once, file by file, mapping each change against the 47 patterns in `review-standards/issue-patterns.md`. **Do not spawn the review agents** — this is a coaching command, not the exhaustive audit. The skill IS the checklist; running it inline costs zero seconds vs the 15-minute fan-out.
 
-- The PR diff
-- Recalled memories routed to their domain (same routing table as `/uw:review`):
+Lean on the **Top 5 by frequency** as your primary lens (they cover ~54% of real issues):
 
-  | Memory Topic | Route To Agent |
-  |--------------|----------------|
-  | Type safety, casting, null handling | `type-safety` |
-  | Security vulnerabilities, auth issues | `security` |
-  | Patterns, utilities, duplication | `patterns-utilities` |
-  | Performance, database, queries | `performance-database` |
-  | Architecture, file organization | `architecture` |
-  | Complexity, over-engineering | `simplicity` |
-  | General gotchas | All agents |
+1. `BETTER_IMPLEMENTATION_APPROACH` (18%)
+2. `TYPE_SAFETY_IMPROVEMENT` (12%)
+3. `EXISTING_UTILITY_AVAILABLE` (10%)
+4. `CODE_DUPLICATION` (8%)
+5. `NULL_HANDLING` (6%)
 
-- Pre-agent findings from Step S1 (so agents know what's already flagged)
-- New-concept inventory from Step S1 (explicit scrutiny targets)
+Then the **Always-P1 set** (zero-tolerance, scan every PR for these):
 
-Each agent returns findings in standard format (pattern name, severity, location, why, fix).
+- Any injection vulnerability
+- Authentication/authorization bypass
+- XSS in user content
+- Security boundary violations
+- Type casting to access properties
+- Barrel files / debug code / swallowed errors
 
-### Step S4 — Finding Verification (silent)
+For everything else, scan by file domain (UI file → check XSS + null handling; query file → check injection + N+1; new service → check architecture). You don't have to walk all 47 patterns on every file — let the file's character guide which patterns apply.
 
-For each finding returned, run the same verification gate `/uw:review` uses:
+Recalled memories route into this scan inline: if memory flagged a past type-safety bug, scrutinize the `TYPE_SAFETY_IMPROVEMENT` pattern harder.
 
-1. **Factual accuracy** — actually read the file at `file:line`; confirm the claim holds.
-2. **Scope relevance** — pre-existing vs PR-introduced; in-scope vs unrelated.
-3. **Blast radius** — fix stays in diff, or expands? Tag `SCOPE_INCREASE` if expands.
-4. **Classify**: `VERIFIED` / `VERIFIED + SCOPE_INCREASE` / `DISMISSED`.
+### Step S4 — Lightweight verification (inline)
 
-Discard `DISMISSED` findings. Keep `VERIFIED` findings in an internal scratchpad organized by:
+For each candidate finding, run a fast verification pass — not the full `/uw:review` gate:
 
-- Tier-1 P1 (Correctness, critical)
-- Tier-1 P2 (Correctness, important)
-- Tier-2 P1/P2 (Cleanliness)
-- P3 (Nice-to-have)
-- `SCOPE_INCREASE` tagged subset
+1. **Read the file at `file:line`** — does the claim actually hold? (One Read tool call, not a 7-agent verification chain.)
+2. **In-scope?** Pre-existing issues go to the held-back section in TURN 2 (informational only), not the dump.
+3. **Classify** as `VERIFIED` (keep), `DISMISSED` (discard), or `INFORMATIONAL` (existing code, held for TURN 2).
 
-This scratchpad is **never written to disk** (ephemeral session). It is held in working memory only until TURN 2.
+The point of this pass is to avoid coaching the user against false positives. Don't make it elaborate — if a finding survives a 30-second sanity check, keep it.
 
 ### Step S5 — Finding → Question translation
 
@@ -165,17 +159,17 @@ Convert each `VERIFIED` finding into a Socratic question that surfaces the *cate
 | `EXISTING_UTILITY_AVAILABLE at src/format.ts:8 — re-implements pluraliseWord` | "Take a look at the helper on line 8 — does anything in the codebase already do this?" |
 | `INJECTION_VULNERABILITY at src/query.ts:30 — raw SQL interpolation` | "Walk through how user input flows into the query on `src/query.ts:30`. What controls each variable?" |
 
-Rules for translation:
-- **Never name the pattern** in the question. The user must classify the issue themselves; pattern names show up in TURN 2 only.
-- **Never state the severity**. Don't say "this is P1." Ask a question that surfaces severity through user thinking.
-- **Always carry a *Why we ask* annotation** that explains the underlying heuristic — not the specific finding. (The heuristic is what transfers; the finding is one-shot.)
-- **One finding per question** when practical. If two findings share a heuristic on the same file, combine them.
+Rules:
+- **Never name the pattern** in the question. Pattern names show up in TURN 2 only.
+- **Never state the severity**. Surface severity through user thinking.
+- **Always carry a *Why we ask* annotation** explaining the underlying heuristic — not the specific finding.
+- **One finding per question** when practical; combine when two findings share a heuristic on the same file.
 
-Every `VERIFIED` finding must produce at least one question in the dump, OR be deferred for TURN 2 only (e.g., if a P3 cleanliness finding doesn't fit a Socratic frame, hold it for the reveal). Aim for ≥ 80% of findings represented in the dump.
+Aim for ≥ 80% of `VERIFIED` findings represented in the dump. The rest go to the TURN 2 "Findings I held back" block (typically because they don't fit a Socratic frame).
 
 ### Step S6 — Architectural observation (if drafted)
 
-If Step S2 produced an architectural concern, draft a single open question for Step 3 that surfaces the direction without naming it. Example: "If you were starting this PR over with the same goal, would you keep the same structure? Where would you diverge?" *Why we ask: most PRs have sound direction with imperfect execution — but the few that don't waste all subsequent execution work. Ask once.*
+If Step S2 flagged a directional concern, draft a single open question for Step 3 that surfaces the direction without naming it. Example: "If you were starting this PR over with the same goal, would you keep the same structure? Where would you diverge?" *Why we ask: most PRs have sound direction with imperfect execution — but the few that don't waste all subsequent execution work. Ask once.*
 
 ---
 
@@ -375,10 +369,11 @@ These are non-negotiable. Violating any of them collapses the command back into 
 3. **Do NOT reveal your own take in TURN 1.** Inventory is descriptive (magic numbers, asymmetries, classifications). Questions are open. Opinions wait until TURN 2.
 4. **Do NOT draft the risk-summary bullets in TURN 1.** Template only. The draft appears in TURN 2.
 5. **Do NOT write to disk.** This command is **ephemeral** — no `.unitwork/guided-reviews/` directory, no artifact files, no Hindsight retain at the end. The session leaves only the risk summary the user pastes into the PR review themselves.
-6. **DO spawn the 7 review agents silently in the Silent Audit Phase.** All output stays internal during TURN 1. Findings appear in TURN 2 as AI's own answers and risk-summary draft only. **Do NOT leak findings into TURN 1** — no pattern names, no severities, no `file:line` audit lines in the dump. If a finding shows up in TURN 1, it must be reshaped as an open question.
-7. **Every question MUST carry a *Why we ask* annotation.** No exceptions. Without the annotation, the user gets a worksheet; with it, they get a transferable mental model. The pedagogical layer is the durable value.
-8. **PR-only.** Reject branch-diff and area-audit inputs upfront. Point users at `/uw:review` for those.
-9. **No retain pass.** Ephemeral session = no Hindsight retain at the end. (Recall at the start is mandatory; retain at the end is forbidden.)
+6. **Do NOT spawn the 7 review agents.** This is a coaching command, not the exhaustive audit. The Silent Audit Phase runs **inline** against the `review-standards` skill — 47 patterns scanned by the main thread, not by fan-out. Subagent fan-out adds ~15 minutes of latency and kills the coaching loop. If the user wants the full audit, they run `/uw:review` separately.
+7. **Do NOT leak findings into TURN 1.** All inline-audit output stays internal until TURN 2. No pattern names, no severities, no `file:line` audit lines in the dump. If a finding shows up in TURN 1, it must be reshaped as an open question.
+8. **Every question MUST carry a *Why we ask* annotation.** No exceptions. Without the annotation, the user gets a worksheet; with it, they get a transferable mental model. The pedagogical layer is the durable value.
+9. **PR-only.** Reject branch-diff and area-audit inputs upfront. Point users at `/uw:review` for those.
+10. **No retain pass.** Ephemeral session = no Hindsight retain at the end. (Recall at the start is mandatory; retain at the end is forbidden.)
 
 ---
 
@@ -386,6 +381,6 @@ These are non-negotiable. Violating any of them collapses the command back into 
 
 `/uw:review` is the right tool when you need findings shipped fast — AI does the audit, presents P1s, fixes them. But it has a cost: the human reviewer stops engaging. They scroll past AI's findings, hit approve, and lose the chance to build their own review intuition.
 
-`/uw:guided-review` flips that. AI runs the same exhaustive audit `/uw:review` runs — 7 parallel agents, architectural zoom-out, finding verification — but **hides the findings** and translates them into Socratic questions instead. The user surfaces the issue category through their own thinking; AI's verified findings appear only in TURN 2 to grade the answer. The *Why we ask* annotations make every question a teaching moment. Over enough sessions, the user internalizes the heuristics and starts asking them on every PR — without ever running this command again.
+`/uw:guided-review` flips that. AI runs an **inline audit** against the `review-standards` skill (47 patterns) — no subagent fan-out, no 15-minute wait — but **hides the findings** and translates them into Socratic questions. The user surfaces the issue category through their own thinking; AI's verified findings appear only in TURN 2 to grade the answer. The *Why we ask* annotations make every question a teaching moment. Over enough sessions, the user internalizes the heuristics and starts asking them on every PR — without ever running this command again. If they want the exhaustive multi-agent audit, they run `/uw:review` separately.
 
 That's the goal: **make yourself unnecessary**.
