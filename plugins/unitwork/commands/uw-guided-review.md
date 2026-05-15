@@ -8,8 +8,6 @@ argument-hint: "[pr <number>]"
 
 ## Introduction
 
-**Note: The current year is 2026.**
-
 **Coaching, not auditing.** When AI does the review, the human goes complacent — P1s slip past because AI "already looked." This command inverts the dynamic: AI is a staff-engineer-style coach that asks Socratic questions, holds back its own opinion until the very end, and forces the user to do the cognitive work.
 
 **Two goals:**
