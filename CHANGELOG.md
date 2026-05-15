@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **uw:guided-review**: New command — active-learning PR review coach
   - Inverts the AI-as-reviewer dynamic: AI surfaces inventory + asks Socratic questions, holds its own opinion until a single reveal turn after the user answers
-  - **Inline depth model**: scans the diff against `review-standards` (47 patterns) inline — no subagent fan-out, no ~15-minute latency. Findings stay buried in TURN 1, translated into Socratic questions; surface in TURN 2 with pattern names + `file:line` citations. Run `/uw:review` for the exhaustive multi-agent audit.
+  - **2-agent parallel + inline depth model**: spawns at most 2 high-leverage subagents (`architecture` + `patterns-utilities`) in parallel for the categories that benefit most from a dedicated prompt; scans the remaining ~45 patterns from `review-standards` inline. Wall-clock capped at slowest single agent (~2-4 min), not the full ~15-minute `/uw:review` fan-out. Findings stay buried in TURN 1, translated into Socratic questions; surface in TURN 2 with pattern names + `file:line` citations. Run `/uw:review` for the exhaustive 7-agent audit.
   - Single-dump 2-turn protocol (no `AskUserQuestion`, no per-step interaction) to maximize user cognition while preserving audit-grade depth
   - Every question carries a *Why we ask* annotation — the pedagogical layer transfers staff-engineer heuristics across sessions
   - Pre-walkthrough inventory: magic numbers (with `file:line`), asymmetries, new concepts, cross-cutting changes, reversibility + blast-radius assessment (structural observation only — no pattern names leak)
