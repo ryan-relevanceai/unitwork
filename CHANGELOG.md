@@ -11,11 +11,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **uw:guided-review**: New command — active-learning PR review coach
   - Inverts the AI-as-reviewer dynamic: AI surfaces inventory + asks Socratic questions, holds its own opinion until a single reveal turn after the user answers
-  - Single-dump 2-turn protocol (no `AskUserQuestion`, no per-step interaction) to maximize user cognition and minimize AI throughput
+  - **Silent depth model**: spawns the same 7 parallel review agents + architectural zoom-out as `/uw:review` before emitting the dump. Findings stay buried in TURN 1, translated into Socratic questions; surface in TURN 2 with pattern names + `file:line` citations
+  - Single-dump 2-turn protocol (no `AskUserQuestion`, no per-step interaction) to maximize user cognition while preserving audit-grade depth
   - Every question carries a *Why we ask* annotation — the pedagogical layer transfers staff-engineer heuristics across sessions
-  - Pre-walkthrough inventory: magic numbers (with `file:line`), asymmetries, new concepts, cross-cutting changes, reversibility + blast-radius assessment
+  - Pre-walkthrough inventory: magic numbers (with `file:line`), asymmetries, new concepts, cross-cutting changes, reversibility + blast-radius assessment (structural observation only — no pattern names leak)
   - Risk-summary handled as user-filled template in TURN 1, AI draft only in TURN 2 reveal — prevents users from copying AI bullets
-  - Reveal turn produces side-by-side comparison + Meta heuristics + Heuristics-to-carry-forward takeaways
+  - Reveal turn produces side-by-side comparison (with finding citations) + held-back findings section + architectural-direction observation + Meta heuristics + Heuristics-to-carry-forward takeaways
   - PR-only (rejects branch-diff and area modes — use `/uw:review` for those)
   - Ephemeral: no artifact written, no Hindsight retain at session end
   - Coexists with `/uw:review` — pick audit mode for fast findings, guided mode for skill-building
